@@ -8,4 +8,8 @@ Includes:
 - Application server (3 server) 
     * Example: port 3000, 3001, 3002
 
-    
+Load balancing technique use:
+- Round robin
+
+Voting system
+
