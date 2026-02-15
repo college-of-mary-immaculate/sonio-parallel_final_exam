@@ -9,7 +9,6 @@ Privincial level
 - Vice governor
 - Provincial Board members
 
-
 Punong barangay 
 - Candidate count = No limit
 - Winner/s = 1
@@ -48,5 +47,10 @@ Sangguniang panlalawigan members (Provincial board)
 - Winner/s = 5
 - Votes per voter = Depends on the no. of the district seats.
 
+-----------------------------------------------------------------
 
+For this Final exam Only Provincial leve included:
+- Governor
+- Vice Governor
+- Provincial board 
 
