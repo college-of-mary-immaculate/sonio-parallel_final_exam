@@ -1,0 +1,76 @@
+version: "3.9"
+
+services:
+
+  mysql_master:
+    image: mysql:8.0
+    container_name: mysql_master
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 111
+      MYSQL_DATABASE: voting_system
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./master/conf/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
+      - master_data:/var/lib/mysql
+
+  mysql_slave1:
+    image: mysql:8.0
+    container_name: mysql_slave1
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 111
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./slave/conf/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
+      - slave1_data:/var/lib/mysql
+
+  mysql_slave2:
+    image: mysql:8.0
+    container_name: mysql_slave2
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 111
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./slave/conf/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
+      - slave2_data:/var/lib/mysql
+
+
+  backend1:
+    build: .
+    container_name: backend1
+    environment:
+      DB_HOST: mysql_master
+    depends_on:
+      - mysql_master
+    ports:
+      - "3000:3000"
+
+  backend2:
+    build: .
+    container_name: backend2
+    environment:
+      DB_HOST: mysql_master
+    depends_on:
+      - mysql_master
+    ports:
+      - "3001:3000"
+
+  backend3:
+    build: .
+    container_name: backend3
+    environment:
+      DB_HOST: mysql_master
+    depends_on:
+      - mysql_master
+    ports:
+      - "3002:3000"
+
+volumes:
+  master_data:
+  slave1_data:
+  slave2_data:
