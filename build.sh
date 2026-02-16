@@ -25,9 +25,9 @@ echo "===================================="
 echo "Injecting MySQL configs INSIDE containers..."
 echo "===================================="
 
-docker cp ./db/master/conf/replication.cnf mysql_master:/etc/mysql/conf.d/replication.cnf
-docker cp ./db/slave1/conf/replication.cnf mysql_slave1:/etc/mysql/conf.d/replication.cnf
-docker cp ./db/slave2/conf/replication.cnf mysql_slave2:/etc/mysql/conf.d/replication.cnf
+docker cp ./server/db/master/conf/replication.cnf mysql_master:/etc/mysql/conf.d/replication.cnf
+docker cp ./server/db/slave1/conf/replication.cnf mysql_slave1:/etc/mysql/conf.d/replication.cnf
+docker cp ./server/db/slave2/conf/replication.cnf mysql_slave2:/etc/mysql/conf.d/replication.cnf
 
 docker exec mysql_master sh -c "chmod 644 /etc/mysql/conf.d/replication.cnf"
 docker exec mysql_slave1 sh -c "chmod 644 /etc/mysql/conf.d/replication.cnf"
