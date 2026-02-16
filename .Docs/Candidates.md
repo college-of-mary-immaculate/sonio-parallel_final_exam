@@ -54,3 +54,20 @@ For this Final exam Only Provincial leve included:
 - Vice Governor
 - Provincial board 
 
+Provincial level
+Governor
+- Candidate count = No limit
+- Winner/s = 1
+- Votes per voter = 1
+
+Vice Governor
+- Canidate count = No limit
+- Winner/s = 1
+- Votes per voter = 1
+
+Sangguniang panlalawigan members (Provincial board)
+- Candidate count = No limit
+- Winner/s = 5
+- Votes per voter = Depends on the no. of the district seats.
+
+
