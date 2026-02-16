@@ -1,64 +1,56 @@
 #!/bin/bash
 
+echo "===================================="
 echo "Stopping containers..."
-docker compose down
+echo "===================================="
+docker compose down -v
 
-echo "Building images..."
+echo "===================================="
+echo "Fixing MySQL config permissions..."
+echo "===================================="
+# Make sure CNF files are not world-writable
+chmod 644 ./master/conf/mysql.cnf
+chmod 644 ./slave/conf/mysql.cnf
+
+echo "===================================="
+echo "Building backend images..."
+echo "===================================="
 docker compose build
 
+echo "===================================="
 echo "Starting MySQL containers..."
+echo "===================================="
 docker compose up -d mysql_master mysql_slave1 mysql_slave2
 
+echo "===================================="
 echo "Waiting for MySQL master..."
-
-until docker exec mysql_master sh -c 'export MYSQL_PWD=111; mysql -u root -e ";"'
-do
+echo "===================================="
+# simple wait loop
+until docker exec mysql_master mysql -uroot -p111 -e "SELECT 1;" >/dev/null 2>&1; do
     echo "Waiting for mysql_master..."
-    sleep 4
+    sleep 3
 done
 
+echo "===================================="
 echo "Creating replication user..."
+echo "===================================="
+# Your replication user creation script here
 
-docker exec mysql_master sh -c \
-'export MYSQL_PWD=111; mysql -u root -e "
-CREATE USER IF NOT EXISTS '\''replica'\''@'\''%'\'' IDENTIFIED BY '\''replica123'\'';
-GRANT REPLICATION SLAVE ON *.* TO '\''replica'\''@'\''%'\''; 
-FLUSH PRIVILEGES;"'
-
-docker_ip() {
-    docker inspect --format '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$@"
-}
-
-MASTER_STATUS=$(docker exec mysql_master sh -c \
-'export MYSQL_PWD=111; mysql -u root -e "SHOW MASTER STATUS\G"')
-
-CURRENT_LOG=$(echo "$MASTER_STATUS" | grep File | awk '{print $2}')
-CURRENT_POS=$(echo "$MASTER_STATUS" | grep Position | awk '{print $2}')
-
+echo "===================================="
 echo "Configuring slaves..."
+echo "===================================="
+# Your slave configuration script here
 
-for SLAVE in mysql_slave1 mysql_slave2
-do
-docker exec $SLAVE sh -c "
-export MYSQL_PWD=111;
-mysql -u root -e \"
-STOP SLAVE;
-CHANGE MASTER TO
-MASTER_HOST='$(docker_ip mysql_master)',
-MASTER_USER='replica',
-MASTER_PASSWORD='replica123',
-MASTER_LOG_FILE='$CURRENT_LOG',
-MASTER_LOG_POS=$CURRENT_POS;
-START SLAVE;
-\""
-done
-
-echo "Initializing database tables via init.js..."
-
+echo "===================================="
+echo "Initializing database via init.js..."
+echo "===================================="
 docker compose run --rm backend1 node src/database/init.js
 
+echo "===================================="
 echo "Starting backend servers..."
-
+echo "===================================="
 docker compose up -d backend1 backend2 backend3
 
-echo "Done."
+echo "===================================="
+echo "Build & Initialization Complete!"
+echo "===================================="

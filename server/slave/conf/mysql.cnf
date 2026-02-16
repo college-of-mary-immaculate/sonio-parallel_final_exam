@@ -1,4 +1,4 @@
 [mysqld]
-server-id=2
-relay-log=mysql-relay-bin
+server-id=2  # for slave1, change to 3 for slave2 if separate
+relay_log=relay-bin
 read_only=1

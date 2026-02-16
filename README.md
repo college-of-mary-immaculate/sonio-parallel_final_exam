@@ -152,5 +152,3 @@ The system will automatically:
 * Launch backend instances
 
 ---
-
-If needed, this README can be further refined into a production-ready or portfolio-focused version.

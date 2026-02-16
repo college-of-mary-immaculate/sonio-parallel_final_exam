@@ -6,7 +6,7 @@ module.exports = async (db) => {
             position_id BIGINT NOT NULL,
             candidate_id BIGINT NOT NULL,
             total_votes INT NOT NULL,
-            rank INT NOT NULL,
+            \`rank\` INT NOT NULL,
             is_winner BOOLEAN DEFAULT FALSE,
 
             UNIQUE(election_id, position_id, candidate_id),
