@@ -12,12 +12,19 @@ server/
                     voteIndex.js
             di/
                 container.js
+                etc.
 
             utils/
                 jwt.js
+                etc.
+
+            sockets/
+                wesocket.js
+                etc.
                 
             middlewares/
                 authMiddleware.js
+                etc.
 
             bootstrap.js
             server.js

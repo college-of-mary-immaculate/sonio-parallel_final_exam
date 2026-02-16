@@ -70,6 +70,10 @@ create account to be a voter
 - signup (email, fullname, password, verifypassword 
 - before making this singup successful, the otp will send a code first then the user will need to put it in the modal pop up, if match. signup successful. if not then invalid. can try again
 - voter wait for the active election. if not then no active election yet. but if there is vote the is already been created and just the start date is not yet. the user can view the count down of that election. once the countdown ends. the voter can now enter the election then vote.
+- Voter can only vote depends on how much votes per voter for that position set by the backend. 
+- Voter can change vote while its not being submitted yet
+- voter can still submit even tho some positions or vote counter per position is notreach yet, for example need 7 vote for senator, but only did 5. its fine.
+- 
 
 -----------------------------------------------------------------------------
 
@@ -89,3 +93,7 @@ Candidate description:
 - years of experience
 - primary advocacy
 - secondart advocacy
+
+
+----------------------------------------------------------------
+
