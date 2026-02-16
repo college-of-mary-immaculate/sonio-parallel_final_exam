@@ -6,12 +6,11 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: 111
-      MYSQL_ROOT_HOST: '%'
       MYSQL_DATABASE: voting_system
     ports:
       - "3306:3306"
     volumes:
-      - ./master/conf/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
+      - ./db/master/conf:/etc/mysql/conf.d
       - master_data:/var/lib/mysql
 
   mysql_slave1:
@@ -20,11 +19,10 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: 111
-      MYSQL_ROOT_HOST: '%'
     ports:
       - "3307:3306"
     volumes:
-      - ./slave/conf/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
+      - ./db/slave1/conf:/etc/mysql/conf.d
       - slave1_data:/var/lib/mysql
 
   mysql_slave2:
@@ -33,11 +31,10 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: 111
-      MYSQL_ROOT_HOST: '%'
     ports:
       - "3308:3306"
     volumes:
-      - ./slave/conf/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
+      - ./db/slave2/conf:/etc/mysql/conf.d
       - slave2_data:/var/lib/mysql
 
   backend1:
