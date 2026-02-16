@@ -55,7 +55,12 @@ now after including the candidates:
 
 real time vote ranking:
 - per each position 
-- realtime so the user can view it moving the vote number as the voters vote
+- realtime view of the vote ranking for admin only (unless admin dispaly it for all too. (has option to show))
+
+winners after the election:
+- simple display of ranking per positions.
+- from highest to lowest (all includes)
+- saved in history . database so can be viewed 
 
 ---------------------------------------------------------------------------
 
