@@ -28,11 +28,12 @@ server/
 
             bootstrap.js
             server.js
-
-        prisma/
-            schema.prisma
         
         database/
+            models/
+                voteModel.js (table scheme only for creating tables)
+                candidateModel.js
+                modelIndex.js (di inject to init.js)
             seeds/
                 voteSeed.js (seeding the tables)
                 candidateSeed.js
@@ -40,8 +41,11 @@ server/
 
             db.js (db configuration using the env file)
             init.js (initializes the database, model, seeds using the indexes) (if database exist, skip. if not create the database then 
-            init the tables first before seeding. arrange preperly)
-    .env (sensitive datas for config)
+            init the tables first before seeding. arrange properly)
+
+    .env (for sensitive data)
+            
+
 
 Backend Design
 - Modulized feature base
@@ -50,3 +54,9 @@ Backend Design
 - Singleton instance for shared 
 
                 
+Notes for later:
+- This will be put in docker
+- Must be docker ready
+- Master slave replication ready (1 master, 2 slave) 
+- Load balancing ready (3 port of server)
+- build.sh (contains the docker fresh start and step by step creation. master slave connection process. initialize database etc.)
