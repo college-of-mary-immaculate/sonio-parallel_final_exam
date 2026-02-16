@@ -71,9 +71,21 @@ create account to be a voter
 - before making this singup successful, the otp will send a code first then the user will need to put it in the modal pop up, if match. signup successful. if not then invalid. can try again
 - voter wait for the active election. if not then no active election yet. but if there is vote the is already been created and just the start date is not yet. the user can view the count down of that election. once the countdown ends. the voter can now enter the election then vote.
 
-
 -----------------------------------------------------------------------------
 
 realtime events:
 - countdown of the election before starting. (so the users can view when it will start) once start. voter can enter now in the election and start voting
 - vote ranking (for admin viewing only unless admin allows it to be displayed (has option))
+
+
+----------------------------------------------------------------------------------
+
+Candidate details:
+- position, fullname, description
+
+Candidate description:
+- background
+- education
+- years of experience
+- primary advocacy
+- secondart advocacy
