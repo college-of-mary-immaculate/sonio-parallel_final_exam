@@ -1,4 +1,4 @@
 [mysqld]
-server-id=2 
+server-id=2
 relay_log=relay-bin
-read_only=1
+read_only=ON

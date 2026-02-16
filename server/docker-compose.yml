@@ -1,5 +1,6 @@
-services:
+version: "3.9"
 
+services:
   mysql_master:
     image: mysql:8.0
     container_name: mysql_master
@@ -10,7 +11,6 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - ./db/master/conf:/etc/mysql/conf.d
       - master_data:/var/lib/mysql
 
   mysql_slave1:
@@ -22,7 +22,6 @@ services:
     ports:
       - "3307:3306"
     volumes:
-      - ./db/slave1/conf:/etc/mysql/conf.d
       - slave1_data:/var/lib/mysql
 
   mysql_slave2:
@@ -34,7 +33,6 @@ services:
     ports:
       - "3308:3306"
     volumes:
-      - ./db/slave2/conf:/etc/mysql/conf.d
       - slave2_data:/var/lib/mysql
 
   backend1:
@@ -45,7 +43,7 @@ services:
       DB_USER: root
       DB_PASS: 111
       DB_NAME: voting_system
-      DB_INIT: true
+      DB_INIT: "true"
     depends_on:
       - mysql_master
     ports:

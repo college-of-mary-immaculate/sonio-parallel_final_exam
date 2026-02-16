@@ -1,0 +1,8 @@
+[mysqld]
+server-id=3
+relay_log=relay-bin
+read_only=1
+[mysqld]
+server-id=3
+relay_log=relay-bin
+read_only=ON
