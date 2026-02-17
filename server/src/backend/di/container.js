@@ -1,4 +1,6 @@
-const getPool = require("../../database/db");
+// ===== di/container.js =====
+const getMasterPool = require("../../database/db.master");
+const { getSlavePool } = require("../../database/db.slave");
 
 // middlewares
 const authMiddleware = require("../middlewares/authMiddleware");
@@ -11,13 +13,19 @@ let container;
 async function buildContainer() {
     if (container) return container;
 
-    const db = getPool();
+    const masterDb = getMasterPool();
+    const slaveDb = getSlavePool();
 
-    // initialize modules
-    const vote = voteModule(db, authMiddleware);
+    const vote = voteModule(
+        { masterDb, slaveDb },
+        authMiddleware
+    );
 
     container = {
-        db,
+        db: {
+            masterDb,
+            slaveDb
+        },
         modules: {
             vote
         }

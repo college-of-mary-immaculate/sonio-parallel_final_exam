@@ -1,19 +1,20 @@
+// ===== voteIndex.js =====
 const VoteRepository = require("./voteRepository");
 const VoteService = require("./voteService");
 const VoteController = require("./voteController");
 const voteRoutes = require("./voteRoutes");
 
-module.exports = (db, authMiddleware) => {
-    // repository
-    const voteRepository = new VoteRepository(db);
+module.exports = ({ masterDb, slaveDb }, authMiddleware) => {
 
-    // service
-    const voteService = new VoteService(db, voteRepository);
+    const voteRepository = new VoteRepository({
+        masterDb,
+        slaveDb
+    });
 
-    // controller
+    const voteService = new VoteService(voteRepository);
+
     const voteController = new VoteController(voteService);
 
-    // routes
     const routes = voteRoutes(voteController, authMiddleware);
 
     return {

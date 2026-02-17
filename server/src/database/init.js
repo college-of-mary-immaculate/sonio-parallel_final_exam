@@ -25,7 +25,7 @@ const initSeeds = require("./seeds/seedIndex");
         await connection.end();
 
         // Now use the regular pool that connects to the database
-        const getPool = require("./db");
+        const getPool = require("./db.bootstrap");
         const db = getPool();
         await initModels(db);
         await initSeeds(db);

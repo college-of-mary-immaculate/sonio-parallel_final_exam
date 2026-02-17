@@ -16,6 +16,11 @@ docker exec -it mysql_master mysql -uroot -p
 docker exec -it mysql_slave1 mysql -uroot -p
 docker exec -it mysql_slave2 mysql -uroot -p
 
+# Install
+npm install cors
+npm install jsonwebtoken
+
+
 
 
 

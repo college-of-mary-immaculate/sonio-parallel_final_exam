@@ -1,55 +1,23 @@
 class VoteRepository {
-    constructor(db) {
-        this.db = db;
+    constructor({ masterDb, slaveDb }) {
+        this.masterDb = masterDb; // writes
+        this.slaveDb = slaveDb;   // reads
     }
 
     // =============================
-    // ELECTION
+    // READS → SLAVE
     // =============================
 
     async getElectionById(electionId) {
-        const [rows] = await this.db.query(
+        const [rows] = await this.slaveDb.query(
             `SELECT * FROM elections WHERE election_id = ?`,
             [electionId]
         );
         return rows[0];
     }
 
-    async getElectionPositionRule(electionId, positionId) {
-        const [rows] = await this.db.query(
-            `
-            SELECT *
-            FROM election_positions
-            WHERE election_id = ?
-            AND position_id = ?
-            `,
-            [electionId, positionId]
-        );
-
-        return rows[0];
-    }
-
-    async getElectionCandidate(electionId, positionId, candidateId) {
-        const [rows] = await this.db.query(
-            `
-            SELECT *
-            FROM election_candidates
-            WHERE election_id = ?
-            AND position_id = ?
-            AND candidate_id = ?
-            `,
-            [electionId, positionId, candidateId]
-        );
-
-        return rows[0];
-    }
-
-    // =============================
-    // SUBMISSION CHECK
-    // =============================
-
     async hasVoterSubmitted(electionId, voterId) {
-        const [rows] = await this.db.query(
+        const [rows] = await this.slaveDb.query(
             `
             SELECT submission_id
             FROM voter_submissions
@@ -58,12 +26,11 @@ class VoteRepository {
             `,
             [electionId, voterId]
         );
-
         return rows.length > 0;
     }
 
     // =============================
-    // INSERTS (TRANSACTION SAFE)
+    // WRITES → MASTER
     // =============================
 
     async insertVotes(connection, votes) {
@@ -94,6 +61,41 @@ class VoteRepository {
             [electionId, voterId]
         );
     }
+
+    // =============================
+    // TRANSACTION (MASTER ONLY)
+    // =============================
+
+    async withTransaction(callback) {
+        const connection = await this.masterDb.getConnection();
+        try {
+            await connection.beginTransaction();
+            await callback(connection);
+            await connection.commit();
+        } catch (err) {
+            await connection.rollback();
+            throw err;
+        } finally {
+            connection.release();
+        }
+    }
+
+    async hasVoterSubmitted(electionId, voterId, options = {}) {
+        const db = options.useMaster ? this.masterDb : this.slaveDb;
+
+        const [rows] = await db.query(
+            `
+            SELECT submission_id
+            FROM voter_submissions
+            WHERE election_id = ?
+            AND voter_id = ?
+            `,
+            [electionId, voterId]
+        );
+
+        return rows.length > 0;
+    }
+
 }
 
 module.exports = VoteRepository;

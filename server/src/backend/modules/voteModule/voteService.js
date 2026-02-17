@@ -1,19 +1,18 @@
+// ===== voteService.js =====
 class VoteService {
-    constructor(db, voteRepository) {
-        this.db = db;
+    constructor(voteRepository) {
         this.voteRepository = voteRepository;
     }
 
     async submitVote({ electionId, voterId, votes }) {
-        const connection = await this.db.getConnection();
 
-        try {
-            await connection.beginTransaction();
+        return this.voteRepository.withTransaction(async (connection) => {
 
             // =============================
-            // 1. Validate Election
+            // 1. Validate Election (READ → SLAVE)
             // =============================
-            const election = await this.voteRepository.getElectionById(electionId);
+            const election =
+                await this.voteRepository.getElectionById(electionId);
 
             if (!election) {
                 throw new Error("Election not found.");
@@ -25,9 +24,14 @@ class VoteService {
 
             // =============================
             // 2. Check If Already Submitted
+            // ⚠️ Read-after-write sensitive → MASTER
             // =============================
             const alreadySubmitted =
-                await this.voteRepository.hasVoterSubmitted(electionId, voterId);
+                await this.voteRepository.hasVoterSubmitted(
+                    electionId,
+                    voterId,
+                    { useMaster: true }
+                );
 
             if (alreadySubmitted) {
                 throw new Error("You have already submitted your vote.");
@@ -58,19 +62,13 @@ class VoteService {
                     );
 
                 if (!rule) {
-                    throw new Error(
-                        `Invalid position selected for this election.`
-                    );
+                    throw new Error("Invalid position selected.");
                 }
 
-                // Enforce max votes (allow fewer)
                 if (positionVotes.length > rule.votes_per_voter) {
-                    throw new Error(
-                        `You exceeded the vote limit for this position.`
-                    );
+                    throw new Error("Vote limit exceeded.");
                 }
 
-                // Validate each candidate
                 for (const vote of positionVotes) {
                     const candidate =
                         await this.voteRepository.getElectionCandidate(
@@ -80,15 +78,13 @@ class VoteService {
                         );
 
                     if (!candidate) {
-                        throw new Error(
-                            `Invalid candidate selected for position.`
-                        );
+                        throw new Error("Invalid candidate.");
                     }
                 }
             }
 
             // =============================
-            // 5. Prepare Insert Data
+            // 5. Insert Votes + Submission
             // =============================
             const voteRecords = votes.map(v => ({
                 electionId,
@@ -97,27 +93,15 @@ class VoteService {
                 voterId
             }));
 
-            // =============================
-            // 6. Insert Votes + Submission
-            // =============================
             await this.voteRepository.insertVotes(connection, voteRecords);
-
             await this.voteRepository.insertSubmission(
                 connection,
                 electionId,
                 voterId
             );
 
-            await connection.commit();
-            connection.release();
-
             return { message: "Vote submitted successfully." };
-
-        } catch (error) {
-            await connection.rollback();
-            connection.release();
-            throw error;
-        }
+        });
     }
 }
 
