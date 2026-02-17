@@ -9,7 +9,13 @@ docker compose down -v
 echo "===================================="
 echo "Building ALL images (backend + client)..."
 echo "===================================="
-docker compose build
+
+# Fail-fast build with echo if tests fail
+if ! docker compose build; then
+  echo "❌ Docker build failed — likely due to failing tests!"
+  exit 1
+fi
+echo "✅ Build succeeded, continuing..."
 
 echo "===================================="
 echo "Starting MySQL master container..."

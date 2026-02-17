@@ -11,6 +11,7 @@ const voteModule     = require("../modules/voteModule/voteIndex");
 const authModule     = require("../modules/authModule/authIndex");
 const userModule     = require("../modules/userModule/userIndex");
 const electionModule = require("../modules/electionModule/electionIndex");
+const candidateModule = require("../modules/candidateModule/candidateIndex");
 
 let container;
 
@@ -24,11 +25,13 @@ async function buildContainer() {
     const auth     = authModule({ slaveDb });
     const users    = userModule({ masterDb, slaveDb });
     const election = electionModule({ masterDb, slaveDb },{ authMiddleware, roleMiddleware });
+    const candidates = candidateModule({ masterDb, slaveDb },{ authMiddleware, roleMiddleware });
+
 
 
     container = {
         db: { masterDb, slaveDb },
-        modules: { vote, auth, users, election }
+        modules: { vote, auth, users, election, candidates }
     };
 
     return container;

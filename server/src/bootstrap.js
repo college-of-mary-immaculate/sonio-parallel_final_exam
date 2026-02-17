@@ -15,6 +15,7 @@ async function bootstrap() {
     app.use("/api/users",     container.modules.users.routes);
     app.use("/api/votes",     container.modules.vote.routes);
     app.use("/api/elections", container.modules.election.routes);
+    app.use("/api/candidates", container.modules.candidates.routes);
 
     app.get("/health", (req, res) => res.json({ status: "OK" }));
     app.get("/check",  (req, res) => res.json({ instance: process.env.HOSTNAME }));

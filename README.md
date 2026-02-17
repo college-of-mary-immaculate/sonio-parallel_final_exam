@@ -17,6 +17,7 @@ This project demonstrates:
 * **Database initialization and seeding**
 * **Load balancing** via Nginx
 * **React frontend client**
+* **Automated test gating** during build using **Jest**
 
 The system is designed for **read/write separation** and **scalable backend architecture**.
 
@@ -98,7 +99,20 @@ The system is designed for **read/write separation** and **scalable backend arch
 
 ---
 
-# Deployment
+# Deployment & Test-Aware Build
+
+This project uses **Jest tests in the backend** and a **build script that acts like a simple CI/CD pipeline**:
+
+* Backend Dockerfile runs:
+
+```dockerfile
+# Run Jest tests
+RUN npm test
+```
+
+* If any test **fails**, the Docker build **stops immediately**
+* The `build.sh` script uses `set -e` so any failed command halts the deployment
+* This ensures **containers are never started with a broken backend**
 
 ### 1. Make the script executable
 
@@ -112,7 +126,7 @@ chmod +x build.sh
 ./build.sh
 ```
 
-### 3. Reset the client and server side only. 
+### 3. Reset the client and server side only
 
 ```bash
 ./reset.sh
@@ -121,24 +135,25 @@ chmod +x build.sh
 **What the script does:**
 
 1. Stops old containers and cleans volumes
-2. Builds **backend** and **client** Docker images
-3. Starts **MySQL master**
-4. Waits for readiness and injects replication config
-5. Creates replication user
-6. Starts **MySQL slaves**
-7. Configures replication automatically
-8. Initializes database schema and seeds data
-9. Starts **backend instances**, **nginx**, and **React client**
+2. Builds **backend** and **client** Docker images (runs Jest tests during backend build)
+3. If tests fail → **build halts**
+4. Starts **MySQL master**
+5. Waits for readiness and injects replication config
+6. Creates replication user
+7. Starts **MySQL slaves**
+8. Configures replication automatically
+9. Initializes database schema and seeds data
+10. Starts **backend instances**, **nginx**, and **React client**
 
 ---
 
 # Tech Stack
 
-* **Backend:** Node.js, Express
+* **Backend:** Node.js, Express, **Jest** (automated testing)
 * **Frontend:** React.js (Vite)
 * **Database:** MySQL 8 (master–slave replication)
 * **Infrastructure:** Docker, Docker Compose, Nginx
-* **Automation:** Bash scripting
+* **Automation:** Bash scripting, **build halts if `npm test` fails**
 
 ---
 
@@ -163,10 +178,10 @@ chmod +x build.sh
 
 # Notes
 
-* This project demonstrates **scalable and distributed architecture concepts**.
-* It is suitable for **learning and prototyping**, or as a **portfolio project**.
-* It is **not a production-grade system**, as it lacks auto-scaling, full failover, monitoring, and advanced security features.
+* This project demonstrates **scalable and distributed architecture concepts**
+* Suitable for **learning, prototyping, or as a portfolio project**
+* **Not production-ready**: lacks auto-scaling, full failover, monitoring, and advanced security features
+* **Build is test-gated** via Jest — if any backend test fails, deployment stops
 
 ---
-
 
