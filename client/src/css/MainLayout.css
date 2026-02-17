@@ -1,84 +1,172 @@
-/* ===================== LAYOUT CONTAINER ===================== */
+/* ==========================================================
+   MAINLAYOUT.CSS — LEVEL 3: LAYOUT STRUCTURE
+   Responsibility: HOW things are positioned together.
+   ✅ Navbar at top, content below — purely structural
+   ✅ Uses CSS variables from role themes for colors (via var())
+   ❌ No hardcoded colors — role themes (Level 2) provide those
+   ❌ No page-specific styles — that's the page CSS (Level 4)
+========================================================== */
+
+/* ── Outer shell ── */
 .main-layout {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    font-family: var(--font-family);
-    background-color: inherit; /* layout inherits body/bg from role CSS */
+  display:          flex;
+  flex-direction:   column;
+  min-height:       100vh;
 }
 
-/* ===================== CONTENT AREA ===================== */
+/* ── Content area ── */
 .content {
-    flex: 1;
-    padding: 20px;
-    background-color: inherit; /* content inherits background from role/theme */
-    margin: 10px 20px;
-    border-radius: var(--border-radius);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    transition: margin-top 0.3s ease;
+  flex:       1;
+  padding:    1.5rem 2rem;
+  transition: margin-top 0.3s ease;
 }
 
-/* Add spacing if navbar exists (assume height 60px + buffer) */
+/* When a navbar is present, push content down to avoid overlap */
 .content.with-navbar {
-    margin-top: 80px;
+  margin-top: 64px; /* matches navbar height */
 }
 
-/* ===================== NAVBAR STRUCTURE ===================== */
-.navbar {
-    position: fixed; /* stick at top */
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-    z-index: 1000;
+/* ── Sidebar layout variant (future use) ── */
+.main-layout.has-sidebar {
+  flex-direction: row;
+}
 
-    /* layout handles structure only: colors are from role CSS */
-    background-color: var(--primary-color, inherit);
-    color: var(--text-color, inherit);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+.main-layout.has-sidebar .sidebar {
+  width:      240px;
+  flex-shrink: 0;
+}
+
+.main-layout.has-sidebar .content {
+  flex: 1;
+}
+
+
+/* ==========================================================
+   NAVBAR STRUCTURE
+   Colors come from var(--primary-color) set by the role theme.
+   This block only defines: position, height, flex alignment.
+========================================================== */
+.navbar {
+  position:        fixed;
+  top:             0;
+  left:            0;
+  right:           0;
+  height:          64px;
+  display:         flex;
+  justify-content: space-between;
+  align-items:     center;
+  padding:         0 1.5rem;
+  z-index:         1000;
+  box-shadow:      0 2px 8px rgba(0, 0, 0, 0.12);
+
+  /* Color: pulled from whichever role theme is active */
+  background-color: var(--primary-color);
+  color:            #ffffff;
 }
 
 .navbar .logo h2 {
-    margin: 0;
-    font-size: 1.5rem;
+  margin:      0;
+  font-size:   1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color:       #ffffff;
 }
 
 .navbar .nav-links {
-    list-style: none;
-    display: flex;
-    gap: 15px;
-    margin: 0;
-    padding: 0;
+  list-style: none;
+  display:    flex;
+  gap:        1.25rem;
+  margin:     0;
+  padding:    0;
 }
 
 .navbar .nav-links li a {
-    text-decoration: none;
-    font-weight: 500;
-    transition: color 0.2s;
-
-    /* color inherits from navbar role theme */
-    color: inherit;
+  color:           #ffffff;
+  font-weight:     500;
+  font-size:       0.95rem;
+  text-decoration: none;
+  opacity:         0.9;
+  transition:      opacity 0.2s;
 }
 
 .navbar .nav-links li a:hover {
-    color: var(--secondary-color, inherit);
+  opacity:         1;
+  text-decoration: none;   /* override Global.css underline on hover */
 }
 
-/* ===================== RESPONSIVE NAVBAR ===================== */
+/* ── Navbar right slot (user info, logout button, etc.) ── */
+.navbar .nav-right {
+  display:     flex;
+  align-items: center;
+  gap:         0.75rem;
+}
+
+/* Navbar button (e.g. logout) — transparent style inside navbar */
+.navbar button {
+  background-color: rgba(255, 255, 255, 0.15);
+  color:            #ffffff;
+  font-size:        0.875rem;
+  padding:          0.35rem 0.9rem;
+  border:           1px solid rgba(255, 255, 255, 0.35);
+  border-radius:    var(--border-radius);
+}
+
+.navbar button:hover {
+  background-color: rgba(255, 255, 255, 0.28);
+}
+
+
+/* ==========================================================
+   SIDEBAR STRUCTURE (optional — future use)
+========================================================== */
+.sidebar {
+  position:         fixed;
+  top:              64px; /* below navbar */
+  left:             0;
+  bottom:           0;
+  width:            240px;
+  padding:          1rem 0;
+  overflow-y:       auto;
+  z-index:          900;
+  box-shadow:       2px 0 6px rgba(0, 0, 0, 0.08);
+
+  background-color: var(--surface-color, #fff);
+  border-right:     1px solid var(--border-color, #e5e7eb);
+}
+
+.sidebar .sidebar-link {
+  display:     block;
+  padding:     0.6rem 1.25rem;
+  font-weight: 500;
+  color:       var(--text-color);
+  transition:  background-color 0.15s;
+}
+
+.sidebar .sidebar-link:hover,
+.sidebar .sidebar-link.active {
+  background-color: var(--accent-color);
+  color:            var(--primary-color);
+  text-decoration:  none;
+}
+
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
 @media (max-width: 768px) {
-    .navbar {
-        flex-direction: column;
-        align-items: flex-start;
-        height: auto;
-        padding: 10px 20px;
-    }
-    .navbar .nav-links {
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 10px;
-    }
+  .navbar {
+    height:  auto;
+    padding: 0.75rem 1rem;
+    flex-wrap: wrap;
+    gap:     0.5rem;
+  }
+
+  .content.with-navbar {
+    margin-top: 100px;
+  }
+
+  .navbar .nav-links {
+    flex-wrap: wrap;
+    gap:       0.75rem;
+  }
 }

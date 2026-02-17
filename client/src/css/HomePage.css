@@ -1,22 +1,41 @@
-/* HomePage.css */
-div {
-  padding: 2rem;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  max-width: 500px;
-  margin: 2rem auto;
+/* ==========================================================
+   HOMEPAGE.CSS — LEVEL 4: PAGE STYLES
+   Responsibility: layout and positioning of THIS page only.
+   ✅ Scoped under .home-page — nothing bleeds out
+   ✅ Uses role theme vars for any color needed
+   ✅ Page is free to define its own components (e.g. .logout-btn)
+========================================================== */
+
+.home-page {
+  max-width: 600px;
+  margin:    2rem auto;
+  padding:   2rem;
   text-align: center;
 }
 
-h2 {
-  font-size: 1.8rem;
+.home-page h2 {
+  font-size:     2rem;
+  margin-bottom: 0.5rem;
+  color:         var(--primary-color);
 }
 
-button {
-  background-color: #ef4444; /* red button for logout */
+.home-page .welcome-text {
+  font-size:     1rem;
+  color:         var(--text-muted, #6b7280);
+  margin-bottom: 1.5rem;
 }
 
-p {
-  margin: 1rem 0;
+/* 
+  Logout button: page defines its OWN color here.
+  This overrides the role theme button color intentionally.
+  That's fine — pages are allowed to force their own style.
+*/
+.home-page .logout-btn {
+  background-color: var(--danger-color, #dc2626);
+  color:            #ffffff;
+  padding:          0.5rem 1.5rem;
+}
+
+.home-page .logout-btn:hover {
+  background-color: #b91c1c;
 }

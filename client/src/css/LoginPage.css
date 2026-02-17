@@ -1,23 +1,70 @@
-/* LoginPage.css - scoped */
+/* ==========================================================
+   LOGINPAGE.CSS — LEVEL 4: PAGE STYLES
+   Responsibility: layout and positioning of THIS page only.
+   ✅ Uses var(--primary-color) etc. from the active role theme
+   ✅ Scoped under .login-page so nothing bleeds out
+   ❌ Does not redefine colors — role theme handles that
+========================================================== */
+
 .login-page {
-  padding: 2rem;
-  max-width: 400px;
-  margin: 2rem auto;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  text-align: center;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  min-height:      100vh;
+  padding:         2rem;
+}
+
+.login-page .login-card {
+  background-color: var(--surface-color, #ffffff);
+  border-radius:    10px;
+  box-shadow:       0 4px 16px rgba(0, 0, 0, 0.1);
+  padding:          2.5rem 2rem;
+  width:            100%;
+  max-width:        400px;
 }
 
 .login-page h2 {
-  font-size: 1.8rem;
-  margin-bottom: 1.5rem;
+  font-size:     1.75rem;
+  margin-bottom: 1.75rem;
+  text-align:    center;
+  color:         var(--primary-color);
 }
 
+.login-page .form-group {
+  display:       flex;
+  flex-direction: column;
+  gap:           0.4rem;
+  margin-bottom: 0.25rem;
+}
+
+.login-page .form-group label {
+  font-size:   0.875rem;
+  font-weight: 500;
+  color:       var(--text-muted, #6b7280);
+}
+
+/* Inputs span full width inside the card */
 .login-page input {
-  margin-bottom: 1rem;
+  max-width: 100%;
 }
 
-.login-page button {
-  background-color: var(--primary-color); /* global color */
+/* Submit button spans full width */
+.login-page .btn-submit {
+  width:         100%;
+  margin-top:    0.5rem;
+  padding:       0.65rem;
+  font-size:     1rem;
+  font-weight:   600;
+  border-radius: var(--border-radius);
+  /* inherits background-color from role theme button rule */
+}
+
+/* Result / error message */
+.login-page .login-result {
+  margin-top:    1rem;
+  font-size:     0.875rem;
+  text-align:    center;
+  color:         var(--text-muted, #6b7280);
+  white-space:   pre-wrap;
 }

@@ -21,23 +21,36 @@ export default function LoginPage() {
 
     return (
         <div className="login-page">
-            <h2>Login</h2>
-            <form onSubmit={handleSubmit}>
-                <input
-                    placeholder="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
-                <input
-                    type="password"
-                    placeholder="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                <button type="submit">Login</button>
-            </form>
+            <div className="login-card">
+                <h2>Login</h2>
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="email">Email</label>
+                        <input
+                            id="email"
+                            type="email"
+                            placeholder="you@example.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="password">Password</label>
+                        <input
+                            id="password"
+                            type="password"
+                            placeholder="••••••••"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
+                    </div>
+                    <button type="submit" className="btn-submit">Login</button>
+                </form>
 
-            <pre>{JSON.stringify(result, null, 2)}</pre>
+                {result && (
+                    <pre className="login-result">{JSON.stringify(result, null, 2)}</pre>
+                )}
+            </div>
         </div>
     );
 }

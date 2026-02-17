@@ -1,22 +1,38 @@
-/* AFTER */
+/* ==========================================================
+   USERGLOBAL.CSS — LEVEL 2: USER ROLE THEME
+   Responsibility: all colors and role-specific style for voters/users.
+   ✅ Applied when <body> has class "user-theme"
+   ✅ Scopes every color override under body.user-theme
+   ❌ No layout/structure here — that's Global.css and MainLayout.css
+========================================================== */
+
+/* ── User color variables ── */
 body.user-theme {
-  --primary-color: #1e40af;
-  --secondary-color: #3b82f6;
-  --bg-color: #f0f4ff;
-  --text-color: #111827;
+  --primary-color:   #1e40af;   /* deep blue */
+  --secondary-color: #3b82f6;   /* lighter blue for hover/accents */
+  --accent-color:    #bfdbfe;   /* pale blue for subtle highlights */
+  --bg-color:        #f0f4ff;   /* page background */
+  --surface-color:   #ffffff;   /* cards, panels */
+  --text-color:      #111827;   /* main text */
+  --text-muted:      #6b7280;   /* secondary/muted text */
+  --border-color:    #c7d2fe;   /* blue-tinted borders */
+  --danger-color:    #dc2626;   /* destructive actions */
+
   background-color: var(--bg-color);
-  color: var(--text-color);
+  color:            var(--text-color);
 }
 
+/* ── Buttons ── */
 body.user-theme button {
   background-color: var(--primary-color);
-  color: white;
+  color:            #ffffff;
 }
 
 body.user-theme button:hover {
   background-color: var(--secondary-color);
 }
 
+/* ── Links ── */
 body.user-theme a {
   color: var(--primary-color);
 }
@@ -25,4 +41,20 @@ body.user-theme a:hover {
   color: var(--secondary-color);
 }
 
+/* ── Inputs ── */
+body.user-theme input:focus,
+body.user-theme textarea:focus,
+body.user-theme select:focus {
+  border-color: var(--secondary-color);
+  box-shadow:   0 0 0 3px var(--accent-color);
+}
 
+/* ── Tables ── */
+body.user-theme th {
+  background-color: var(--accent-color);
+  color:            var(--primary-color);
+}
+
+body.user-theme tr:hover td {
+  background-color: #eff6ff;
+}
