@@ -9,4 +9,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["node", "src/backend/server.js"]
+CMD ["node", "src/server.js"]
