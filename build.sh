@@ -7,7 +7,7 @@ echo "===================================="
 docker compose down -v
 
 echo "===================================="
-echo "Building backend images..."
+echo "Building ALL images (backend + client)..."
 echo "===================================="
 docker compose build
 
@@ -31,7 +31,6 @@ docker exec mysql_master sh -c "chmod 644 /etc/mysql/conf.d/replication.cnf"
 docker restart mysql_master
 sleep 5
 
-# Wait again after restart
 until docker exec mysql_master mysql -uroot -p111 -e "SELECT 1;" >/dev/null 2>&1; do
   sleep 3
 done
@@ -52,39 +51,29 @@ echo "===================================="
 docker compose up -d mysql_slave1 mysql_slave2
 
 echo "===================================="
-echo "Waiting for slaves to be ready..."
+echo "Waiting for slaves..."
 echo "===================================="
-until docker exec mysql_slave1 mysql -uroot -p111 -e "SELECT 1;" >/dev/null 2>&1; do
-  sleep 3
-done
-until docker exec mysql_slave2 mysql -uroot -p111 -e "SELECT 1;" >/dev/null 2>&1; do
-  sleep 3
-done
+until docker exec mysql_slave1 mysql -uroot -p111 -e "SELECT 1;" >/dev/null 2>&1; do sleep 3; done
+until docker exec mysql_slave2 mysql -uroot -p111 -e "SELECT 1;" >/dev/null 2>&1; do sleep 3; done
 
 echo "===================================="
-echo "Injecting slave MySQL configs..."
+echo "Injecting slave configs..."
 echo "===================================="
 docker cp ./server/db/slave1/conf/replication.cnf mysql_slave1:/etc/mysql/conf.d/replication.cnf
 docker cp ./server/db/slave2/conf/replication.cnf mysql_slave2:/etc/mysql/conf.d/replication.cnf
 docker exec mysql_slave1 sh -c "chmod 644 /etc/mysql/conf.d/replication.cnf"
 docker exec mysql_slave2 sh -c "chmod 644 /etc/mysql/conf.d/replication.cnf"
+
 docker restart mysql_slave1 mysql_slave2
 sleep 5
 
-# Wait again after restart
-until docker exec mysql_slave1 mysql -uroot -p111 -e "SELECT 1;" >/dev/null 2>&1; do
-  sleep 3
-done
-until docker exec mysql_slave2 mysql -uroot -p111 -e "SELECT 1;" >/dev/null 2>&1; do
-  sleep 3
-done
+until docker exec mysql_slave1 mysql -uroot -p111 -e "SELECT 1;" >/dev/null 2>&1; do sleep 3; done
+until docker exec mysql_slave2 mysql -uroot -p111 -e "SELECT 1;" >/dev/null 2>&1; do sleep 3; done
 
 echo "===================================="
 echo "Resetting master and getting position..."
 echo "===================================="
 docker exec mysql_master mysql -uroot -p111 -e "RESET MASTER;"
-
-# Explicitly create database on master with binlog
 docker exec mysql_master mysql -uroot -p111 -e "CREATE DATABASE IF NOT EXISTS voting_system;"
 
 MASTER_STATUS=$(docker exec mysql_master mysql -uroot -p111 -e "SHOW MASTER STATUS\G")
@@ -95,12 +84,12 @@ echo "Master File: $MASTER_FILE"
 echo "Master Position: $MASTER_POS"
 
 echo "===================================="
-echo "Initializing database tables and seeds..."
+echo "Initializing DB tables..."
 echo "===================================="
 docker compose run --rm backend1 node src/database/init.js
 
 echo "===================================="
-echo "Configuring slaves for replication..."
+echo "Configuring slaves..."
 echo "===================================="
 for SLAVE in mysql_slave1 mysql_slave2; do
   docker exec $SLAVE mysql -uroot -p111 -e "
@@ -124,10 +113,9 @@ echo "Verifying replication..."
 echo "===================================="
 for SLAVE in mysql_slave1 mysql_slave2; do
   echo "--- $SLAVE ---"
-  docker exec $SLAVE mysql -uroot -p111 -e "SHOW REPLICA STATUS\G" | grep -E "Replica_IO_Running|Replica_SQL_Running|Last_.*Error|Seconds_Behind"
+  docker exec $SLAVE mysql -uroot -p111 -e "SHOW REPLICA STATUS\G" | grep -E "Replica_IO_Running|Replica_SQL_Running|Seconds_Behind"
 done
 
-echo ""
 echo "===================================="
 echo "Checking replicated data..."
 echo "===================================="
@@ -137,10 +125,12 @@ for SLAVE in mysql_slave1 mysql_slave2; do
 done
 
 echo "===================================="
-echo "Starting backend servers..."
+echo "Starting backend + nginx + client..."
 echo "===================================="
-docker compose up -d backend1 backend2 backend3
+docker compose up -d backend1 backend2 backend3 nginx client
 
 echo "===================================="
-echo "BUILD & REPLICATION COMPLETE ✅"
+echo "FULL SYSTEM READY ✅"
+echo "Backend via nginx: http://localhost:8080"
+echo "React client: http://localhost:5173"
 echo "===================================="

@@ -97,11 +97,11 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: nginx_lb
+    container_name: load_balancer
     ports:
       - "8080:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./loadbalancer/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
       - backend1
       - backend2

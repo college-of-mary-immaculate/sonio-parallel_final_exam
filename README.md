@@ -95,6 +95,7 @@ The script performs the following steps:
    * Creates tables
    * Seeds initial data
 8. Starts three backend instances
+9. Starts client instance
 
 All database configuration and replication setup are automated.
 
@@ -125,12 +126,9 @@ This improves scalability and reduces database bottlenecks.
 
 ## Future Improvements
 
-* Load balancer integration (Nginx or HAProxy)
 * Real-time voting updates (WebSocket or Socket.IO)
 * Health checks for backend instances
-* Automatic master failover
 * Monitoring and observability
-* CI/CD integration
 
 ---
 
@@ -150,5 +148,6 @@ The system will automatically:
 * Initialize schema
 * Seed data
 * Launch backend instances
+* Launch client instance
 
 ---
