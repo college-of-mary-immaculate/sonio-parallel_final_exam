@@ -3,15 +3,14 @@ const ElectionService = require("./electionService");
 const ElectionController = require("./electionController");
 const electionRoutes = require("./electionRoutes");
 
-module.exports = (db, middlewares) => {
+module.exports = ({ masterDb, slaveDb }, middlewares) => {
+  const repository = new ElectionRepository({ masterDb, slaveDb });
+  const service = new ElectionService(repository);
 
-    const service = new ElectionService(db);
-
-    const routes = require("./electionRoutes")(service, middlewares);
-
-    return {
-        service,
-        routes
-    };
+  return {
+    repository,
+    service,
+    controller: new ElectionController(service),
+    routes: electionRoutes(service, middlewares) // <-- pass middlewares here
+  };
 };
-
