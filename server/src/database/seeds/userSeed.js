@@ -14,52 +14,52 @@ module.exports = async (db) => {
         {
             full_name: "Juan Dela Cruz",
             email: "voter1@gmail.com",
-            password: "VoteJuan01"
+            password: "voter1"
         },
         {
             full_name: "Maria Santos",
             email: "voter2@gmail.com",
-            password: "Maria2024!"
+            password: "voter2"
         },
         {
             full_name: "Pedro Reyes",
             email: "voter3@gmail.com",
-            password: "Pedro#789"
+            password: "voter3"
         },
         {
             full_name: "Ana Lopez",
             email: "voter4@gmail.com",
-            password: "AnaSecure88"
+            password: "voter4"
         },
         {
             full_name: "Mark Bautista",
             email: "voter5@gmail.com",
-            password: "MarkVote55"
+            password: "voter5"
         },
         {
             full_name: "Liza Ramos",
             email: "voter6@gmail.com",
-            password: "Liza@1234"
+            password: "voter6"
         },
         {
             full_name: "Carlo Mendoza",
             email: "voter7@gmail.com",
-            password: "CarloSafe77"
+            password: "voter7"
         },
         {
             full_name: "Angela Torres",
             email: "voter8@gmail.com",
-            password: "AngieVote22"
+            password: "voter8"
         },
         {
             full_name: "Ramon Villanueva",
             email: "voter9@gmail.com",
-            password: "RamonPass99"
+            password: "voter9"
         },
         {
             full_name: "Sofia Garcia",
             email: "voter10@gmail.com",
-            password: "Sofia!Vote"
+            password: "voter10"
         }
     ];
 

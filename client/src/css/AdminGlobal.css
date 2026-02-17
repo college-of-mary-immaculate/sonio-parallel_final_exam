@@ -1,0 +1,26 @@
+/* AFTER */
+body.admin-theme {
+  --primary-color: #166534;
+  --secondary-color: #22c55e;
+  --bg-color: #f0fff4;
+  --text-color: #111827;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+body.admin-theme button {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+body.admin-theme button:hover {
+  background-color: var(--secondary-color);
+}
+
+body.admin-theme a {
+  color: var(--primary-color);
+}
+
+body.admin-theme a:hover {
+  color: var(--secondary-color);
+}

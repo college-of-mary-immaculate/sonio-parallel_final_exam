@@ -1,13 +1,8 @@
-import { AuthProvider } from "./context/AuthContext";
-import AppRoutes from "./routes/AppRoutes";
-import './css/Global.css';
+import AppWrapper from "./AppWrapper";
+import './css/Global.css';          
+import './css/UserGlobal.css';  
+import './css/AdminGlobal.css';
 
-function App() {
-    return (
-        <AuthProvider>
-            <AppRoutes />
-        </AuthProvider>
-    );
+export default function App() {
+    return <AppWrapper />;
 }
-
-export default App;

@@ -1,3 +1,5 @@
 *node_modules/
 
 all.md
+client.sh
+server.sh

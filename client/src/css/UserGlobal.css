@@ -1,0 +1,28 @@
+/* AFTER */
+body.user-theme {
+  --primary-color: #1e40af;
+  --secondary-color: #3b82f6;
+  --bg-color: #f0f4ff;
+  --text-color: #111827;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+body.user-theme button {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+body.user-theme button:hover {
+  background-color: var(--secondary-color);
+}
+
+body.user-theme a {
+  color: var(--primary-color);
+}
+
+body.user-theme a:hover {
+  color: var(--secondary-color);
+}
+
+

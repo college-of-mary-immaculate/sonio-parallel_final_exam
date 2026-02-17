@@ -1,15 +1,4 @@
 /* ===================== GLOBAL VARIABLES ===================== */
-:root {
-  --primary-color: #4f46e5;   /* Indigo */
-  --secondary-color: #facc15; /* Amber */
-  --text-color: #111827;
-  --bg-color: #f9fafb;
-  --font-family: 'Arial', sans-serif;
-  --font-size-base: 16px;
-  --line-height-base: 1.5;
-  --border-radius: 6px;
-  --input-border: #d1d5db; /* Gray-300 */
-}
 
 /* ===================== RESET / BASE STYLES ===================== */
 * {
@@ -22,14 +11,12 @@ body {
   font-family: var(--font-family);
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
-  color: var(--text-color);
-  background-color: var(--bg-color);
 }
 
 /* ===================== HEADINGS ===================== */
 h1, h2, h3, h4, h5, h6 {
-  color: var(--primary-color);
   margin-bottom: 1rem;
+  font-weight: 600;
 }
 
 /* ===================== BUTTONS ===================== */
@@ -40,8 +27,6 @@ button {
   border-radius: var(--border-radius);
   border: none;
   cursor: pointer;
-  background-color: var(--primary-color);
-  color: white;
   transition: background-color 0.2s, opacity 0.2s;
 }
 
@@ -50,7 +35,7 @@ button:hover {
 }
 
 /* ===================== INPUTS ===================== */
-input {
+input, textarea, select {
   font-family: var(--font-family);
   font-size: var(--font-size-base);
   padding: 0.5rem;
@@ -61,13 +46,14 @@ input {
   max-width: 300px;
 }
 
-input:focus {
-  border-color: var(--primary-color);
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--input-border);
 }
 
 /* ===================== LINKS ===================== */
 a {
-  color: var(--primary-color);
   text-decoration: none;
 }
 
@@ -76,7 +62,7 @@ a:hover {
 }
 
 /* ===================== CONTAINERS ===================== */
-div {
+div, section, article, main {
   margin-bottom: 1rem;
 }
 
@@ -85,4 +71,29 @@ form {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+}
+
+/* ===================== TABLES ===================== */
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+th, td {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--input-border);
+}
+
+/* ===================== LISTS ===================== */
+ul, ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+/* ===================== IMAGES ===================== */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
 }
