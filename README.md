@@ -26,24 +26,24 @@ The system is designed for **read/write separation** and **scalable backend arch
 
 ## Layers
 
-### 1️⃣ Client Layer
+### 1. Client Layer
 
 * React frontend running in a Docker container
 * Communicates with backend via Nginx
 
-### 2️⃣ Load Balancer
+### 2. Load Balancer
 
 * Nginx container
 * Distributes API requests across backend instances
 * Single entry point for all client requests
 
-### 3️⃣ Backend Layer
+### 3. Backend Layer
 
 * Three Node.js/Express backend instances: backend1, backend2, backend3
 * **Stateless architecture** allows any instance to handle any request
 * Connects to the MySQL database layer
 
-### 4️⃣ Database Layer
+### 4. Database Layer
 
 * **mysql_master** – handles all write operations
 * **mysql_slave1** – read replica
@@ -100,16 +100,22 @@ The system is designed for **read/write separation** and **scalable backend arch
 
 # Deployment
 
-### 1️⃣ Make the script executable
+### 1. Make the script executable
 
 ```bash
 chmod +x build.sh
 ```
 
-### 2️⃣ Start the system
+### 2. Start the system
 
 ```bash
 ./build.sh
+```
+
+### 3. Reset the client and server side only. 
+
+```bash
+./reset.sh
 ```
 
 **What the script does:**

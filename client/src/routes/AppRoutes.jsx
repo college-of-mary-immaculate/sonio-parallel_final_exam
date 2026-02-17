@@ -4,6 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import LoginPage from "../pages/LoginPage";
 import HomePage from "../pages/HomePage";
 import ProtectedRoute from "./ProtectedRoute";
+import MainLayout from "../layouts/MainLayout";
+import Navbar from "../components/Navbar";
 
 function AppRoutes() {
     const { user, loading } = useAuth();
@@ -13,20 +15,28 @@ function AppRoutes() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Public Route */}
+                {/* Public Route: Login page with MainLayout without navbar */}
                 <Route
                     path="/login"
                     element={
-                        user ? <Navigate to="/" replace /> : <LoginPage />
+                        user ? (
+                            <Navigate to="/" replace />
+                        ) : (
+                            <MainLayout>
+                                <LoginPage />
+                            </MainLayout>
+                        )
                     }
                 />
 
-                {/* Protected Route */}
+                {/* Protected Route: Home page with MainLayout and navbar */}
                 <Route
                     path="/"
                     element={
                         <ProtectedRoute>
-                            <HomePage />
+                            <MainLayout Navbar={Navbar}>
+                                <HomePage />
+                            </MainLayout>
                         </ProtectedRoute>
                     }
                 />

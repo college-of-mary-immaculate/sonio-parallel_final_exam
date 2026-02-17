@@ -1,11 +1,15 @@
 import { Outlet } from "react-router-dom";
-import Navbar from "../components/Navbar"; // import the navbar
+import "../css/MainLayout.css"; // your layout CSS
 
-export default function MainLayout() {
+/**
+ * MainLayout can optionally accept a Navbar component
+ * @param {React.Component} Navbar - optional navbar component
+ */
+export default function MainLayout({ Navbar }) {
     return (
         <div className="main-layout">
-            <Navbar /> {/* Always render navbar */}
-            <div className="content">
+            {Navbar && <Navbar />} {/* Render navbar only if provided */}
+            <div className={`content ${Navbar ? "with-navbar" : ""}`}>
                 <Outlet />
             </div>
         </div>
