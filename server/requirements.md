@@ -11,5 +11,11 @@ chmod 644 ./slave/conf/mysql.cnf
 docker compose down -v
 docker volume prune -f
 
+# Open mysql in docker
+docker exec -it mysql_master mysql -uroot -p
+docker exec -it mysql_slave1 mysql -uroot -p
+docker exec -it mysql_slave2 mysql -uroot -p
+
+
 
 

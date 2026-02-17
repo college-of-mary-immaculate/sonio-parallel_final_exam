@@ -3,7 +3,7 @@ const mysql = require("mysql2/promise");
 
 let pool;
 
-const createPool = () => {
+function getPool() {
     if (!pool) {
         pool = mysql.createPool({
             host: process.env.DB_HOST,
@@ -15,6 +15,6 @@ const createPool = () => {
         });
     }
     return pool;
-};
+}
 
-module.exports = createPool();
+module.exports = getPool;
