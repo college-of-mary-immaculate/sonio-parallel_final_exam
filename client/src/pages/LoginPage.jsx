@@ -20,7 +20,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div>
+        <div className="login-page">
             <h2>Login</h2>
             <form onSubmit={handleSubmit}>
                 <input
@@ -28,14 +28,12 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                 />
-                <br /><br />
                 <input
                     type="password"
                     placeholder="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                 />
-                <br /><br />
                 <button type="submit">Login</button>
             </form>
 
