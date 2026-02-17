@@ -91,6 +91,20 @@ services:
     ports:
       - "3002:3000"
 
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: react_client
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    depends_on:
+      - backend1
+
+
 volumes:
   master_data:
   slave1_data:
