@@ -1,11 +1,14 @@
 /* ===================== GLOBAL VARIABLES ===================== */
 :root {
-  --primary-color: #4f46e5; /* default primary color */
-  --secondary-color: #facc15; /* default secondary */
+  --primary-color: #4f46e5;   /* Indigo */
+  --secondary-color: #facc15; /* Amber */
+  --text-color: #111827;
+  --bg-color: #f9fafb;
   --font-family: 'Arial', sans-serif;
   --font-size-base: 16px;
   --line-height-base: 1.5;
   --border-radius: 6px;
+  --input-border: #d1d5db; /* Gray-300 */
 }
 
 /* ===================== RESET / BASE STYLES ===================== */
@@ -19,16 +22,17 @@ body {
   font-family: var(--font-family);
   font-size: var(--font-size-base);
   line-height: var(--line-height-base);
-  color: #111; /* default text color */
-  background-color: #fff; /* default bg color */
+  color: var(--text-color);
+  background-color: var(--bg-color);
 }
 
-/* ===================== DEFAULT ELEMENT STYLES ===================== */
+/* ===================== HEADINGS ===================== */
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-family);
   color: var(--primary-color);
+  margin-bottom: 1rem;
 }
 
+/* ===================== BUTTONS ===================== */
 button {
   font-family: var(--font-family);
   font-size: var(--font-size-base);
@@ -38,28 +42,30 @@ button {
   cursor: pointer;
   background-color: var(--primary-color);
   color: white;
-  transition: 0.2s;
+  transition: background-color 0.2s, opacity 0.2s;
 }
 
 button:hover {
   opacity: 0.85;
 }
 
-/* Inputs */
+/* ===================== INPUTS ===================== */
 input {
   font-family: var(--font-family);
   font-size: var(--font-size-base);
-  padding: 0.4rem 0.6rem;
-  border: 1px solid #ccc;
+  padding: 0.5rem;
+  border: 1px solid var(--input-border);
   border-radius: var(--border-radius);
   outline: none;
+  width: 100%;
+  max-width: 300px;
 }
 
 input:focus {
   border-color: var(--primary-color);
 }
 
-/* Links */
+/* ===================== LINKS ===================== */
 a {
   color: var(--primary-color);
   text-decoration: none;
@@ -67,4 +73,16 @@ a {
 
 a:hover {
   text-decoration: underline;
+}
+
+/* ===================== CONTAINERS ===================== */
+div {
+  margin-bottom: 1rem;
+}
+
+/* ===================== FORMS ===================== */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }

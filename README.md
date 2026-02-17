@@ -1,153 +1,166 @@
 
 ---
 
-# Voting System
+# Voting System (Distributed & Scalable)
 
-A distributed Voting System designed with horizontal backend scaling and MySQL master–slave replication.
+A distributed Voting System built with **containerized backends, MySQL master–slave replication, and a React frontend**, designed for **horizontal scaling and automated deployment**.
 
-## Overview
+---
+
+# Overview
 
 This project demonstrates:
 
-* Multiple backend instances
-* MySQL replication (1 master, 2 slaves)
-* Automated containerized deployment
-* Database initialization and seeding
-* Scalable architecture ready for load balancing
-* Real-time support via websockets
+* **Multiple backend instances** for load distribution
+* **MySQL replication** (1 master, 2 read replicas)
+* **Automated containerized deployment** using Docker & Docker Compose
+* **Database initialization and seeding**
+* **Load balancing** via Nginx
+* **React frontend client**
+
+The system is designed for **read/write separation** and **scalable backend architecture**.
 
 ---
 
-## Architecture
+# Architecture
 
-### Backend Layer
+## Layers
 
-* 3 backend instances:
+### 1️⃣ Client Layer
 
-  * backend_1
-  * backend_2
-  * backend_3
+* React frontend running in a Docker container
+* Communicates with backend via Nginx
 
-Each instance runs the same application and connects to the database layer.
+### 2️⃣ Load Balancer
 
-### Database Layer
+* Nginx container
+* Distributes API requests across backend instances
+* Single entry point for all client requests
 
-* mysql_master
+### 3️⃣ Backend Layer
 
-  * Handles all write operations (INSERT, UPDATE, DELETE)
-* mysql_slave1
+* Three Node.js/Express backend instances: backend1, backend2, backend3
+* **Stateless architecture** allows any instance to handle any request
+* Connects to the MySQL database layer
 
-  * Read replica
-* mysql_slave2
+### 4️⃣ Database Layer
 
-  * Read replica
+* **mysql_master** – handles all write operations
+* **mysql_slave1** – read replica
+* **mysql_slave2** – read replica
 
-Read queries can be distributed across slave databases to improve performance and reduce master load.
+**Replication Strategy:**
+
+* Master handles writes
+* Slaves handle read queries
+* Simple asynchronous replication for read scaling
 
 ---
 
-## Architecture Diagram
+# Architecture Diagram
 
 ```
-                (Planned: Real-time support)
-            ┌──────────────┐
-            │ Load Balancer │
-            └──────┬───────┘
+             React Client
                    │
-      ┌────────────┼────────────┐
-      │            │            │
- backend_1    backend_2    backend_3
-      │            │            │
-      └───────┬────┴────┬───────┘
-              │           │
-        mysql_master   mysql_slave1
-                          mysql_slave2
+                   ▼
+              ┌──────────┐
+              │   NGINX   │  <- Load Balancer
+              └─────┬─────┘
+                    │
+    ┌───────────────┼───────────────┐
+    │               │               │
+ backend1        backend2         backend3
+    │               │               │
+    └───────────────┴───────────────┘
+            │
+       mysql_master
+           │
+    mysql_slave1  mysql_slave2
 ```
 
 ---
 
-## Deployment
+# Database Strategy
 
-The entire system is started using:
+### Writes
 
-```
-./build.sh
-```
+* All **INSERT / UPDATE / DELETE** operations go to **mysql_master**
 
----
+### Reads
 
-## build.sh Process
+* Read queries are distributed across **mysql_slave1** and **mysql_slave2**
+* Reduces master load and improves performance
 
-The script performs the following steps:
+### Consistency
 
-1. Stops old containers
-2. Cleans up previous environment
-3. Builds the backend Docker image
-4. Starts:
-
-   * MySQL master
-   * MySQL slave 1
-   * MySQL slave 2
-5. Waits until databases are ready
-6. Configures MySQL replication
-7. Runs `init.js`
-
-   * Creates tables
-   * Seeds initial data
-8. Starts three backend instances
-9. Starts client instance
-
-All database configuration and replication setup are automated.
+* Slaves may lag behind master slightly (`Seconds_Behind_Master`)
+* Read replicas provide **eventual consistency**, suitable for read-heavy queries like vote counts
 
 ---
 
-## Database Strategy
+# Deployment
 
-Write Operations
-All write queries are routed to mysql_master.
+### 1️⃣ Make the script executable
 
-Read Operations
-Read queries are handled by mysql_slave1 and mysql_slave2 to distribute load.
-
-This improves scalability and reduces database bottlenecks.
-
----
-
-## Tech Stack
-
-* Node.js
-* Express
-* React.js
-* MySQL
-* Docker
-* Bash scripting
-
----
-
-## Future Improvements
-
-* Real-time voting updates (WebSocket or Socket.IO)
-* Health checks for backend instances
-* Monitoring and observability
-
----
-
-## Getting Started
-
-Make the script executable and run it:
-
-```
+```bash
 chmod +x build.sh
+```
+
+### 2️⃣ Start the system
+
+```bash
 ./build.sh
 ```
 
-The system will automatically:
+**What the script does:**
 
-* Configure databases
-* Setup replication
-* Initialize schema
-* Seed data
-* Launch backend instances
-* Launch client instance
+1. Stops old containers and cleans volumes
+2. Builds **backend** and **client** Docker images
+3. Starts **MySQL master**
+4. Waits for readiness and injects replication config
+5. Creates replication user
+6. Starts **MySQL slaves**
+7. Configures replication automatically
+8. Initializes database schema and seeds data
+9. Starts **backend instances**, **nginx**, and **React client**
 
 ---
+
+# Tech Stack
+
+* **Backend:** Node.js, Express
+* **Frontend:** React.js (Vite)
+* **Database:** MySQL 8 (master–slave replication)
+* **Infrastructure:** Docker, Docker Compose, Nginx
+* **Automation:** Bash scripting
+
+---
+
+# Services
+
+| Service         | URL                                            |
+| --------------- | ---------------------------------------------- |
+| React Client    | [http://localhost:5173](http://localhost:5173) |
+| API (via nginx) | [http://localhost:8080](http://localhost:8080) |
+
+---
+
+# Future Improvements
+
+* Real-time voting updates via WebSocket / Socket.IO
+* Health checks and auto-restart for backend instances
+* Automated failover for MySQL master
+* Monitoring and logging
+* CI/CD pipeline for automated deployment
+
+---
+
+# Notes
+
+* This project demonstrates **scalable and distributed architecture concepts**.
+* It is suitable for **learning and prototyping**, or as a **portfolio project**.
+* It is **not a production-grade system**, as it lacks auto-scaling, full failover, monitoring, and advanced security features.
+
+---
+
+
