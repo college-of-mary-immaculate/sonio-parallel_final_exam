@@ -1,35 +1,63 @@
 /* ==========================================================
    USERGLOBAL.CSS — LEVEL 2: USER ROLE THEME
-   Responsibility: all colors and role-specific style for voters/users.
+   Responsibility: all colors for the voter/user role.
    ✅ Applied when <body> has class "user-theme"
-   ✅ Scopes every color override under body.user-theme
-   ❌ No layout/structure here — that's Global.css and MainLayout.css
+   ✅ Defines --btn-* slots so Button.jsx picks up correct colors
+   ❌ No layout/structure — that's Global.css and MainLayout.css
+
+   HOW TO ADD A NEW COMPONENT'S COLORS:
+   When you create a new component with its own CSS variable slots,
+   add the values here (and in AdminGlobal.css) so the component
+   automatically gets the right color per role. Example:
+     --card-header-bg: #1e40af;
+     --badge-bg: #bfdbfe;
+     etc.
 ========================================================== */
 
-/* ── User color variables ── */
 body.user-theme {
-  --primary-color:   #1e40af;   /* deep blue */
-  --secondary-color: #3b82f6;   /* lighter blue for hover/accents */
-  --accent-color:    #bfdbfe;   /* pale blue for subtle highlights */
-  --bg-color:        #f0f4ff;   /* page background */
-  --surface-color:   #ffffff;   /* cards, panels */
-  --text-color:      #111827;   /* main text */
-  --text-muted:      #6b7280;   /* secondary/muted text */
-  --border-color:    #c7d2fe;   /* blue-tinted borders */
-  --danger-color:    #dc2626;   /* destructive actions */
 
+  /* ── Page colors ── */
+  --primary-color:   #1e40af;
+  --secondary-color: #3b82f6;
+  --accent-color:    #bfdbfe;
+  --bg-color:        #f0f4ff;
+  --surface-color:   #ffffff;
+  --text-color:      #111827;
+  --text-muted:      #6b7280;
+  --border-color:    #c7d2fe;
+  --danger-color:    #dc2626;
+
+  /* ── Button component color slots ──────────────────────
+     Button.css reads these. Add new button variants here.
+  ──────────────────────────────────────────────────────── */
+  --btn-primary-bg:      #1e40af;
+  --btn-primary-hover:   #1d4ed8;
+  --btn-primary-text:    #ffffff;
+
+  --btn-secondary-bg:    #bfdbfe;
+  --btn-secondary-hover: #93c5fd;
+  --btn-secondary-text:  #1e3a8a;
+
+  --btn-danger-bg:       #dc2626;
+  --btn-danger-hover:    #b91c1c;
+  --btn-danger-text:     #ffffff;
+
+  --btn-ghost-color:     #1e40af;
+  --btn-ghost-hover-bg:  #eff6ff;
+
+  /* ── Page background & text ── */
   background-color: var(--bg-color);
   color:            var(--text-color);
 }
 
-/* ── Buttons ── */
+/* ── Generic button fallback (non-Button.jsx buttons) ── */
 body.user-theme button {
-  background-color: var(--primary-color);
-  color:            #ffffff;
+  background-color: var(--btn-primary-bg);
+  color:            var(--btn-primary-text);
 }
 
 body.user-theme button:hover {
-  background-color: var(--secondary-color);
+  background-color: var(--btn-primary-hover);
 }
 
 /* ── Links ── */

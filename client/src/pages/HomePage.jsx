@@ -1,5 +1,6 @@
 import "../css/HomePage.css";
 import { useAuth } from "../context/AuthContext";
+import Button from "../components/Button";
 
 export default function HomePage() {
     const { user, logout } = useAuth();
@@ -10,8 +11,11 @@ export default function HomePage() {
             {user ? (
                 <>
                     <p className="welcome-text">Welcome, {user.email}</p>
-                    {/* logout-btn is a page-level override — red, not role-theme color */}
-                    <button className="logout-btn" onClick={logout}>Logout</button>
+
+                    {/* variant="danger" → picks up --btn-danger-* from active role theme */}
+                    <Button variant="danger" size="md" onClick={logout}>
+                        Logout
+                    </Button>
                 </>
             ) : (
                 <p>Not logged in</p>

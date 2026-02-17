@@ -1,70 +1,129 @@
 /* ==========================================================
    LOGINPAGE.CSS — LEVEL 4: PAGE STYLES
-   Responsibility: layout and positioning of THIS page only.
-   ✅ Uses var(--primary-color) etc. from the active role theme
-   ✅ Scoped under .login-page so nothing bleeds out
-   ❌ Does not redefine colors — role theme handles that
+   Special case: renders BEFORE any role theme is active.
+   ✅ Defines its own color palette directly on .login-page
+   ✅ Overrides --btn-primary-* so Button always has color
+   ✅ Fully scoped under .login-page — nothing leaks out
+   ❌ Does NOT rely on body.user-theme or body.admin-theme
 ========================================================== */
 
 .login-page {
-  display:         flex;
-  flex-direction:  column;
+  display:          flex;
+  flex-direction:   column;
+  align-items:      center;
+  justify-content:  center;
+  min-height:       100vh;
+  padding:          1.5rem;
+  background-color: #f1f5f9;
+  color:            #111827;
+
+  /* Button override — no role theme active yet */
+  --btn-primary-bg:    #2563eb;
+  --btn-primary-hover: #1d4ed8;
+  --btn-primary-text:  #ffffff;
+}
+
+/* ── Card ── */
+.login-page .login-card {
+  background-color: #ffffff;
+  border-radius:    14px;
+  box-shadow:       0 2px 12px rgba(0, 0, 0, 0.08),
+                    0 1px 3px  rgba(0, 0, 0, 0.06);
+  padding:          2.25rem 2rem;
+  width:            100%;
+  max-width:        380px;
+}
+
+/* ── Logo / brand slot at top ── */
+.login-page .login-brand {
+  text-align:    center;
+  margin-bottom: 1.5rem;
+}
+
+.login-page .login-brand .brand-icon {
+  width:           48px;
+  height:          48px;
+  border-radius:   10px;
+  background:      #2563eb;
+  display:         inline-flex;
   align-items:     center;
   justify-content: center;
-  min-height:      100vh;
-  padding:         2rem;
+  margin-bottom:   0.65rem;
 }
 
-.login-page .login-card {
-  background-color: var(--surface-color, #ffffff);
-  border-radius:    10px;
-  box-shadow:       0 4px 16px rgba(0, 0, 0, 0.1);
-  padding:          2.5rem 2rem;
-  width:            100%;
-  max-width:        400px;
+.login-page .login-brand .brand-icon svg {
+  width:  22px;
+  height: 22px;
+  color:  #ffffff;
+  fill:   none;
+  stroke: currentColor;
 }
 
-.login-page h2 {
-  font-size:     1.75rem;
-  margin-bottom: 1.75rem;
-  text-align:    center;
-  color:         var(--primary-color);
+.login-page .login-brand h2 {
+  font-size:     1.35rem;
+  font-weight:   700;
+  color:         #111827;
+  margin-bottom: 0.2rem;
 }
 
+.login-page .login-brand p {
+  font-size:     0.85rem;
+  color:         #9ca3af;
+  margin-bottom: 0;
+}
+
+/* ── Form groups ── */
 .login-page .form-group {
-  display:       flex;
+  display:        flex;
   flex-direction: column;
-  gap:           0.4rem;
-  margin-bottom: 0.25rem;
+  gap:            0.3rem;
+  margin-bottom:  0.1rem;
 }
 
 .login-page .form-group label {
-  font-size:   0.875rem;
-  font-weight: 500;
-  color:       var(--text-muted, #6b7280);
+  font-size:   0.78rem;
+  font-weight: 600;
+  color:       #374151;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
 }
 
-/* Inputs span full width inside the card */
 .login-page input {
-  max-width: 100%;
+  max-width:     100%;
+  font-size:     0.95rem;
+  padding:       0.55rem 0.8rem;
+  border:        1px solid #e2e8f0;
+  border-radius: 8px;
+  background:    #f8fafc;
+  transition:    border-color 0.15s, box-shadow 0.15s, background 0.15s;
 }
 
-/* Submit button spans full width */
-.login-page .btn-submit {
-  width:         100%;
-  margin-top:    0.5rem;
-  padding:       0.65rem;
-  font-size:     1rem;
-  font-weight:   600;
-  border-radius: var(--border-radius);
-  /* inherits background-color from role theme button rule */
+.login-page input:focus {
+  border-color:     #2563eb;
+  background:       #ffffff;
+  box-shadow:       0 0 0 3px #bfdbfe;
 }
 
-/* Result / error message */
+/* ── Divider between inputs and button ── */
+.login-page .form-actions {
+  margin-top: 0.75rem;
+}
+
+/* ── Result / error ── */
 .login-page .login-result {
-  margin-top:    1rem;
-  font-size:     0.875rem;
+  margin-top:    0.85rem;
+  font-size:     0.8rem;
   text-align:    center;
-  color:         var(--text-muted, #6b7280);
+  color:         #6b7280;
   white-space:   pre-wrap;
+  background:    #f8fafc;
+  border-radius: 6px;
+  padding:       0.5rem 0.75rem;
+  border:        1px solid #e2e8f0;
+}
+
+.login-page .login-result.error {
+  color:        #dc2626;
+  background:   #fef2f2;
+  border-color: #fecaca;
 }

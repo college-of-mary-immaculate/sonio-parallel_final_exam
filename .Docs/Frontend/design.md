@@ -12,16 +12,18 @@ Note:
 UserGlobal.css
 * Color (blue formal professional) 
 * Style
+* Color of components also (buttons, modal, etc.)
 * etc. 
 
 Note:
 - For user ui! and pages of user has this css for consistency
 - Some pages can still force it's own if needed.
 
-# Second level
+# Second level (Role base theme)
 AdminGlobal.css
 * Color (green formal professional)
 * Style
+* Color of components also (buttons, modal, etc.)
 * etc. 
 
 Note:
@@ -46,4 +48,8 @@ Pages css
 * Handle how itself structured. like button where it placed.
 * If it has force css. or css that doesn't exist in global and it's scoped user/admin css
 * Design it's own component so pages freely design it.
+
+# Component level
+* only the structure 
+* color theme is based on role base theme
 
