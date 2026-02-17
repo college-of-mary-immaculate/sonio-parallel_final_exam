@@ -30,7 +30,8 @@ async function buildContainer() {
             slaveDb
         },
         modules: {
-            vote
+            vote,
+            users
         }
     };
 

@@ -26,6 +26,11 @@ async function bootstrap() {
         res.json({ status: "OK" });
     });
 
+    app.get("/check", (req, res) => {
+        res.json({ instance: process.env.HOSTNAME });
+    });
+
+
     return app;
 }
 
