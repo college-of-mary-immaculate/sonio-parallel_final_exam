@@ -20,6 +20,8 @@ docker exec -it mysql_slave2 mysql -uroot -p
 npm install cors
 npm install jsonwebtoken
 
+# Live sync for docker
+npm install -g nodemon
 
 
 

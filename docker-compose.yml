@@ -44,6 +44,8 @@ services:
       context: ./server
       dockerfile: Dockerfile
     container_name: backend1
+    volumes:
+      - ./server:/app 
     environment:
       DB_HOST: mysql_master
       DB_USER: root
@@ -60,6 +62,8 @@ services:
       context: ./server
       dockerfile: Dockerfile
     container_name: backend2
+    volumes:
+      - ./server:/app   
     environment:
       DB_HOST: mysql_master
       DB_USER: root
@@ -75,6 +79,8 @@ services:
       context: ./server
       dockerfile: Dockerfile
     container_name: backend3
+    volumes:
+      - ./server:/app  
     environment:
       DB_HOST: mysql_master
       DB_USER: root
