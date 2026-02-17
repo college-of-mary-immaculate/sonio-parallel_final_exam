@@ -15,33 +15,29 @@ function AppRoutes() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Public Route: Login page with MainLayout without navbar */}
-                <Route
-                    path="/login"
-                    element={
-                        user ? (
-                            <Navigate to="/" replace />
-                        ) : (
-                            <MainLayout>
-                                <LoginPage />
-                            </MainLayout>
-                        )
-                    }
-                />
+                {/* Public routes wrapped in MainLayout WITHOUT navbar */}
+                <Route element={<MainLayout />}>
+                    <Route
+                        path="/login"
+                        element={user ? <Navigate to="/" replace /> : <LoginPage />}
+                    />
+                </Route>
 
-                {/* Protected Route: Home page with MainLayout and navbar */}
+                {/* Protected routes wrapped in MainLayout WITH navbar */}
                 <Route
-                    path="/"
                     element={
                         <ProtectedRoute>
-                            <MainLayout Navbar={Navbar}>
-                                <HomePage />
-                            </MainLayout>
+                            <MainLayout Navbar={Navbar} />
                         </ProtectedRoute>
                     }
-                />
+                >
+                    <Route path="/" element={<HomePage />} />
+                    {/* Add more protected pages here */}
+                    {/* <Route path="dashboard" element={<Dashboard />} /> */}
+                    {/* <Route path="profile" element={<Profile />} /> */}
+                </Route>
 
-                {/* Catch all */}
+                {/* Catch-all */}
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
         </BrowserRouter>
