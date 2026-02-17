@@ -1,62 +1,59 @@
 // modules/userModule/userController.js
+
 class UserController {
     constructor(userService) {
         this.userService = userService;
-
-        this.register = this.register.bind(this);
-        this.login = this.login.bind(this);
     }
 
-    async register(req, res) {
+    register = async (req, res) => {
         try {
-            const { email, fullName, password } = req.body;
-
-            if (!email || !fullName || !password) {
-                return res.status(400).json({
-                    message: "Missing required fields."
-                });
-            }
-
-            const result =
-                await this.userService.register({
-                    email,
-                    fullName,
-                    password
-                });
-
-            return res.status(201).json(result);
-
+            const result = await this.userService.register(req.body);
+            res.status(201).json(result);
         } catch (error) {
-            return res.status(400).json({
-                message: error.message
-            });
+            res.status(400).json({ message: error.message });
         }
-    }
+    };
 
-    async login(req, res) {
+    getProfile = async (req, res) => {
         try {
-            const { email, password } = req.body;
-
-            if (!email || !password) {
-                return res.status(400).json({
-                    message: "Email and password required."
-                });
-            }
-
-            const result =
-                await this.userService.login({
-                    email,
-                    password
-                });
-
-            return res.status(200).json(result);
-
+            const user = await this.userService.getProfile(req.user.userId);
+            res.json(user);
         } catch (error) {
-            return res.status(401).json({
-                message: error.message
-            });
+            res.status(404).json({ message: error.message });
         }
-    }
+    };
+
+    getAllUsers = async (req, res) => {
+        try {
+            const users = await this.userService.getAllUsers();
+            res.json(users);
+        } catch (error) {
+            res.status(500).json({ message: error.message });
+        }
+    };
+
+    updateUser = async (req, res) => {
+        try {
+            const result = await this.userService.updateUser({
+                requester: req.user,
+                userId: req.params.id,
+                ...req.body
+            });
+            res.json(result);
+        } catch (error) {
+            const status = error.message.startsWith("Forbidden") ? 403 : 400;
+            res.status(status).json({ message: error.message });
+        }
+    };
+
+    deleteUser = async (req, res) => {
+        try {
+            const result = await this.userService.deleteUser(req.params.id);
+            res.json(result);
+        } catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    };
 }
 
 module.exports = UserController;

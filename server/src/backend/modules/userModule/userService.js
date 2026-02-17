@@ -1,6 +1,5 @@
 // modules/userModule/userService.js
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 
 class UserService {
     constructor(userRepository) {
@@ -10,10 +9,9 @@ class UserService {
     // =============================
     // REGISTER
     // =============================
-    async register({ email, fullName, password }) {
 
-        const existing =
-            await this.userRepository.getUserByEmail(email);
+    async register({ email, fullName, password }) {
+        const existing = await this.userRepository.getUserByEmail(email);
 
         if (existing) {
             throw new Error("Email already registered.");
@@ -25,7 +23,7 @@ class UserService {
             email,
             fullName,
             passwordHash,
-            role: "voter" // default role
+            role: "voter"
         });
 
         return {
@@ -35,45 +33,85 @@ class UserService {
     }
 
     // =============================
-    // LOGIN
+    // GET PROFILE
     // =============================
-    async login({ email, password }) {
 
-        const user =
-            await this.userRepository.getUserByEmail(email);
+    async getProfile(userId) {
+        const user = await this.userRepository.getUserById(userId);
 
         if (!user) {
-            throw new Error("Invalid email or password.");
+            throw new Error("User not found.");
         }
 
-        const isMatch = await bcrypt.compare(
-            password,
-            user.password_hash
-        );
+        return user;
+    }
 
-        if (!isMatch) {
-            throw new Error("Invalid email or password.");
+    // =============================
+    // GET ALL USERS (ADMIN)
+    // =============================
+
+    async getAllUsers() {
+        return await this.userRepository.getAllUsers();
+    }
+
+    // =============================
+    // UPDATE USER
+    // =============================
+
+    async updateUser({ requester, userId, email, fullName, password, role }) {
+        const existing = await this.userRepository.getUserById(userId);
+
+        if (!existing) {
+            throw new Error("User not found.");
         }
 
-        const token = jwt.sign(
-            {
-                userId: user.user_id,
-                email: user.email,
-                role: user.role
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: "1d" }
-        );
+        // Non-admins can only update their own profile
+        if (requester.role !== "admin" && requester.userId !== parseInt(userId)) {
+            throw new Error("Forbidden: you can only update your own profile.");
+        }
 
-        return {
-            token,
-            user: {
-                userId: user.user_id,
-                email: user.email,
-                fullName: user.full_name,
-                role: user.role
-            }
-        };
+        // Only admins can change roles
+        if (role && requester.role !== "admin") {
+            throw new Error("Only admins can change roles.");
+        }
+
+        let passwordHash;
+
+        if (password) {
+            passwordHash = await bcrypt.hash(password, 10);
+        }
+
+        await this.userRepository.updateUser({
+            userId,
+            email,
+            fullName,
+            passwordHash,
+            role
+        });
+
+        return { message: "User updated successfully." };
+    }
+
+    // =============================
+    // DELETE USER
+    // =============================
+
+    async deleteUser(userId) {
+        const existing = await this.userRepository.getUserById(userId);
+
+        if (!existing) {
+            throw new Error("User not found.");
+        }
+
+        const hasVotes = await this.userRepository.userHasVotes(userId);
+
+        if (hasVotes) {
+            throw new Error("Cannot delete user with vote history.");
+        }
+
+        await this.userRepository.deleteUser(userId);
+
+        return { message: "User deleted successfully." };
     }
 }
 

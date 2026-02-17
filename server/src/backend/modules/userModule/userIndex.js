@@ -5,16 +5,9 @@ const UserController = require("./userController");
 const userRoutes = require("./userRoutes");
 
 module.exports = ({ masterDb, slaveDb }) => {
-
-    const userRepository = new UserRepository({
-        masterDb,
-        slaveDb
-    });
-
+    const userRepository = new UserRepository({ masterDb, slaveDb });
     const userService = new UserService(userRepository);
-
     const userController = new UserController(userService);
-
     const routes = userRoutes(userController);
 
     return {
