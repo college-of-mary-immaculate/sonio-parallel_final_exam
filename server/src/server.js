@@ -1,14 +1,15 @@
 require("dotenv").config();
 
 const http      = require("http");
+const express   = require("express");
 const bootstrap = require("./bootstrap");
 
 async function startServer() {
     try {
-        // Create bare http.Server first — Socket.IO needs this reference
-        const httpServer = http.createServer();
+        const app        = express();
+        const httpServer = http.createServer(app); // ← pass app here
 
-        await bootstrap(httpServer);
+        await bootstrap(httpServer, app); // ← pass app too
 
         const PORT = process.env.PORT || 3000;
 

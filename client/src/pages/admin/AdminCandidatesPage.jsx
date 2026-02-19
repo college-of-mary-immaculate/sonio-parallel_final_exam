@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import "../../css/admin/AdminPage.css";           // ← shared admin base
-import "../../css/admin/AdminCandidatesPage.css"; // ← page-specific overrides
+import "../../css/admin/AdminPage.css";
+import "../../css/admin/AdminCandidatesPage.css";
 import Button from "../../components/Button";
 import { getAllCandidates, deleteCandidate } from "../../apis/candidateApi";
 import CandidateFormModal from "./components/CandidateFormModal";
@@ -15,7 +15,7 @@ export default function AdminCandidatesPage() {
     try {
       setLoading(true);
       const data = await getAllCandidates();
-      setCandidates(data);
+      setCandidates(Array.isArray(data) ? data : []);
     } catch (err) {
       alert(err.response?.data?.error || "Failed to load candidates");
     } finally {
@@ -23,7 +23,9 @@ export default function AdminCandidatesPage() {
     }
   };
 
-  useEffect(() => { loadCandidates(); }, []);
+  useEffect(() => {
+    loadCandidates();
+  }, []);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this candidate?")) return;
@@ -35,64 +37,116 @@ export default function AdminCandidatesPage() {
     }
   };
 
-  const openCreate = () => { setSelectedCandidate(null); setShowModal(true); };
-  const openEdit   = (candidate) => { setSelectedCandidate(candidate); setShowModal(true); };
+  const openCreate = () => {
+    setSelectedCandidate(null);
+    setShowModal(true);
+  };
+
+  const openEdit = (candidate) => {
+    setSelectedCandidate(candidate);
+    setShowModal(true);
+  };
 
   return (
     <div className="admin-page admin-candidates-page">
 
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="page-header">
         <h2>Candidate Management</h2>
         <Button onClick={openCreate}>+ Add Candidate</Button>
       </div>
 
-    {/* ── Table ── */}
-    {loading ? (
-      <p className="page-empty">Loading...</p>
-    ) : (
-      <table>
-        <thead>
-          <tr>
-            <th>Photo</th> {/* new */}
-            <th>Name</th>
-            <th>Education</th>
-            <th>Experience</th>
-            <th>Primary Advocacy</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {candidates.map((c) => (
-            <tr key={c.candidate_id}>
-              <td data-label="Photo">
-                <img 
-                  src={c.image_url} 
-                  alt={c.full_name} 
-                  style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover" }} 
-                />
-              </td>
-              <td data-label="Name">{c.full_name}</td>
-              <td data-label="Education">{c.education}</td>
-              <td data-label="Experience">{c.years_experience} yrs</td>
-              <td data-label="Primary Advocacy">{c.primary_advocacy}</td>
-              <td data-label="Actions">
-                <Button variant="secondary" onClick={() => openEdit(c)}>Edit</Button>
-                <Button variant="danger"    onClick={() => handleDelete(c.candidate_id)}>Delete</Button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    )}
+      {/* Table Section */}
+      {loading ? (
+        <p className="page-empty">Loading...</p>
+      ) : (
+        <div className="table-wrapper">
+          <table>
+            <thead>
+              <tr>
+                <th>Photo</th>
+                <th>Name</th>
+                <th>Education</th>
+                <th>Experience</th>
+                <th>Primary Advocacy</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
 
+            <tbody>
+              {candidates.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="page-empty">
+                    No candidates found.
+                  </td>
+                </tr>
+              ) : (
+                candidates.map((c) => {
+                  return (
+                    <tr key={c.candidate_id}>
+                      <td data-label="Photo">
+                        {c.image_url ? (
+                          <img
+                            src={c.image_url}
+                            alt={c.full_name}
+                            style={{
+                              width: 50,
+                              height: 50,
+                              borderRadius: "50%",
+                              objectFit: "cover"
+                            }}
+                          />
+                        ) : null}
+                      </td>
 
-      {/* ── Modal ── */}
+                      <td data-label="Name">{c.full_name}</td>
+
+                      <td data-label="Education">
+                        {c.education || "-"}
+                      </td>
+
+                      <td data-label="Experience">
+                        {c.years_experience ?? 0} yrs
+                      </td>
+
+                      <td data-label="Primary Advocacy">
+                        {c.primary_advocacy || "-"}
+                      </td>
+
+                      <td data-label="Actions">
+                        <Button
+                          variant="secondary"
+                          onClick={() => openEdit(c)}
+                        >
+                          Edit
+                        </Button>
+
+                        <Button
+                          variant="danger"
+                          onClick={() => handleDelete(c.candidate_id)}
+                        >
+                          Delete
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+
+          </table>
+        </div>
+      )}
+
+      {/* Modal */}
       {showModal && (
         <CandidateFormModal
           candidate={selectedCandidate}
           onClose={() => setShowModal(false)}
-          onSuccess={() => { setShowModal(false); loadCandidates(); }}
+          onSuccess={() => {
+            setShowModal(false);
+            loadCandidates();
+          }}
         />
       )}
     </div>

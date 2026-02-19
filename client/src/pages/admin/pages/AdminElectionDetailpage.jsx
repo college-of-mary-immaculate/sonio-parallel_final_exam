@@ -8,11 +8,11 @@ import { positionApi } from "../../../apis/positionApi";
 import { getAllCandidates } from "../../../apis/candidateApi";
 import Button from "../../../components/Button";
 import {
+  createSocket,
+  getSocket,
   joinElectionRoom,
   leaveElectionRoom,
   onVoteUpdated,
-  onConnectionChange,
-  getSocket,
 } from "../../../sockets/socket";
 import "../../../css/admin/AdminPage.css";
 
@@ -220,47 +220,48 @@ function LiveTrackingSection({ electionId }) {
     }
   };
 
-  useEffect(() => {
-    fetchLive();
+useEffect(() => {
+  fetchLive();
 
-    const s = getSocket();
+  // Create a fresh socket just for this component instance
+  const s = createSocket();
 
-    const onConnect = () => {
-      console.log("[LiveTracking] socket connected, joining room:", electionId);
-      setConnected(true);
-      s.emit("join:election", String(electionId));
-    };
+  const onConnect = () => {
+    console.log("[LiveTracking] connected:", s.id);
+    setConnected(true);
+    s.emit("join:election", String(electionId));
+  };
 
-    const onDisconnect = () => {
-      console.log("[LiveTracking] socket disconnected");
-      setConnected(false);
-    };
+  const onDisconnect = (reason) => {
+    console.log("[LiveTracking] disconnected:", reason);
+    setConnected(false);
+  };
 
-    // Register listeners BEFORE connecting
-    s.on("connect",    onConnect);
-    s.on("disconnect", onDisconnect);
+  const onError = (err) => {
+    console.warn("[LiveTracking] error:", err.message);
+  };
 
-    if (s.connected) {
-      // Already connected — fire manually since event won't re-fire
-      onConnect();
-    } else {
-      s.connect();
-    }
+  const onVoteUpdate = (payload) => {
+    console.log("[LiveTracking] vote:updated:", payload);
+    if (String(payload.electionId) === String(electionId)) fetchLive();
+  };
 
-    const cleanupVote = onVoteUpdated((payload) => {
-      console.log("[LiveTracking] vote:updated received:", payload);
-      if (String(payload.electionId) === String(electionId)) {
-        fetchLive();
-      }
-    });
+  s.on("connect",       onConnect);
+  s.on("disconnect",    onDisconnect);
+  s.on("connect_error", onError);
+  s.on("vote:updated",  onVoteUpdate);
 
-    return () => {
-      cleanupVote();
-      s.off("connect",    onConnect);
-      s.off("disconnect", onDisconnect);
-      s.emit("leave:election", String(electionId));
-    };
-  }, [electionId]);
+  s.connect();
+
+  return () => {
+    s.off("connect",       onConnect);
+    s.off("disconnect",    onDisconnect);
+    s.off("connect_error", onError);
+    s.off("vote:updated",  onVoteUpdate);
+    s.emit("leave:election", String(electionId));
+    s.disconnect();
+  };
+}, [electionId]);
 
   return (
     <section style={{
