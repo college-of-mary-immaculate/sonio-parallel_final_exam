@@ -2,7 +2,6 @@
 module.exports = async (db) => {
     console.log("Seeding elections with positions and candidates...");
 
-    // Predefined election data
     const elections = [
         { title: "Provincial Election Feb 11", start: "2026-02-11 08:00:00", end: "2026-02-15 17:00:00" },
         { title: "Provincial Election Feb 12", start: "2026-02-12 08:00:00", end: "2026-02-16 17:00:00" },
@@ -22,7 +21,6 @@ module.exports = async (db) => {
     const candidateIds = candidates.map(c => c.candidate_id);
 
     for (const e of elections) {
-        // Insert election
         const [result] = await db.query(
             `INSERT INTO elections (title, status, start_date, end_date, created_by)
              VALUES (?, 'active', ?, ?, ?)`,
@@ -30,7 +28,9 @@ module.exports = async (db) => {
         );
         const electionId = result.insertId;
 
-        // Add positions to election
+        // Keep track of candidates already assigned in this election
+        const usedCandidateIds = new Set();
+
         for (const [posName, posId] of Object.entries(positionIds)) {
             const candidateCount = 3;
             const winnersCount = posName === "Provincial Board" ? 5 : 1;
@@ -43,18 +43,29 @@ module.exports = async (db) => {
                 [electionId, posId, candidateCount, winnersCount, votesPerVoter]
             );
 
-            // Assign candidates to position
-            for (let i = 0; i < candidateCount; i++) {
-                const candidateId = candidateIds[(i + electionId) % candidateIds.length]; // simple rotation
-                await db.query(
-                    `INSERT INTO election_candidates 
-                        (election_id, position_id, candidate_id)
-                     VALUES (?, ?, ?)`,
-                    [electionId, posId, candidateId]
-                );
+            // Assign candidates without repeating
+            let assigned = 0;
+            let idx = 0;
+            while (assigned < candidateCount && idx < candidateIds.length) {
+                const candidateId = candidateIds[idx];
+                idx++;
+                if (!usedCandidateIds.has(candidateId)) {
+                    await db.query(
+                        `INSERT INTO election_candidates 
+                            (election_id, position_id, candidate_id)
+                         VALUES (?, ?, ?)`,
+                        [electionId, posId, candidateId]
+                    );
+                    usedCandidateIds.add(candidateId);
+                    assigned++;
+                }
+            }
+
+            if (assigned < candidateCount) {
+                console.warn(`Not enough unique candidates to fill position: ${posName} for election ${e.title}`);
             }
         }
     }
 
-    console.log("Elections seeded with positions and candidates.");
+    console.log("Elections seeded with positions and candidates (unique per election).");
 };

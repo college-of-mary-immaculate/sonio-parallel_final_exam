@@ -13,13 +13,13 @@ class ElectionCandidateService {
     return election;
   }
 
-  async addCandidate(electionId, positionId, candidateId) {
+    async addCandidate(electionId, positionId, candidateId) {
     await this._assertDraftElection(electionId);
 
     // position must exist in this election's ballot
     const electionPositions = await this.positionRepo.getPositionsForElection(electionId);
     const positionInElection = electionPositions.find(
-      p => String(p.position_id) === String(positionId)
+        p => String(p.position_id) === String(positionId)
     );
     if (!positionInElection) throw new Error("Position is not part of this election");
 
@@ -27,20 +27,28 @@ class ElectionCandidateService {
     const candidate = await this.candidateRepo.getCandidateById(candidateId);
     if (!candidate) throw new Error("Candidate not found");
 
-    // no duplicates
+    // no duplicates in the same position
     const already = await this.repo.candidateExistsInPosition(electionId, positionId, candidateId);
     if (already) throw new Error("Candidate already assigned to this position");
+
+    // ✅ check if candidate already exists in another position of the same election
+    const allCandidates = await this.repo.getCandidatesForElection(electionId);
+    const existsInOther = allCandidates.some(
+        c => String(c.candidate_id) === String(candidateId)
+    );
+    if (existsInOther) throw new Error("Candidate is already assigned to another position in this election");
 
     // enforce candidate_count cap
     const current = await this.repo.countCandidatesForPosition(electionId, positionId);
     if (current >= positionInElection.candidate_count) {
-      throw new Error(
+        throw new Error(
         `Position already has the maximum ${positionInElection.candidate_count} candidate(s)`
-      );
+        );
     }
 
     return this.repo.addCandidateToElection(electionId, positionId, candidateId);
-  }
+    }
+
 
   async removeCandidate(electionId, positionId, candidateId) {
     await this._assertDraftElection(electionId);
