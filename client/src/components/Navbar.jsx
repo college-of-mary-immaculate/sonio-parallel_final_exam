@@ -13,21 +13,18 @@ export default function Navbar() {
             <ul className="nav-links">
                 <li><Link to="/">Home</Link></li>
 
-                {/* Admin link */}
+                {/* Admin links */}
                 {user?.role === "admin" && (
-                    <li>
-                        <Link to="/admin/candidates">
-                            Candidates
-                        </Link>
-                    </li>
+                    <>
+                        <li><Link to="/admin/candidates">Candidates</Link></li>
+                        <li><Link to="/admin/positions">Positions</Link></li>
+                    </>
                 )}
             </ul>
 
             <div className="nav-right">
                 {user ? (
-                    <button onClick={logout}>
-                        Logout
-                    </button>
+                    <button onClick={logout}>Logout</button>
                 ) : (
                     <Link to="/login">Login</Link>
                 )}

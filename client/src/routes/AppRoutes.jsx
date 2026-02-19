@@ -4,6 +4,7 @@ import { useAuth } from "../context/AuthContext";
 import LoginPage from "../pages/LoginPage";
 import HomePage from "../pages/HomePage";
 import AdminCandidatesPage from "../pages/admin/AdminCandidatesPage";
+import AdminPositionsPage from "../pages/admin/AdminPositionsPage";
 
 import ProtectedRoute from "./ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
@@ -44,10 +45,8 @@ function AppRoutes() {
                         </ProtectedRoute>
                     }
                 >
-                    <Route
-                        path="/admin/candidates"
-                        element={<AdminCandidatesPage />}
-                    />
+                    <Route path="/admin/candidates" element={<AdminCandidatesPage />} />
+                    <Route path="/admin/positions" element={<AdminPositionsPage />} />
                 </Route>
 
                 {/* Catch-all */}

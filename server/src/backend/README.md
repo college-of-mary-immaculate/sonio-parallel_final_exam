@@ -14,7 +14,7 @@
 Base URL:
 
 ```
-http://localhost:8080/api 
+http://localhost:8080/ 
 ```
 
 ---
@@ -23,7 +23,7 @@ http://localhost:8080/api
 
 | Method | Endpoint      | Access | Description |
 | ------ | ------------- | ------ | ----------- |
-| POST   | `/auth/login` | Public | Login user  |
+| POST   | `/api/auth/login` | Public | Login user  |
 
 ---
 
@@ -31,11 +31,11 @@ http://localhost:8080/api
 
 | Method | Endpoint          | Access                | Description       |
 | ------ | ----------------- | --------------------- | ----------------- |
-| POST   | `/users/register` | Public                | Register new user |
-| GET    | `/users/profile`  | Authenticated         | Get own profile   |
-| GET    | `/users`          | Admin                 | Get all users     |
-| PUT    | `/users/:id`      | Authenticated / Admin | Update user       |
-| DELETE | `/users/:id`      | Admin                 | Delete user       |
+| POST   | `/api/users/register` | Public                | Register new user |
+| GET    | `/api/users/profile`  | Authenticated         | Get own profile   |
+| GET    | `/api/users`          | Admin                 | Get all users     |
+| PUT    | `/api/users/:id`      | Authenticated / Admin | Update user       |
+| DELETE | `/api/users/:id`      | Admin                 | Delete user       |
 
 ---
 
@@ -43,7 +43,7 @@ http://localhost:8080/api
 
 | Method | Endpoint        | Access        | Description |
 | ------ | --------------- | ------------- | ----------- |
-| POST   | `/votes/submit` | Authenticated | Submit vote |
+| POST   | `/api/votes/submit` | Authenticated | Submit vote |
 
 ---
 
@@ -51,9 +51,9 @@ http://localhost:8080/api
 
 | Method | Endpoint                                                               | Access | Description                    |
 | ------ | ---------------------------------------------------------------------- | ------ | ------------------------------ |
-| GET    | `/elections/:electionId/config`                                        | Admin  | Get election configuration     |
-| POST   | `/elections/:electionId/candidates`                                    | Admin  | Add candidate to election      |
-| DELETE | `/elections/:electionId/positions/:positionId/candidates/:candidateId` | Admin  | Remove candidate from position |
+| GET    | `/api/elections/:electionId/config`                                        | Admin  | Get election configuration     |
+| POST   | `/api/elections/:electionId/candidates`                                    | Admin  | Add candidate to election      |
+| DELETE | `/api/elections/:electionId/positions/:positionId/candidates/:candidateId` | Admin  | Remove candidate from position |
 
 ---
 
@@ -61,11 +61,11 @@ http://localhost:8080/api
 
 | Method | Endpoint                   | Access | Description         |
 | ------ | -------------------------- | ------ | ------------------- |
-| GET    | `/candidates`              | Admin  | Get all candidates  |
-| GET    | `/candidates/:candidateId` | Admin  | Get candidate by ID |
-| POST   | `/candidates`              | Admin  | Create candidate    |
-| PUT    | `/candidates/:candidateId` | Admin  | Update candidate    |
-| DELETE | `/candidates/:candidateId` | Admin  | Delete candidate    |
+| GET    | `/api/candidates`              | Admin  | Get all candidates  |
+| GET    | `/api/candidates/:candidateId` | Admin  | Get candidate by ID |
+| POST   | `/api/candidates`              | Admin  | Create candidate    |
+| PUT    | `/api/candidates/:candidateId` | Admin  | Update candidate    |
+| DELETE | `/api/candidates/:candidateId` | Admin  | Delete candidate    |
 
 ---
 
@@ -73,11 +73,11 @@ http://localhost:8080/api
 
 | Method | Endpoint                 | Access | Description         |
 | ------ | ------------------------ | ------ | ------------------- |
-| GET    | `/positions`             | Admin  | Get all positions   |
-| GET    | `/positions/:positionId` | Admin  | Get position by ID  |
-| POST   | `/positions`             | Admin  | Create new position |
-| PUT    | `/positions/:positionId` | Admin  | Update position     |
-| DELETE | `/positions/:positionId` | Admin  | Delete position     |
+| GET    | `/api/positions`             | Admin  | Get all positions   |
+| GET    | `/api/positions/:positionId` | Admin  | Get position by ID  |
+| POST   | `/api/positions`             | Admin  | Create new position |
+| PUT    | `/api/positions/:positionId` | Admin  | Update position     |
+| DELETE | `/api/positions/:positionId` | Admin  | Delete position     |
 
 ---
 
