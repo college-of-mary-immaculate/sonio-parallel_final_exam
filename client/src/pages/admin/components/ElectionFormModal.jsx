@@ -265,21 +265,29 @@ export default function ElectionFormModal({ election, onSaved }) {
               </div>
             </div>
 
-            {isEdit && (
-              <div style={{ marginTop: 14 }}>
-                <FieldLabel>Status</FieldLabel>
-                <select
-                  name="status"
-                  value={form.status}
-                  onChange={handleChange}
-                  style={{ ...inputStyle(true), cursor: "pointer" }}
-                >
-                  <option value="draft">Draft</option>
-                  <option value="active">Active</option>
-                  <option value="ended">Ended</option>
-                </select>
-              </div>
-            )}
+          {isEdit && (
+            <div style={{ marginTop: 14 }}>
+              <FieldLabel>Status</FieldLabel>
+              <select
+                name="status"
+                value={form.status}
+                onChange={handleChange}
+                style={{ ...inputStyle(true), cursor: "pointer" }}
+              >
+                {/* Only show valid forward transitions */}
+                <option value="draft"   disabled={form.status !== "draft"}>Draft</option>
+                <option value="pending" disabled={!["draft","pending"].includes(form.status)}>Pending</option>
+                <option value="active"  disabled={!["pending","active"].includes(form.status)}>Active</option>
+                <option value="ended"   disabled={!["active","ended"].includes(form.status)}>Ended</option>
+              </select>
+              <p style={{ margin: "4px 0 0", fontSize: "0.75rem", color: "#9ca3af" }}>
+                {form.status === "draft"   && "Draft → set to Pending when ballot is ready for voters to preview"}
+                {form.status === "pending" && "Pending → set to Active once the start date has passed"}
+                {form.status === "active"  && "Active → set to Ended once the end date has passed"}
+                {form.status === "ended"   && "This election has ended"}
+              </p>
+            </div>
+          )}
           </section>
 
           <hr style={{ border: "none", borderTop: "1px solid #f0f0f0", margin: "0 0 20px" }} />

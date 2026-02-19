@@ -57,33 +57,41 @@ class ElectionService {
 
 
   async updateElection(electionId, data) {
-
     const election = await this.repo.getElectionById(electionId);
     if (!election) throw new Error("Election not found");
 
-    const now = new Date();
+    const now   = new Date();
     const start = new Date(election.start_date);
-    const end = new Date(election.end_date);
+    const end   = new Date(election.end_date);
 
-    // status change requested?
     if (data.status && data.status !== election.status) {
+      const from = election.status;
+      const to   = data.status;
 
-      if (election.status === "draft" && data.status === "active") {
+      // draft → pending: finalize ballot, make visible to voters, no date restriction
+      if (from === "draft" && to === "pending") {
+        // allowed anytime — just publishes the upcoming election
+      }
+
+      // pending → active: voting opens, must be on or after start date
+      else if (from === "pending" && to === "active") {
         if (now < start)
-          throw new Error("Cannot activate before start date");
+          throw new Error(`Cannot activate before start date (${start.toLocaleDateString()})`);
       }
 
-      else if (election.status === "active" && data.status === "ended") {
+      // active → ended: voting closes, must be on or after end date
+      else if (from === "active" && to === "ended") {
         if (now < end)
-          throw new Error("Cannot end before end date");
+          throw new Error(`Cannot end before end date (${end.toLocaleDateString()})`);
       }
 
+      // draft → active shortcut still blocked — must go through pending
       else {
-        throw new Error("Invalid status transition");
+        throw new Error(`Invalid status transition: ${from} → ${to}`);
       }
     }
 
-    // prevent editing config if not draft
+    // lock title/dates once out of draft
     if (election.status !== "draft") {
       delete data.title;
       delete data.start_date;
@@ -92,6 +100,7 @@ class ElectionService {
 
     return this.repo.updateElection(electionId, data);
   }
+  
   async getById(electionId) {
     const election = await this.repo.getElectionById(electionId);
     if (!election) throw new Error("Election not found");

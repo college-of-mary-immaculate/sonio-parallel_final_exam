@@ -3,19 +3,21 @@ module.exports = async (db) => {
     console.log("Seeding positions...");
 
     const positions = [
-        "Governor",
-        "Vice Governor",
-        "Provincial Board"
+        { name: "Governor", description: "Chief executive of the province." },
+        { name: "Vice Governor", description: "Deputy executive assisting the governor." },
+        { name: "Provincial Board", description: "Legislative body of the province." }
     ];
 
-    for (const name of positions) {
+    for (const pos of positions) {
         await db.query(
             `
-            INSERT INTO positions (name)
-            VALUES (?)
-            ON DUPLICATE KEY UPDATE name=name
+            INSERT INTO positions (name, description)
+            VALUES (?, ?)
+            ON DUPLICATE KEY UPDATE 
+                name = VALUES(name),
+                description = VALUES(description)
             `,
-            [name]
+            [pos.name, pos.description]
         );
     }
 

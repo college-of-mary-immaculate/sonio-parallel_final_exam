@@ -4,14 +4,15 @@ const { getSlavePool } = require("../../database/db.slave");
 const authMiddleware = require("../middlewares/authMiddleware");
 const roleMiddleware = require("../middlewares/roleMiddleware");
 
-const voteModule             = require("../modules/voteModule/voteIndex");
-const authModule             = require("../modules/authModule/authIndex");
-const userModule             = require("../modules/userModule/userIndex");
-const electionModule         = require("../modules/electionModule/electionIndex");
-const candidateModule        = require("../modules/candidateModule/candidateIndex");
-const positionModule         = require("../modules/positionModule/positionIndex");
-const electionPositionModule = require("../modules/electionPositionModule/electionPositionIndex");
+const voteModule              = require("../modules/voteModule/voteIndex");
+const authModule              = require("../modules/authModule/authIndex");
+const userModule              = require("../modules/userModule/userIndex");
+const electionModule          = require("../modules/electionModule/electionIndex");
+const candidateModule         = require("../modules/candidateModule/candidateIndex");
+const positionModule          = require("../modules/positionModule/positionIndex");
+const electionPositionModule  = require("../modules/electionPositionModule/electionPositionIndex");
 const electionCandidateModule = require("../modules/electionCandidateModule/electionCandidateIndex");
+const electionTrackingModule  = require("../modules/electionTrackingModule/electionTrackingIndex");
 
 let container;
 
@@ -34,7 +35,7 @@ async function buildContainer() {
     { masterDb, slaveDb },
     middlewares,
     {
-      electionRepository: election.repository,   // ✅ was missing
+      electionRepository: election.repository,
       positionRepository: positions.repository,
     }
   );
@@ -49,6 +50,14 @@ async function buildContainer() {
     }
   );
 
+  const electionTracking = electionTrackingModule(
+    { masterDb, slaveDb },
+    middlewares,
+    {
+      electionRepository: election.repository, // only dep needed
+    }
+  );
+
   container = {
     db: { masterDb, slaveDb },
     modules: {
@@ -60,6 +69,7 @@ async function buildContainer() {
       positions,
       electionPositions,
       electionCandidates,
+      electionTracking,
     },
   };
 

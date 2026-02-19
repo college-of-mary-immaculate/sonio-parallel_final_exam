@@ -11,9 +11,10 @@ import "../../../css/admin/AdminPage.css";
 // ─── Status badge ────────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
   const map = {
-    draft:  { label: "Draft",  color: "#f59e0b" },
-    active: { label: "Active", color: "#22c55e" },
-    ended:  { label: "Ended",  color: "#6b7280" },
+    draft:   { label: "Draft",   color: "#f59e0b" },
+    pending: { label: "Pending", color: "#8b5cf6" }, // ✅ new
+    active:  { label: "Active",  color: "#22c55e" },
+    ended:   { label: "Ended",   color: "#6b7280" },
   };
   const { label, color } = map[status] ?? { label: status, color: "#6b7280" };
   return (
@@ -264,16 +265,17 @@ export default function AdminElectionDetailPage() {
           <EditableField label="End Date"   name="end_date"   value={formInfo.end_date}   onChange={handleInfoChange} type="date" disabled={!isDraft} />
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>Status</span>
-            <select
-              name="status"
-              value={formInfo.status}
-              onChange={handleInfoChange}
-              style={{ border: "1px solid #d1d5db", borderRadius: 6, padding: "6px 10px", fontSize: "0.95rem", background: "#fff" }}
-            >
-              <option value="draft">Draft</option>
-              <option value="active">Active</option>
-              <option value="ended">Ended</option>
-            </select>
+          <select
+            name="status"
+            value={formInfo.status}
+            onChange={handleInfoChange}
+            style={{ border: "1px solid #d1d5db", borderRadius: 6, padding: "6px 10px", fontSize: "0.95rem", background: "#fff" }}
+          >
+            <option value="draft"   disabled={formInfo.status !== "draft"}>Draft</option>
+            <option value="pending" disabled={!["draft","pending"].includes(formInfo.status)}>Pending</option>
+            <option value="active"  disabled={!["pending","active"].includes(formInfo.status)}>Active</option>
+            <option value="ended"   disabled={!["active","ended"].includes(formInfo.status)}>Ended</option>
+          </select>
           </div>
         </div>
 

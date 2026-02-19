@@ -18,9 +18,10 @@ async function bootstrap() {
   app.use("/api/candidates", container.modules.candidates.routes);
   app.use("/api/positions",  container.modules.positions.routes);
 
-  // nested under elections for clean REST structure
+  // nested election sub-routes
   app.use("/api/elections/:electionId/positions",  container.modules.electionPositions.routes);
   app.use("/api/elections/:electionId/candidates", container.modules.electionCandidates.routes);
+  app.use("/api/elections/:electionId/tracking",   container.modules.electionTracking.routes);
 
   app.get("/health", (req, res) => res.json({ status: "OK" }));
   app.get("/check",  (req, res) => res.json({ instance: process.env.HOSTNAME }));
