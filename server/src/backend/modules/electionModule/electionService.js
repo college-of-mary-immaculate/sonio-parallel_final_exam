@@ -60,6 +60,18 @@ class ElectionService {
     return this.repo.updateElection(electionId, { title, start_date, end_date, status });
   }
 
+  async deleteElection(electionId) {
+    const election = await this.repo.getElectionById(electionId);
+    if (!election) throw new Error("Election not found");
+
+    // Optional: prevent deleting active/ended elections
+    if (election.status !== "draft") throw new Error("Only draft elections can be deleted");
+
+    await this.repo.deleteElection(electionId);
+    return true;
+  }
+
+
 }
 
 module.exports = ElectionService;

@@ -63,6 +63,18 @@ class ElectionController {
     }
   }
 
+
+  async deleteElection(req, res) {
+    try {
+      const { electionId } = req.params;
+      await this.service.deleteElection(electionId);
+      res.json({ success: true });
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
+
 }
 
 module.exports = ElectionController;

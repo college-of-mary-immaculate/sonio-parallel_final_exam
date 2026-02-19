@@ -92,10 +92,9 @@ class ElectionRepository {
 
     return rows[0]; // always return full updated object
   }
-
-
-
-
+  async deleteElection(electionId) {
+  return this.masterDb.query(`DELETE FROM elections WHERE election_id = ?`, [electionId]);
+}
 }
 
 module.exports = ElectionRepository;
