@@ -1,0 +1,48 @@
+services:
+  backend1:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: backend1
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    command: ["nodemon", "--legacy-watch", "src/server.js"]
+
+  backend2:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: backend2
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    ports:
+      - "3001:3000"
+    command: ["nodemon", "--legacy-watch", "src/server.js"]
+
+  backend3:
+    build:
+      context: ./server
+      dockerfile: Dockerfile.dev
+    container_name: backend3
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    ports:
+      - "3002:3000"
+    command: ["nodemon", "--legacy-watch", "src/server.js"]
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile.dev
+    container_name: react_client
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    command: ["npm", "run", "dev", "--", "--host"]

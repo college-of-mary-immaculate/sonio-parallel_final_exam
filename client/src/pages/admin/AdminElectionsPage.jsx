@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "../../css/admin/AdminPage.css"; // shared admin base
+import "../../css/admin/AdminPage.css";
 import Button from "../../components/Button";
 import ElectionFormModal from "./components/ElectionFormModal";
 import { electionApi } from "../../apis/electionApi";
@@ -16,8 +16,17 @@ export default function AdminElectionsPage() {
       const response = await electionApi.getAll();
 
       // Ensure we have an array
-      const electionsArray = Array.isArray(response) ? response : response.elections || [];
-      const sorted = electionsArray.slice().sort((a, b) => a.election_id - b.election_id);
+      const electionsArray = Array.isArray(response)
+        ? response
+        : response.elections || [];
+
+      const sorted = electionsArray.slice().sort((a, b) => {
+        // fallback to 0 if election_id missing
+        const aId = a.election_id ?? 0;
+        const bId = b.election_id ?? 0;
+        return aId - bId;
+      });
+
       setElections(sorted);
     } catch (err) {
       console.error(err);
@@ -38,7 +47,6 @@ export default function AdminElectionsPage() {
 
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this election?")) return;
-
     try {
       await electionApi.delete(id);
       setElections((prev) => prev.filter((e) => e.election_id !== id));
@@ -65,7 +73,12 @@ export default function AdminElectionsPage() {
       {/* Header */}
       <div className="page-header">
         <h2>Election Management</h2>
-        <Button onClick={() => { setEditingElection(null); setModalOpen(true); }}>
+        <Button
+          onClick={() => {
+            setEditingElection(null);
+            setModalOpen(true);
+          }}
+        >
           + Add Election
         </Button>
       </div>
@@ -88,16 +101,24 @@ export default function AdminElectionsPage() {
             </tr>
           </thead>
           <tbody>
-            {elections.map((e) => (
-              <tr key={e.election_id}>
-                <td data-label="ID">{e.election_id}</td>
-                <td data-label="Title">{e.title}</td>
-                <td data-label="Start">{e.start_date?.split("T")[0]}</td>
-                <td data-label="End">{e.end_date?.split("T")[0]}</td>
-                <td data-label="Status">{e.status}</td>
+            {elections.map((e, index) => (
+              <tr key={e.election_id ?? index}>
+                <td data-label="ID">{e.election_id ?? "-"}</td>
+                <td data-label="Title">{e.title ?? "-"}</td>
+                <td data-label="Start">{e.start_date?.split("T")[0] ?? "-"}</td>
+                <td data-label="End">{e.end_date?.split("T")[0] ?? "-"}</td>
+                <td data-label="Status">{e.status ?? "-"}</td>
                 <td data-label="Actions">
-                  <Button variant="secondary" onClick={() => handleEdit(e)}>Edit</Button>
-                  <Button variant="danger" onClick={() => handleDelete(e.election_id)}>Delete</Button>
+                  <Button variant="secondary" onClick={() => handleEdit(e)}>
+                    Edit
+                  </Button>
+                  <Button
+                    variant="danger"
+                    onClick={() => handleDelete(e.election_id)}
+                    disabled={e.election_id == null}
+                  >
+                    Delete
+                  </Button>
                 </td>
               </tr>
             ))}

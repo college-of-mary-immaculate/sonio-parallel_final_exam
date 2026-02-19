@@ -1,22 +1,22 @@
-import axios from "axios";
+import mainApi from "./mainApi"; // use the configured axios instance
 
-const base = "/api/elections";
+const base = "/api/elections"; // no /api, mainApi already includes baseURL
 
 export const electionApi = {
   getAll: async () => {
-    const { data } = await axios.get(base);
+    const { data } = await mainApi.get(base);
     return data;
   },
   create: async (payload) => {
-    const { data } = await axios.post(base, payload);
-    return data;
-  },
-  update: async (id, payload) => {
-    const { data } = await axios.put(`${base}/${id}`, payload);
+    const { data } = await mainApi.post(base, payload);
     return data;
   },
   delete: async (id) => {
-    const { data } = await axios.delete(`${base}/${id}`);
+    const { data } = await mainApi.delete(`${base}/${id}`);
     return data;
+  },
+  update: async (id, payload) => {
+    // Only implement if backend supports PUT
+    throw new Error("Update endpoint not yet implemented on backend");
   },
 };

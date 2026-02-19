@@ -10,40 +10,53 @@ export default function ElectionFormModal({ election, onClose, onSaved }) {
     start_date: "",
     end_date: "",
     status: "draft",
+    created_by: 1, // default admin
   });
   const [saving, setSaving] = useState(false);
 
+  // Populate form if editing
   useEffect(() => {
     if (election) {
       setForm({
-        title: election.title || "",
-        start_date: election.start_date?.split("T")[0] || "",
-        end_date: election.end_date?.split("T")[0] || "",
-        status: election.status || "draft",
+        title: election.title ?? "",
+        start_date: election.start_date?.split("T")[0] ?? "",
+        end_date: election.end_date?.split("T")[0] ?? "",
+        status: election.status ?? "draft",
+        created_by: election.created_by ?? 1,
       });
     }
   }, [election]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSave = async () => {
     try {
       setSaving(true);
-      let saved;
+
+      let savedElection;
 
       if (isEdit) {
-        saved = await electionApi.update(election.election_id, form);
+        alert("Editing elections is not yet supported!"); // or implement PUT backend
+        return;
       } else {
-        // Add created_by = 1 for now (admin)
-        saved = await electionApi.create({ ...form, created_by: 1 });
+        // Call backend to create election
+        savedElection = await electionApi.create(form);
+
+        // Ensure backend returned a valid election_id
+        if (!savedElection?.election_id) {
+          throw new Error("Backend did not return a valid election ID");
+        }
       }
 
-      onSaved(saved);
+      // Pass the full saved election to parent for table update
+      onSaved(savedElection);
+      onClose();
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.error || "Save failed");
+      alert(err.response?.data?.error || err.message || "Save failed");
     } finally {
       setSaving(false);
     }
@@ -52,7 +65,7 @@ export default function ElectionFormModal({ election, onClose, onSaved }) {
   return (
     <div className="modal-overlay">
       <div className="modal">
-        <h3>{isEdit ? "Edit Election" : "Create Election"}</h3>
+        <h3>{isEdit ? "Edit Election (disabled)" : "Create Election"}</h3>
 
         <label>
           Title
@@ -60,6 +73,7 @@ export default function ElectionFormModal({ election, onClose, onSaved }) {
             name="title"
             value={form.title}
             onChange={handleChange}
+            placeholder="Enter election title"
             required
           />
         </label>
@@ -96,7 +110,9 @@ export default function ElectionFormModal({ election, onClose, onSaved }) {
         </label>
 
         <div className="modal-actions">
-          <Button variant="secondary" onClick={onClose}>Cancel</Button>
+          <Button variant="secondary" onClick={onClose}>
+            Cancel
+          </Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>
             {saving ? "Saving..." : "Save"}
           </Button>

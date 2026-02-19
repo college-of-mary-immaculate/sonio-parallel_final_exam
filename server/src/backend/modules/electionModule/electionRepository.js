@@ -70,9 +70,15 @@ class ElectionRepository {
       [title, start_date, end_date, created_by, status]
     );
 
-    const [rows] = await this.slaveDb.query(`SELECT * FROM elections WHERE election_id = ?`, [result.insertId]);
-    return rows[0];
+    const [rows] = await this.slaveDb.query(
+      `SELECT * FROM elections WHERE election_id = ?`,
+      [result.insertId]
+    );
+
+    // fallback if replication not yet caught up
+    return rows[0] ?? { election_id: result.insertId, title, start_date, end_date, created_by, status };
   }
+
 }
 
 module.exports = ElectionRepository;
