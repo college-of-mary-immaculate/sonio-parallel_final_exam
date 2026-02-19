@@ -207,6 +207,8 @@ services:
       - /app/node_modules
     ports:
       - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8080   # ← add this
     depends_on:
       nginx:
         condition: service_healthy

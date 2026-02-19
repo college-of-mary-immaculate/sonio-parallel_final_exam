@@ -1,41 +1,49 @@
 import { io } from "socket.io-client";
 
 const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+console.log("[socket] connecting to:", SOCKET_URL);
 
-let socket = null;
-
-export function getSocket() {
-  if (!socket) {
-    socket = io(SOCKET_URL, {
+// ── Use globalThis instead of module-level variable ──────────
+// This survives Vite HMR without getting stale
+function getSocket() {
+  if (!globalThis.__appSocket) {
+    globalThis.__appSocket = io(SOCKET_URL, {
       autoConnect: false,
       withCredentials: true,
+      transports: ["websocket"],
       auth: () => ({ token: localStorage.getItem("token") }),
     });
 
-    socket.on("connect",       () => console.log("[ws] connected:", socket.id));
-    socket.on("disconnect",    (r) => console.log("[ws] disconnected:", r));
-    socket.on("connect_error", (e) => console.warn("[ws] connection error:", e.message));
+    globalThis.__appSocket.on("connect",       () => console.log("[ws] connected:", globalThis.__appSocket.id));
+    globalThis.__appSocket.on("disconnect",    (r) => console.log("[ws] disconnected:", r));
+    globalThis.__appSocket.on("connect_error", (e) => console.warn("[ws] connect error:", e.message));
   }
-  return socket;
+  return globalThis.__appSocket;
 }
+
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    if (globalThis.__appSocket) {
+      globalThis.__appSocket.disconnect();
+      globalThis.__appSocket = null;
+    }
+  });
+}
+
+export { getSocket };
 
 export function joinElectionRoom(electionId) {
   const s = getSocket();
-
   if (s.connected) {
-    // Already connected — join immediately
-    s.emit("join:election", electionId);
+    s.emit("join:election", String(electionId));
   } else {
-    // Wait for connection, then join
-    s.once("connect", () => {
-      s.emit("join:election", electionId);
-    });
+    s.once("connect", () => s.emit("join:election", String(electionId)));
     s.connect();
   }
 }
 
 export function leaveElectionRoom(electionId) {
-  getSocket().emit("leave:election", electionId);
+  getSocket().emit("leave:election", String(electionId));
 }
 
 export function onVoteUpdated(callback) {
@@ -44,7 +52,6 @@ export function onVoteUpdated(callback) {
   return () => s.off("vote:updated", callback);
 }
 
-// ✅ New — lets components subscribe to connection state changes
 export function onConnectionChange(onConnect, onDisconnect) {
   const s = getSocket();
   s.on("connect",    onConnect);
@@ -53,4 +60,11 @@ export function onConnectionChange(onConnect, onDisconnect) {
     s.off("connect",    onConnect);
     s.off("disconnect", onDisconnect);
   };
+}
+
+export function resetSocket() {
+  if (globalThis.__appSocket) {
+    globalThis.__appSocket.disconnect();
+    globalThis.__appSocket = null;
+  }
 }

@@ -226,23 +226,29 @@ function LiveTrackingSection({ electionId }) {
     const s = getSocket();
 
     const onConnect = () => {
+      console.log("[LiveTracking] socket connected, joining room:", electionId);
       setConnected(true);
-      s.emit("join:election", electionId);   // re-join on reconnect too
+      s.emit("join:election", String(electionId));
     };
-    const onDisconnect = () => setConnected(false);
 
+    const onDisconnect = () => {
+      console.log("[LiveTracking] socket disconnected");
+      setConnected(false);
+    };
+
+    // Register listeners BEFORE connecting
     s.on("connect",    onConnect);
     s.on("disconnect", onDisconnect);
 
-    // Connect (or join immediately if already connected)
     if (s.connected) {
-      setConnected(true);
-      s.emit("join:election", electionId);
+      // Already connected — fire manually since event won't re-fire
+      onConnect();
     } else {
       s.connect();
     }
 
     const cleanupVote = onVoteUpdated((payload) => {
+      console.log("[LiveTracking] vote:updated received:", payload);
       if (String(payload.electionId) === String(electionId)) {
         fetchLive();
       }
@@ -252,7 +258,7 @@ function LiveTrackingSection({ electionId }) {
       cleanupVote();
       s.off("connect",    onConnect);
       s.off("disconnect", onDisconnect);
-      s.emit("leave:election", electionId);
+      s.emit("leave:election", String(electionId));
     };
   }, [electionId]);
 
