@@ -2,18 +2,28 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 export default function Navbar() {
+
     const { user, logout } = useAuth();
 
     return (
         <nav className="navbar">
+
             <div className="logo">
                 <h2>Voting System</h2>
             </div>
 
             <ul className="nav-links">
+
                 <li><Link to="/">Home</Link></li>
 
-                {/* Admin links */}
+                {/* USER LINKS */}
+                {user?.role === "voter" && (
+                    <>
+                        <li><Link to="/elections">Elections</Link></li>
+                    </>
+                )}
+
+                {/* ADMIN LINKS */}
                 {user?.role === "admin" && (
                     <>
                         <li><Link to="/admin/candidates">Candidates</Link></li>
@@ -21,6 +31,7 @@ export default function Navbar() {
                         <li><Link to="/admin/elections">Elections</Link></li>
                     </>
                 )}
+
             </ul>
 
             <div className="nav-right">
@@ -30,6 +41,7 @@ export default function Navbar() {
                     <Link to="/login">Login</Link>
                 )}
             </div>
+
         </nav>
     );
 }

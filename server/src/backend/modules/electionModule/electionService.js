@@ -100,7 +100,7 @@ class ElectionService {
 
     return this.repo.updateElection(electionId, data);
   }
-  
+
   async getById(electionId) {
     const election = await this.repo.getElectionById(electionId);
     if (!election) throw new Error("Election not found");
@@ -118,6 +118,34 @@ class ElectionService {
     await this.repo.deleteElection(electionId);
     return true;
   }
+
+// ======================
+// VOTER SAFE METHODS
+// ======================
+
+async listPublicElections() {
+
+  const elections = await this.repo.getAllElections();
+
+  // voters should only see visible elections
+  return elections.filter(e =>
+    e.status === "pending" || e.status === "active"
+  );
+}
+
+  async getPublicElectionById(electionId) {
+
+    const election = await this.repo.getElectionById(electionId);
+
+    if (!election) throw new Error("Election not found");
+
+    // block draft elections
+    if (election.status === "draft")
+      throw new Error("Election not available");
+
+    return election;
+  }
+
 
 
 }

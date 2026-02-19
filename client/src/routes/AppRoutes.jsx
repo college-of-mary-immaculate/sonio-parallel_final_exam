@@ -7,7 +7,9 @@ import HomePage from "../pages/HomePage";
 import AdminCandidatesPage from "../pages/admin/AdminCandidatesPage";
 import AdminPositionsPage from "../pages/admin/AdminPositionsPage";
 import AdminElectionsPage from "../pages/admin/AdminElectionsPage";
-import AdminElectionDetailPage from "../pages/admin/pages/AdminElectionDetailPage"; // ✅ fixed name
+import AdminElectionDetailPage from "../pages/admin/pages/AdminElectionDetailPage";
+
+import UserElectionsPage from "../pages/user/UserElectionsPage"; // ✅ NEW
 
 import ProtectedRoute from "./ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
@@ -22,6 +24,7 @@ function AppRoutes() {
         <BrowserRouter>
             <Routes>
 
+                {/* PUBLIC */}
                 <Route element={<MainLayout />}>
                     <Route
                         path="/login"
@@ -29,6 +32,7 @@ function AppRoutes() {
                     />
                 </Route>
 
+                {/* AUTHENTICATED USERS (admin + voter) */}
                 <Route
                     element={
                         <ProtectedRoute>
@@ -37,8 +41,12 @@ function AppRoutes() {
                     }
                 >
                     <Route path="/" element={<HomePage />} />
+
+                    {/* ✅ USER ELECTIONS */}
+                    <Route path="/elections" element={<UserElectionsPage />} />
                 </Route>
 
+                {/* ADMIN ONLY */}
                 <Route
                     element={
                         <ProtectedRoute roles={["admin"]}>
@@ -47,10 +55,8 @@ function AppRoutes() {
                     }
                 >
                     <Route path="/admin/candidates" element={<AdminCandidatesPage />} />
-                    <Route path="/admin/positions"  element={<AdminPositionsPage />} />
-                    <Route path="/admin/elections"  element={<AdminElectionsPage />} />
-
-                    {/* ✅ correct name */}
+                    <Route path="/admin/positions" element={<AdminPositionsPage />} />
+                    <Route path="/admin/elections" element={<AdminElectionsPage />} />
                     <Route path="/admin/elections/:electionId" element={<AdminElectionDetailPage />} />
                 </Route>
 

@@ -30,9 +30,8 @@ class VoteService {
                 await this.voteRepository.hasVoterSubmitted(
                     electionId,
                     voterId,
-                    { useMaster: true }
+                    { forceMaster: true }
                 );
-
             if (alreadySubmitted) {
                 throw new Error("You have already submitted your vote.");
             }

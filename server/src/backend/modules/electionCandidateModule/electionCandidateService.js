@@ -62,6 +62,7 @@ class ElectionCandidateService {
     if (!election) throw new Error("Election not found");
     return this.repo.getCandidatesForPosition(electionId, positionId);
   }
+
 }
 
 module.exports = ElectionCandidateService;

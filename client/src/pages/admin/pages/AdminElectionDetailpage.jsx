@@ -10,187 +10,199 @@ import Button from "../../../components/Button";
 import "../../../css/admin/AdminPage.css";
 
 const POLL_INTERVAL = 5000;
+const CHART_HEIGHT  = 220;
 
-/* ── palette ────────────────────────────────────────────────── */
-const COLORS = {
-  win:     ["#34d399", "#10b981", "#059669"],   // greens  — winners
-  lose:    ["#64748b", "#475569", "#334155"],   // slates  — non-winners
-  accent:  "#34d399",
-  bg:      "#0f172a",
-  surface: "#1e293b",
-  border:  "#2d3f55",
-  text:    "#e2e8f0",
-  muted:   "#64748b",
-};
+const BAR_COLORS = [
+  "#f59e0b", // 1st — gold
+  "#94a3b8", // 2nd — silver
+  "#b45309", // 3rd — bronze
+  "#38bdf8",
+  "#818cf8",
+  "#34d399",
+  "#f472b6",
+];
 
-/* ── helpers ────────────────────────────────────────────────── */
-function pick(arr, i) { return arr[i % arr.length]; }
+const BG      = "#0f172a";
+const SURFACE = "#1e293b";
+const BORDER  = "#2d3f55";
+const TEXT    = "#e2e8f0";
+const MUTED   = "#64748b";
 
-/* ── StatusBadge ────────────────────────────────────────────── */
+// ─── Status badge ─────────────────────────────────────────────────────────────
 function StatusBadge({ status }) {
   const map = {
     draft:   { label: "Draft",   color: "#f59e0b" },
     pending: { label: "Pending", color: "#8b5cf6" },
-    active:  { label: "Active",  color: "#34d399" },
-    ended:   { label: "Ended",   color: "#64748b" },
+    active:  { label: "Active",  color: "#22c55e" },
+    ended:   { label: "Ended",   color: "#6b7280" },
   };
-  const { label, color } = map[status] ?? { label: status, color: "#64748b" };
+  const { label, color } = map[status] ?? { label: status, color: "#6b7280" };
   return (
     <span style={{
-      display: "inline-block", padding: "3px 12px", borderRadius: 999,
-      background: color + "22", color, border: `1px solid ${color}55`,
-      fontWeight: 700, fontSize: "0.72rem", textTransform: "uppercase", letterSpacing: "0.08em",
+      display: "inline-block", padding: "2px 10px", borderRadius: "999px",
+      background: color + "22", color, border: `1px solid ${color}`,
+      fontWeight: 600, fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.05em",
     }}>
       {label}
     </span>
   );
 }
 
-/* ── EditableField ──────────────────────────────────────────── */
+// ─── Editable field ───────────────────────────────────────────────────────────
 function EditableField({ label, name, value, type = "text", onChange, disabled }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-      <span style={{ fontSize: "0.68rem", fontWeight: 700, color: COLORS.muted, textTransform: "uppercase", letterSpacing: "0.07em" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+      <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>
         {label}
       </span>
       <input
         type={type} name={name} value={value} onChange={onChange} disabled={disabled}
         style={{
-          border: `1px solid ${disabled ? "transparent" : COLORS.border}`,
-          borderRadius: 7, padding: "7px 11px", fontSize: "0.9rem",
-          background: disabled ? "transparent" : COLORS.surface,
-          color: disabled ? COLORS.muted : COLORS.text,
-          cursor: disabled ? "default" : "text", outline: "none",
-          transition: "border-color 0.15s",
+          border: disabled ? "1px solid transparent" : "1px solid #d1d5db",
+          borderRadius: 6, padding: "6px 10px", fontSize: "0.95rem",
+          background: disabled ? "transparent" : "#fff", color: "#111",
+          cursor: disabled ? "default" : "text", outline: "none", transition: "border-color 0.15s",
         }}
       />
     </div>
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   BAR CHART — one position
-══════════════════════════════════════════════════════════════ */
+// ─── Vertical bar chart for one position ─────────────────────────────────────
 function PositionBarChart({ position }) {
-  const total    = position.candidates.reduce((s, c) => s + c.vote_count, 0);
   const maxVotes = Math.max(...position.candidates.map(c => c.vote_count), 1);
+  const total    = position.candidates.reduce((s, c) => s + c.vote_count, 0);
+  const sorted   = [...position.candidates].sort((a, b) => a.rank - b.rank);
+  const colW     = sorted.length <= 4 ? 72 : sorted.length <= 6 ? 58 : 46;
+  const gap      = sorted.length <= 4 ? 24 : sorted.length <= 6 ? 16 : 10;
 
   return (
     <div style={{
-      background: COLORS.surface,
-      border: `1px solid ${COLORS.border}`,
-      borderRadius: 12,
-      padding: "22px 26px 18px",
-      marginBottom: 18,
+      background: SURFACE, border: `1px solid ${BORDER}`,
+      borderRadius: 12, padding: "18px 20px 0", flex: "1 1 300px", minWidth: 260,
     }}>
-      {/* Position header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 20 }}>
-        <div>
-          <span style={{ fontSize: "1rem", fontWeight: 700, color: COLORS.text }}>
-            {position.position_name}
-          </span>
-          {position.description && (
-            <span style={{ fontSize: "0.78rem", color: COLORS.muted, marginLeft: 8 }}>
-              {position.description}
-            </span>
-          )}
-        </div>
-        <div style={{ display: "flex", gap: 16, fontSize: "0.75rem", color: COLORS.muted }}>
-          <span>{total} vote{total !== 1 ? "s" : ""}</span>
-          <span>top {position.winners_count} win</span>
-        </div>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 16 }}>
+        <span style={{ fontSize: "0.9rem", fontWeight: 800, color: TEXT }}>{position.position_name}</span>
+        <span style={{ fontSize: "0.7rem", color: MUTED }}>{total} vote{total !== 1 ? "s" : ""} · top {position.winners_count} win</span>
       </div>
 
       {/* Bars */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-        {position.candidates.map((c, idx) => {
-          const pct       = maxVotes > 0 ? (c.vote_count / maxVotes) * 100 : 0;
-          const sharePct  = total > 0 ? ((c.vote_count / total) * 100).toFixed(1) : "0.0";
+      <div style={{
+        display: "flex", alignItems: "flex-end", justifyContent: "center",
+        gap, height: CHART_HEIGHT,
+        borderBottom: `2px solid ${BORDER}`, position: "relative",
+      }}>
+        {/* Grid lines */}
+        {[25, 50, 75].map(pct => (
+          <div key={pct} style={{
+            position: "absolute", left: 0, right: 0, bottom: `${pct}%`,
+            borderTop: `1px dashed ${BORDER}`, pointerEvents: "none",
+          }} />
+        ))}
+
+        {sorted.map((c, idx) => {
+          const heightPct = maxVotes > 0 ? (c.vote_count / maxVotes) * 100 : 0;
+          const barH      = Math.max((heightPct / 100) * CHART_HEIGHT, c.vote_count > 0 ? 8 : 2);
           const isWinning = c.is_leading;
-          const barColor  = isWinning ? pick(COLORS.win, idx) : pick(COLORS.lose, idx);
-          const tiedWith  = position.candidates.filter(x => x.vote_count === c.vote_count && c.vote_count > 0);
-          const isTied    = tiedWith.length > 1;
+          const color     = BAR_COLORS[idx] ?? BAR_COLORS[BAR_COLORS.length - 1];
+          const sharePct  = total > 0 ? ((c.vote_count / total) * 100).toFixed(1) : "0.0";
 
           return (
-            <div key={c.candidate_id}>
-              {/* Label row */}
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }}>
-
-                {/* Avatar */}
-                <img
-                  src={c.image_url} alt={c.full_name}
-                  style={{
-                    width: 30, height: 30, borderRadius: "50%",
-                    objectFit: "cover", flexShrink: 0,
-                    border: `2px solid ${isWinning ? COLORS.accent : COLORS.border}`,
-                    filter: isWinning ? "none" : "grayscale(40%)",
-                  }}
-                  onError={e => { e.target.src = `https://i.pravatar.cc/150?u=${c.candidate_id}`; }}
-                />
-
-                {/* Rank circle */}
-                <span style={{
-                  width: 20, height: 20, borderRadius: "50%", flexShrink: 0,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  fontSize: "0.65rem", fontWeight: 800,
-                  background: isWinning ? COLORS.accent : COLORS.border,
-                  color: isWinning ? "#0f172a" : COLORS.muted,
+            <div key={c.candidate_id} style={{
+              display: "flex", flexDirection: "column", alignItems: "center",
+              justifyContent: "flex-end", width: colW, height: "100%", position: "relative",
+            }}>
+              {/* Star */}
+              {isWinning && (
+                <div style={{
+                  position: "absolute", bottom: barH + 8,
+                  fontSize: c.rank === 1 ? "1.5rem" : "1.1rem",
+                  filter: `drop-shadow(0 0 5px ${color}cc)`,
+                  transition: "bottom 0.7s cubic-bezier(0.4,0,0.2,1)", lineHeight: 1,
                 }}>
-                  {c.rank}
-                </span>
-
-                {/* Name */}
-                <span style={{
-                  flex: 1, fontSize: "0.85rem",
-                  fontWeight: isWinning ? 700 : 400,
-                  color: isWinning ? COLORS.text : COLORS.muted,
-                  whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                }}>
-                  {c.full_name}
-                </span>
-
-                {/* Tags */}
-                <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
-                  {isWinning && (
-                    <span style={{
-                      fontSize: "0.6rem", fontWeight: 800, letterSpacing: "0.06em",
-                      color: "#0f172a", background: COLORS.accent,
-                      padding: "2px 6px", borderRadius: 3,
-                    }}>
-                      LEADING
-                    </span>
-                  )}
-                  {isTied && (
-                    <span style={{
-                      fontSize: "0.6rem", fontWeight: 800, letterSpacing: "0.06em",
-                      color: "#0f172a", background: "#f59e0b",
-                      padding: "2px 6px", borderRadius: 3,
-                    }}>
-                      TIED
-                    </span>
-                  )}
+                  ⭐
                 </div>
+              )}
 
-                {/* Vote count + share */}
-                <span style={{ fontSize: "0.82rem", fontWeight: 700, color: isWinning ? COLORS.accent : COLORS.muted, flexShrink: 0, minWidth: 70, textAlign: "right" }}>
-                  {c.vote_count} <span style={{ fontSize: "0.68rem", fontWeight: 400, color: COLORS.muted }}>({sharePct}%)</span>
-                </span>
-              </div>
+              {/* Vote count above bar */}
+              {c.vote_count > 0 && (
+                <div style={{
+                  position: "absolute",
+                  bottom: barH + (isWinning ? 36 : 6),
+                  fontSize: "0.68rem", fontWeight: 800, color,
+                  transition: "bottom 0.7s cubic-bezier(0.4,0,0.2,1)",
+                  whiteSpace: "nowrap",
+                }}>
+                  {c.vote_count}
+                </div>
+              )}
 
-              {/* Bar track */}
+              {/* Bar */}
               <div style={{
-                height: 10, background: "#0f172a", borderRadius: 999,
-                overflow: "hidden", marginLeft: 40,
+                width: "100%", height: barH,
+                background: `linear-gradient(to top, ${color}bb, ${color})`,
+                borderRadius: "6px 6px 0 0",
+                transition: "height 0.7s cubic-bezier(0.4,0,0.2,1)",
+                boxShadow: isWinning ? `0 0 14px ${color}55` : "none",
+                position: "relative", overflow: "hidden",
               }}>
                 <div style={{
-                  height: "100%",
-                  width: `${pct}%`,
-                  background: `linear-gradient(90deg, ${barColor}cc, ${barColor})`,
-                  borderRadius: 999,
-                  transition: "width 0.7s cubic-bezier(0.4,0,0.2,1)",
-                  boxShadow: isWinning ? `0 0 10px ${barColor}88` : "none",
+                  position: "absolute", top: 0, left: 0, right: 0, height: "40%",
+                  background: "linear-gradient(to bottom, rgba(255,255,255,0.15), transparent)",
+                  borderRadius: "6px 6px 0 0",
                 }} />
               </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* X-axis labels */}
+      <div style={{
+        display: "flex", justifyContent: "center", gap,
+        paddingTop: 10, paddingBottom: 14,
+      }}>
+        {sorted.map((c, idx) => {
+          const isWinning = c.is_leading;
+          const color     = BAR_COLORS[idx] ?? BAR_COLORS[BAR_COLORS.length - 1];
+          const isTied    = sorted.filter(x => x.vote_count === c.vote_count && c.vote_count > 0).length > 1;
+
+          return (
+            <div key={c.candidate_id} style={{
+              width: colW, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
+            }}>
+              <div style={{
+                width: 22, height: 22, borderRadius: "50%",
+                border: `2px solid ${color}`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "0.58rem", fontWeight: 800,
+                color: isWinning ? "#0f172a" : color,
+                background: isWinning ? color : "transparent",
+              }}>
+                {String(c.rank).padStart(2, "0")}
+              </div>
+              <img
+                src={c.image_url} alt={c.full_name}
+                style={{
+                  width: 28, height: 28, borderRadius: "50%", objectFit: "cover",
+                  border: `2px solid ${isWinning ? color : BORDER}`,
+                  filter: isWinning ? "none" : "grayscale(50%)",
+                }}
+                onError={e => { e.target.src = `https://i.pravatar.cc/150?u=${c.candidate_id}`; }}
+              />
+              <span style={{
+                fontSize: "0.6rem", fontWeight: isWinning ? 700 : 400,
+                color: isWinning ? TEXT : MUTED,
+                textAlign: "center", lineHeight: 1.2, wordBreak: "break-word", maxWidth: colW,
+              }}>
+                {c.full_name.split(" ")[0]}
+              </span>
+              {isTied && (
+                <span style={{ fontSize: "0.52rem", fontWeight: 800, color: "#0f172a", background: "#f59e0b", padding: "1px 4px", borderRadius: 3 }}>
+                  TIED
+                </span>
+              )}
             </div>
           );
         })}
@@ -199,9 +211,7 @@ function PositionBarChart({ position }) {
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   LIVE TRACKING SECTION
-══════════════════════════════════════════════════════════════ */
+// ─── Live tracking section ─────────────────────────────────────────────────────
 function LiveTrackingSection({ electionId }) {
   const [data,        setData]        = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -216,6 +226,7 @@ function LiveTrackingSection({ electionId }) {
       setError(null);
     } catch (err) {
       setError("Failed to fetch live results");
+      console.error(err);
     }
   };
 
@@ -226,89 +237,54 @@ function LiveTrackingSection({ electionId }) {
   }, [electionId]);
 
   return (
-    <div style={{
-      background: COLORS.bg,
-      border: `1px solid ${COLORS.border}`,
-      borderRadius: 14,
-      padding: "24px 28px",
-      marginTop: 28,
+    <section style={{
+      background: BG, border: `1px solid ${BORDER}`,
+      borderRadius: 12, padding: "20px 24px", marginTop: 24,
     }}>
-      {/* Section header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <h4 style={{ margin: 0, fontSize: "1rem", fontWeight: 800, color: COLORS.text, letterSpacing: "-0.01em" }}>
-            Live Vote Tracking
-          </h4>
-
-          {/* Pulse dot */}
+      {/* Header */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <h4 style={{ margin: 0, fontSize: "1rem", fontWeight: 700, color: TEXT }}>Live Vote Tracking</h4>
           <span style={{ position: "relative", display: "inline-flex", width: 10, height: 10 }}>
-            <style>{`
-              @keyframes lv-ping {
-                0%   { transform: scale(1); opacity: .75; }
-                75%, 100% { transform: scale(2.4); opacity: 0; }
-              }
-            `}</style>
-            <span style={{
-              position: "absolute", inset: 0, borderRadius: "50%",
-              background: COLORS.accent, animation: "lv-ping 1.5s ease-in-out infinite",
-            }} />
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: COLORS.accent, display: "inline-block" }} />
+            <style>{`@keyframes lv-ping{0%{transform:scale(1);opacity:.75}75%,100%{transform:scale(2.4);opacity:0}}`}</style>
+            <span style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#22c55e", animation: "lv-ping 1.5s ease-in-out infinite" }} />
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
           </span>
         </div>
-
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {data && (
-            <span style={{ fontSize: "0.78rem", color: COLORS.muted }}>
-              <span style={{ color: COLORS.accent, fontWeight: 700 }}>{data.total_submissions}</span> voter{data.total_submissions !== 1 ? "s" : ""} submitted
+            <span style={{ fontSize: "0.75rem", color: MUTED }}>
+              <span style={{ color: "#22c55e", fontWeight: 700 }}>{data.total_submissions}</span> voter{data.total_submissions !== 1 ? "s" : ""} submitted
             </span>
           )}
-          {lastUpdated && (
-            <span style={{ fontSize: "0.7rem", color: COLORS.muted }}>
-              {lastUpdated.toLocaleTimeString()}
-            </span>
-          )}
-          <button
-            onClick={fetchLive}
-            style={{
-              background: "none", border: `1px solid ${COLORS.border}`, borderRadius: 6,
-              padding: "3px 10px", fontSize: "0.75rem", cursor: "pointer",
-              color: COLORS.muted, transition: "color 0.15s, border-color 0.15s",
-            }}
-            onMouseEnter={e => { e.target.style.color = COLORS.text; e.target.style.borderColor = COLORS.muted; }}
-            onMouseLeave={e => { e.target.style.color = COLORS.muted; e.target.style.borderColor = COLORS.border; }}
-          >
-            ↻ Refresh
-          </button>
+          {lastUpdated && <span style={{ fontSize: "0.68rem", color: MUTED }}>{lastUpdated.toLocaleTimeString()}</span>}
+          <button onClick={fetchLive} style={{
+            background: "none", border: `1px solid ${BORDER}`, borderRadius: 6,
+            padding: "3px 10px", fontSize: "0.72rem", cursor: "pointer", color: MUTED,
+          }}>↻ Refresh</button>
         </div>
       </div>
-
-      <p style={{ margin: "0 0 20px", fontSize: "0.68rem", color: COLORS.muted }}>
+      <p style={{ margin: "0 0 18px", fontSize: "0.68rem", color: MUTED }}>
         Auto-refreshing every 5s · WebSocket upgrade coming
       </p>
 
-      {error  && <p style={{ color: "#f87171", fontSize: "0.875rem" }}>{error}</p>}
-      {!data && !error && <p style={{ color: COLORS.muted, fontSize: "0.875rem" }}>Loading live results...</p>}
-      {data?.positions?.length === 0 && <p style={{ color: COLORS.muted }}>No positions found.</p>}
+      {error   && <p style={{ color: "#f87171" }}>{error}</p>}
+      {!data && !error && <p style={{ color: MUTED, fontSize: "0.875rem" }}>Loading...</p>}
+      {data?.positions?.length === 0 && <p style={{ color: MUTED }}>No positions found.</p>}
 
-      {/* Chart grid — 2 columns when ≥ 2 positions */}
+      {/* Charts in a wrapping flex row — fills width naturally */}
       {data?.positions && (
-        <div style={{
-          display: "grid",
-          gridTemplateColumns: data.positions.length >= 2 ? "1fr 1fr" : "1fr",
-          gap: 18,
-        }}>
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
           {data.positions.map(pos => (
             <PositionBarChart key={pos.position_id} position={pos} />
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }
 
-/* ══════════════════════════════════════════════════════════════
-   MAIN PAGE
-══════════════════════════════════════════════════════════════ */
+// ─── Main page ────────────────────────────────────────────────────────────────
 export default function AdminElectionDetailPage() {
   const { electionId } = useParams();
   const navigate       = useNavigate();
@@ -392,10 +368,8 @@ export default function AdminElectionDetailPage() {
 
   const handleRemovePosition = async (positionId) => {
     if (!confirm("Remove this position and all its candidates from the election?")) return;
-    try {
-      await electionPositionApi.remove(electionId, positionId);
-      await load();
-    } catch (err) { alert(err.response?.data?.error || "Failed to remove position"); }
+    try { await electionPositionApi.remove(electionId, positionId); await load(); }
+    catch (err) { alert(err.response?.data?.error || "Failed to remove position"); }
   };
 
   const handleAddCandidate = async (positionId) => {
@@ -410,10 +384,8 @@ export default function AdminElectionDetailPage() {
 
   const handleRemoveCandidate = async (positionId, candidateId) => {
     if (!confirm("Remove this candidate?")) return;
-    try {
-      await electionCandidateApi.remove(electionId, positionId, candidateId);
-      await load();
-    } catch (err) { alert(err.response?.data?.error || "Failed to remove candidate"); }
+    try { await electionCandidateApi.remove(electionId, positionId, candidateId); await load(); }
+    catch (err) { alert(err.response?.data?.error || "Failed to remove candidate"); }
   };
 
   const candidatesForPosition = (positionId) =>
@@ -435,10 +407,8 @@ export default function AdminElectionDetailPage() {
   if (!election) return <div className="admin-page"><p className="page-empty">Election not found.</p></div>;
 
   return (
-    /* ── wider max-width ── */
-    <div className="admin-page" style={{ maxWidth: 1200, margin: "0 auto", padding: "24px 24px" }}>
+    <div className="admin-page" style={{ maxWidth: 860, margin: "0 auto", padding: "24px 16px" }}>
 
-      {/* Back */}
       <button
         onClick={() => navigate("/admin/elections")}
         style={{ background: "none", border: "none", color: "#6b7280", cursor: "pointer", marginBottom: 16, fontSize: "0.9rem", display: "flex", alignItems: "center", gap: 4 }}
@@ -446,146 +416,133 @@ export default function AdminElectionDetailPage() {
         ← Back to Elections
       </button>
 
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-        <h2 style={{ margin: 0, fontSize: "1.4rem" }}>{election.title}</h2>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 28 }}>
+        <h2 style={{ margin: 0 }}>{election.title}</h2>
         <StatusBadge status={election.status} />
       </div>
 
-      {/* ── two-column layout when active ── */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: isActive ? "340px 1fr" : "1fr",
-        gap: 24,
-        alignItems: "start",
-      }}>
+      {/* ── Info card ─────────────────────────────── */}
+      <section style={cardStyle}>
+        <h4 style={sectionTitle}>
+          Election Info
+          {!isDraft && <span style={lockedLabel}>read-only</span>}
+        </h4>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <EditableField label="Title"      name="title"      value={formInfo.title}      onChange={handleInfoChange} disabled={!isDraft} />
+          <EditableField label="Start Date" name="start_date" value={formInfo.start_date} onChange={handleInfoChange} type="date" disabled={!isDraft} />
+          <EditableField label="End Date"   name="end_date"   value={formInfo.end_date}   onChange={handleInfoChange} type="date" disabled={!isDraft} />
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <span style={{ fontSize: "0.75rem", fontWeight: 600, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>Status</span>
+            <select
+              name="status" value={formInfo.status} onChange={handleInfoChange}
+              style={{ border: "1px solid #d1d5db", borderRadius: 6, padding: "6px 10px", fontSize: "0.95rem", background: "#fff" }}
+            >
+              <option value="draft"   disabled={formInfo.status !== "draft"}>Draft</option>
+              <option value="pending" disabled={!["draft","pending"].includes(formInfo.status)}>Pending</option>
+              <option value="active"  disabled={!["pending","active"].includes(formInfo.status)}>Active</option>
+              <option value="ended"   disabled={!["active","ended"].includes(formInfo.status)}>Ended</option>
+            </select>
+          </div>
+        </div>
+        <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
+          <Button variant={isDraft ? "primary" : "secondary"} onClick={handleSaveInfo} disabled={infoSaving}>
+            {infoSaving ? "Saving..." : isDraft ? "Save Changes" : "Update Status"}
+          </Button>
+        </div>
+      </section>
 
-        {/* LEFT COLUMN — info + ballot */}
-        <div>
-          {/* Info card */}
-          <section style={cardStyle}>
-            <h4 style={sectionTitle}>
-              Election Info
-              {!isDraft && <span style={lockedLabel}>read-only</span>}
-            </h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-              <EditableField label="Title"      name="title"      value={formInfo.title}      onChange={handleInfoChange} disabled={!isDraft} />
-              <EditableField label="Start Date" name="start_date" value={formInfo.start_date} onChange={handleInfoChange} type="date" disabled={!isDraft} />
-              <EditableField label="End Date"   name="end_date"   value={formInfo.end_date}   onChange={handleInfoChange} type="date" disabled={!isDraft} />
-              <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                <span style={{ fontSize: "0.68rem", fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.07em" }}>Status</span>
-                <select
-                  name="status" value={formInfo.status} onChange={handleInfoChange}
-                  style={{ border: "1px solid #d1d5db", borderRadius: 7, padding: "7px 11px", fontSize: "0.9rem", background: "#fff" }}
-                >
-                  <option value="draft"   disabled={formInfo.status !== "draft"}>Draft</option>
-                  <option value="pending" disabled={!["draft","pending"].includes(formInfo.status)}>Pending</option>
-                  <option value="active"  disabled={!["pending","active"].includes(formInfo.status)}>Active</option>
-                  <option value="ended"   disabled={!["active","ended"].includes(formInfo.status)}>Ended</option>
-                </select>
-              </div>
+      {/* ── Live tracking — active only, sits right below info ── */}
+      {isActive && <LiveTrackingSection electionId={electionId} />}
+
+      {/* ── Ballot positions ──────────────────────── */}
+      <section style={{ marginTop: 28 }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+          <h4 style={{ margin: 0, fontSize: "1rem", fontWeight: 700 }}>
+            Ballot Positions
+            {!isDraft && <span style={{ ...lockedLabel, marginLeft: 8 }}>read-only</span>}
+          </h4>
+          {isDraft && availablePositions.length > 0 && (
+            <div style={{ display: "flex", gap: 8 }}>
+              <select value={addingPositionId} onChange={e => setAddingPositionId(e.target.value)} style={selectStyle}>
+                <option value="">Select position to add…</option>
+                {availablePositions.map(p => <option key={p.position_id} value={p.position_id}>{p.name}</option>)}
+              </select>
+              <Button variant="primary" onClick={handleAddPosition} disabled={!addingPositionId}>+ Add</Button>
             </div>
-            <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
-              <Button variant={isDraft ? "primary" : "secondary"} onClick={handleSaveInfo} disabled={infoSaving}>
-                {infoSaving ? "Saving..." : isDraft ? "Save Changes" : "Update Status"}
-              </Button>
-            </div>
-          </section>
-
-          {/* Ballot positions */}
-          <section style={{ marginTop: 20 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-              <h4 style={{ margin: 0, fontSize: "0.95rem", fontWeight: 700 }}>
-                Ballot Positions
-                {!isDraft && <span style={{ ...lockedLabel, marginLeft: 8 }}>read-only</span>}
-              </h4>
-              {isDraft && availablePositions.length > 0 && (
-                <div style={{ display: "flex", gap: 6 }}>
-                  <select value={addingPositionId} onChange={e => setAddingPositionId(e.target.value)} style={selectStyle}>
-                    <option value="">Add position…</option>
-                    {availablePositions.map(p => <option key={p.position_id} value={p.position_id}>{p.name}</option>)}
-                  </select>
-                  <Button variant="primary" onClick={handleAddPosition} disabled={!addingPositionId}>+</Button>
-                </div>
-              )}
-            </div>
-
-            {positions.length === 0 ? (
-              <p style={{ color: "#9ca3af", fontSize: "0.875rem" }}>No positions configured.</p>
-            ) : positions.map(pos => {
-              const posCandidates = candidatesForPosition(pos.position_id);
-              const avail         = availableCandidates(pos.position_id);
-              const isFull        = posCandidates.length >= pos.candidate_count;
-
-              return (
-                <div key={pos.position_id} style={{ ...cardStyle, marginBottom: 12 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-                    <div>
-                      <strong style={{ fontSize: "0.9rem" }}>{pos.name}</strong>
-                      <div style={{ marginTop: 3, fontSize: "0.72rem", color: "#9ca3af" }}>
-                        Slots: {pos.candidate_count} · Winners: {pos.winners_count} · Votes/Voter: {pos.votes_per_voter}
-                      </div>
-                    </div>
-                    {isDraft && <Button variant="danger" onClick={() => handleRemovePosition(pos.position_id)}>Remove</Button>}
-                  </div>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-                    {posCandidates.length === 0 ? (
-                      <p style={{ margin: 0, fontSize: "0.82rem", color: "#9ca3af" }}>No candidates yet.</p>
-                    ) : posCandidates.map(c => (
-                      <div key={c.candidate_id} style={candidateRow}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <img
-                            src={c.image_url} alt={c.full_name}
-                            style={{ width: 30, height: 30, borderRadius: "50%", objectFit: "cover", border: "2px solid #e5e7eb", flexShrink: 0 }}
-                            onError={e => { e.target.src = `https://i.pravatar.cc/150?u=${c.candidate_id}`; }}
-                          />
-                          <div>
-                            <span style={{ fontWeight: 500, fontSize: "0.85rem" }}>{c.full_name}</span>
-                            {c.primary_advocacy && <div style={{ fontSize: "0.7rem", color: "#6b7280" }}>{c.primary_advocacy}</div>}
-                          </div>
-                        </div>
-                        {isDraft && <Button variant="danger" onClick={() => handleRemoveCandidate(pos.position_id, c.candidate_id)}>✕</Button>}
-                      </div>
-                    ))}
-                  </div>
-
-                  {isDraft && !isFull && avail.length > 0 && (
-                    <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
-                      <select
-                        value={addingCandidateMap[pos.position_id] ?? ""}
-                        onChange={e => setAddingCandidateMap(prev => ({ ...prev, [pos.position_id]: e.target.value }))}
-                        style={{ ...selectStyle, flex: 1 }}
-                      >
-                        <option value="">Add candidate…</option>
-                        {avail.map(c => <option key={c.candidate_id} value={c.candidate_id}>{c.full_name}</option>)}
-                      </select>
-                      <Button variant="secondary" onClick={() => handleAddCandidate(pos.position_id)} disabled={!addingCandidateMap[pos.position_id]}>+</Button>
-                    </div>
-                  )}
-                  {isDraft && isFull && (
-                    <p style={{ margin: "8px 0 0", fontSize: "0.75rem", color: "#22c55e" }}>✓ All slots filled</p>
-                  )}
-                </div>
-              );
-            })}
-          </section>
+          )}
         </div>
 
-        {/* RIGHT COLUMN — live tracking (only when active) */}
-        {isActive && (
-          <div style={{ position: "sticky", top: 24 }}>
-            <LiveTrackingSection electionId={electionId} />
-          </div>
-        )}
-      </div>
+        {positions.length === 0 ? (
+          <p className="page-empty">No positions configured.</p>
+        ) : positions.map(pos => {
+          const posCandidates = candidatesForPosition(pos.position_id);
+          const avail         = availableCandidates(pos.position_id);
+          const isFull        = posCandidates.length >= pos.candidate_count;
+
+          return (
+            <div key={pos.position_id} style={{ ...cardStyle, marginBottom: 16 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                <div>
+                  <strong style={{ fontSize: "1rem" }}>{pos.name}</strong>
+                  {pos.description && <span style={{ fontSize: "0.82rem", color: "#6b7280", marginLeft: 8 }}>{pos.description}</span>}
+                  <div style={{ marginTop: 4, fontSize: "0.78rem", color: "#9ca3af" }}>
+                    Slots: {pos.candidate_count} · Winners: {pos.winners_count} · Votes/Voter: {pos.votes_per_voter}
+                  </div>
+                </div>
+                {isDraft && <Button variant="danger" onClick={() => handleRemovePosition(pos.position_id)}>Remove Position</Button>}
+              </div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {posCandidates.length === 0 ? (
+                  <p style={{ margin: 0, fontSize: "0.85rem", color: "#9ca3af" }}>No candidates assigned yet.</p>
+                ) : posCandidates.map(c => (
+                  <div key={c.candidate_id} style={candidateRow}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <img
+                        src={c.image_url} alt={c.full_name}
+                        style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", border: "2px solid #e5e7eb", flexShrink: 0 }}
+                        onError={e => { e.target.src = `https://i.pravatar.cc/150?u=${c.candidate_id}`; }}
+                      />
+                      <div>
+                        <span style={{ fontWeight: 500, fontSize: "0.9rem" }}>{c.full_name}</span>
+                        {c.primary_advocacy && <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>{c.primary_advocacy}</div>}
+                      </div>
+                    </div>
+                    {isDraft && <Button variant="danger" onClick={() => handleRemoveCandidate(pos.position_id, c.candidate_id)}>Remove</Button>}
+                  </div>
+                ))}
+              </div>
+
+              {isDraft && !isFull && avail.length > 0 && (
+                <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                  <select
+                    value={addingCandidateMap[pos.position_id] ?? ""}
+                    onChange={e => setAddingCandidateMap(prev => ({ ...prev, [pos.position_id]: e.target.value }))}
+                    style={selectStyle}
+                  >
+                    <option value="">Select candidate to add…</option>
+                    {avail.map(c => <option key={c.candidate_id} value={c.candidate_id}>{c.full_name}</option>)}
+                  </select>
+                  <Button variant="secondary" onClick={() => handleAddCandidate(pos.position_id)} disabled={!addingCandidateMap[pos.position_id]}>
+                    + Add Candidate
+                  </Button>
+                </div>
+              )}
+              {isDraft && isFull && (
+                <p style={{ margin: "10px 0 0", fontSize: "0.8rem", color: "#22c55e" }}>
+                  ✓ All {pos.candidate_count} slot(s) filled
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </section>
     </div>
   );
 }
 
-/* ── shared styles ─────────────────────────────────────────── */
-const cardStyle    = { background: "#fff", border: "1px solid #e5e7eb", borderRadius: 10, padding: "18px 20px", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" };
-const sectionTitle = { margin: "0 0 14px", fontSize: "0.9rem", fontWeight: 700, display: "flex", alignItems: "center", gap: 8 };
-const lockedLabel  = { fontSize: "0.68rem", fontWeight: 500, color: "#9ca3af", background: "#f3f4f6", border: "1px solid #e5e7eb", borderRadius: 4, padding: "1px 6px" };
-const candidateRow = { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 10px", borderRadius: 6, background: "#f9fafb", border: "1px solid #f3f4f6" };
-const selectStyle  = { border: "1px solid #d1d5db", borderRadius: 6, padding: "6px 9px", fontSize: "0.82rem", background: "#fff" };
+const cardStyle    = { background: "#fff", border: "1px solid #e5e7eb", borderRadius: 10, padding: "20px 24px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" };
+const sectionTitle = { margin: "0 0 16px", fontSize: "0.95rem", fontWeight: 700, display: "flex", alignItems: "center", gap: 8 };
+const lockedLabel  = { fontSize: "0.72rem", fontWeight: 500, color: "#9ca3af", background: "#f3f4f6", border: "1px solid #e5e7eb", borderRadius: 4, padding: "1px 6px" };
+const candidateRow = { display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 12px", borderRadius: 6, background: "#f9fafb", border: "1px solid #f3f4f6" };
+const selectStyle  = { border: "1px solid #d1d5db", borderRadius: 6, padding: "6px 10px", fontSize: "0.875rem", background: "#fff", minWidth: 220 };

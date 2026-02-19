@@ -76,6 +76,33 @@ class VoteRepository {
             connection.release();
         }
     }
+
+    async getElectionPositionRule(electionId, positionId) {
+
+        const [rows] = await this.slaveDb.query(`
+            SELECT *
+            FROM election_positions
+            WHERE election_id = ?
+            AND position_id = ?
+        `, [electionId, positionId]);
+
+        return rows[0];
+    }
+
+    async getElectionCandidate(electionId, positionId, candidateId) {
+
+        const [rows] = await this.slaveDb.query(`
+            SELECT *
+            FROM election_candidates
+            WHERE election_id = ?
+            AND position_id = ?
+            AND candidate_id = ?
+        `, [electionId, positionId, candidateId]);
+
+        return rows[0];
+    }
+
+
 }
 
 module.exports = VoteRepository;

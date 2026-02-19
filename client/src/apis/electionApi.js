@@ -27,4 +27,14 @@ export const electionApi = {
     const { data } = await mainApi.delete(`${base}/${id}`);
     return data;
   },
+  getPublic: async () => {
+    const { data } = await mainApi.get(`${base}/public`);
+    return data;
+  },
+
+  getPublicById: async (id) => {
+    const { data } = await mainApi.get(`${base}/public/${id}`);
+    return data;
+  },
+
 };

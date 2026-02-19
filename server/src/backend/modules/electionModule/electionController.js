@@ -86,7 +86,28 @@ class ElectionController {
     }
   }
 
+  // ======================
+  // VOTER ENDPOINTS
+  // ======================
 
+  async listPublic(req, res) {
+    try {
+      const elections = await this.service.listPublicElections();
+      res.json(elections);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
+  async getPublicById(req, res) {
+    try {
+      const { electionId } = req.params;
+      const election = await this.service.getPublicElectionById(electionId);
+      res.json(election);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
 }
 
 module.exports = ElectionController;
