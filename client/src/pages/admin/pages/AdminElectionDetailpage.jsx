@@ -7,15 +7,15 @@ import { electionTrackingApi } from "../../../apis/electionTrackingApi";
 import { positionApi } from "../../../apis/positionApi";
 import { getAllCandidates } from "../../../apis/candidateApi";
 import Button from "../../../components/Button";
+import { joinElectionRoom, leaveElectionRoom, onVoteUpdated } from "../../../sockets/socket";
 import "../../../css/admin/AdminPage.css";
 
-const POLL_INTERVAL = 5000;
-const CHART_HEIGHT  = 220;
+const CHART_HEIGHT = 220;
 
 const BAR_COLORS = [
-  "#f59e0b", // 1st — gold
-  "#94a3b8", // 2nd — silver
-  "#b45309", // 3rd — bronze
+  "#f59e0b",
+  "#94a3b8",
+  "#b45309",
   "#38bdf8",
   "#818cf8",
   "#34d399",
@@ -68,7 +68,7 @@ function EditableField({ label, name, value, type = "text", onChange, disabled }
   );
 }
 
-// ─── Vertical bar chart for one position ─────────────────────────────────────
+// ─── Vertical bar chart ───────────────────────────────────────────────────────
 function PositionBarChart({ position }) {
   const maxVotes = Math.max(...position.candidates.map(c => c.vote_count), 1);
   const total    = position.candidates.reduce((s, c) => s + c.vote_count, 0);
@@ -81,19 +81,16 @@ function PositionBarChart({ position }) {
       background: SURFACE, border: `1px solid ${BORDER}`,
       borderRadius: 12, padding: "18px 20px 0", flex: "1 1 300px", minWidth: 260,
     }}>
-      {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 16 }}>
         <span style={{ fontSize: "0.9rem", fontWeight: 800, color: TEXT }}>{position.position_name}</span>
         <span style={{ fontSize: "0.7rem", color: MUTED }}>{total} vote{total !== 1 ? "s" : ""} · top {position.winners_count} win</span>
       </div>
 
-      {/* Bars */}
       <div style={{
         display: "flex", alignItems: "flex-end", justifyContent: "center",
         gap, height: CHART_HEIGHT,
         borderBottom: `2px solid ${BORDER}`, position: "relative",
       }}>
-        {/* Grid lines */}
         {[25, 50, 75].map(pct => (
           <div key={pct} style={{
             position: "absolute", left: 0, right: 0, bottom: `${pct}%`,
@@ -106,14 +103,12 @@ function PositionBarChart({ position }) {
           const barH      = Math.max((heightPct / 100) * CHART_HEIGHT, c.vote_count > 0 ? 8 : 2);
           const isWinning = c.is_leading;
           const color     = BAR_COLORS[idx] ?? BAR_COLORS[BAR_COLORS.length - 1];
-          const sharePct  = total > 0 ? ((c.vote_count / total) * 100).toFixed(1) : "0.0";
 
           return (
             <div key={c.candidate_id} style={{
               display: "flex", flexDirection: "column", alignItems: "center",
               justifyContent: "flex-end", width: colW, height: "100%", position: "relative",
             }}>
-              {/* Star */}
               {isWinning && (
                 <div style={{
                   position: "absolute", bottom: barH + 8,
@@ -124,8 +119,6 @@ function PositionBarChart({ position }) {
                   ⭐
                 </div>
               )}
-
-              {/* Vote count above bar */}
               {c.vote_count > 0 && (
                 <div style={{
                   position: "absolute",
@@ -137,8 +130,6 @@ function PositionBarChart({ position }) {
                   {c.vote_count}
                 </div>
               )}
-
-              {/* Bar */}
               <div style={{
                 width: "100%", height: barH,
                 background: `linear-gradient(to top, ${color}bb, ${color})`,
@@ -158,20 +149,14 @@ function PositionBarChart({ position }) {
         })}
       </div>
 
-      {/* X-axis labels */}
-      <div style={{
-        display: "flex", justifyContent: "center", gap,
-        paddingTop: 10, paddingBottom: 14,
-      }}>
+      <div style={{ display: "flex", justifyContent: "center", gap, paddingTop: 10, paddingBottom: 14 }}>
         {sorted.map((c, idx) => {
           const isWinning = c.is_leading;
           const color     = BAR_COLORS[idx] ?? BAR_COLORS[BAR_COLORS.length - 1];
           const isTied    = sorted.filter(x => x.vote_count === c.vote_count && c.vote_count > 0).length > 1;
 
           return (
-            <div key={c.candidate_id} style={{
-              width: colW, display: "flex", flexDirection: "column", alignItems: "center", gap: 4,
-            }}>
+            <div key={c.candidate_id} style={{ width: colW, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
               <div style={{
                 width: 22, height: 22, borderRadius: "50%",
                 border: `2px solid ${color}`,
@@ -211,12 +196,13 @@ function PositionBarChart({ position }) {
   );
 }
 
-// ─── Live tracking section ─────────────────────────────────────────────────────
+// ─── Live tracking section ────────────────────────────────────────────────────
+// ✅ Now uses Socket.IO instead of polling interval
 function LiveTrackingSection({ electionId }) {
   const [data,        setData]        = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [error,       setError]       = useState(null);
-  const intervalRef = useRef(null);
+  const [connected,   setConnected]   = useState(false);
 
   const fetchLive = async () => {
     try {
@@ -231,9 +217,26 @@ function LiveTrackingSection({ electionId }) {
   };
 
   useEffect(() => {
+    // 1️⃣ Initial fetch
     fetchLive();
-    intervalRef.current = setInterval(fetchLive, POLL_INTERVAL);
-    return () => clearInterval(intervalRef.current);
+
+    // 2️⃣ Join Socket.IO room for this election
+    joinElectionRoom(electionId);
+    setConnected(true);
+
+    // 3️⃣ Listen for vote:updated — re-fetch live data when a voter submits
+    const cleanup = onVoteUpdated((payload) => {
+      if (String(payload.electionId) === String(electionId)) {
+        fetchLive();
+      }
+    });
+
+    // 4️⃣ Cleanup on unmount
+    return () => {
+      cleanup();
+      leaveElectionRoom(electionId);
+      setConnected(false);
+    };
   }, [electionId]);
 
   return (
@@ -245,34 +248,47 @@ function LiveTrackingSection({ electionId }) {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <h4 style={{ margin: 0, fontSize: "1rem", fontWeight: 700, color: TEXT }}>Live Vote Tracking</h4>
+          {/* Live dot — green when socket connected, grey when not */}
           <span style={{ position: "relative", display: "inline-flex", width: 10, height: 10 }}>
             <style>{`@keyframes lv-ping{0%{transform:scale(1);opacity:.75}75%,100%{transform:scale(2.4);opacity:0}}`}</style>
-            <span style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#22c55e", animation: "lv-ping 1.5s ease-in-out infinite" }} />
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
+            {connected && (
+              <span style={{ position: "absolute", inset: 0, borderRadius: "50%", background: "#22c55e", animation: "lv-ping 1.5s ease-in-out infinite" }} />
+            )}
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: connected ? "#22c55e" : MUTED, display: "inline-block" }} />
+          </span>
+          <span style={{ fontSize: "0.68rem", color: connected ? "#22c55e" : MUTED, fontWeight: 500 }}>
+            {connected ? "Live" : "Disconnected"}
           </span>
         </div>
+
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           {data && (
             <span style={{ fontSize: "0.75rem", color: MUTED }}>
               <span style={{ color: "#22c55e", fontWeight: 700 }}>{data.total_submissions}</span> voter{data.total_submissions !== 1 ? "s" : ""} submitted
             </span>
           )}
-          {lastUpdated && <span style={{ fontSize: "0.68rem", color: MUTED }}>{lastUpdated.toLocaleTimeString()}</span>}
+          {lastUpdated && (
+            <span style={{ fontSize: "0.68rem", color: MUTED }}>
+              updated {lastUpdated.toLocaleTimeString()}
+            </span>
+          )}
           <button onClick={fetchLive} style={{
             background: "none", border: `1px solid ${BORDER}`, borderRadius: 6,
             padding: "3px 10px", fontSize: "0.72rem", cursor: "pointer", color: MUTED,
-          }}>↻ Refresh</button>
+          }}>
+            ↻ Refresh
+          </button>
         </div>
       </div>
+
       <p style={{ margin: "0 0 18px", fontSize: "0.68rem", color: MUTED }}>
-        Auto-refreshing every 5s · WebSocket upgrade coming
+        Updates instantly when a voter submits · manual refresh available
       </p>
 
-      {error   && <p style={{ color: "#f87171" }}>{error}</p>}
+      {error    && <p style={{ color: "#f87171" }}>{error}</p>}
       {!data && !error && <p style={{ color: MUTED, fontSize: "0.875rem" }}>Loading...</p>}
       {data?.positions?.length === 0 && <p style={{ color: MUTED }}>No positions found.</p>}
 
-      {/* Charts in a wrapping flex row — fills width naturally */}
       {data?.positions && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
           {data.positions.map(pos => (
@@ -421,7 +437,7 @@ export default function AdminElectionDetailPage() {
         <StatusBadge status={election.status} />
       </div>
 
-      {/* ── Info card ─────────────────────────────── */}
+      {/* ── Info card ── */}
       <section style={cardStyle}>
         <h4 style={sectionTitle}>
           Election Info
@@ -451,10 +467,10 @@ export default function AdminElectionDetailPage() {
         </div>
       </section>
 
-      {/* ── Live tracking — active only, sits right below info ── */}
+      {/* ── Live tracking — active elections only ── */}
       {isActive && <LiveTrackingSection electionId={electionId} />}
 
-      {/* ── Ballot positions ──────────────────────── */}
+      {/* ── Ballot positions ── */}
       <section style={{ marginTop: 28 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
           <h4 style={{ margin: 0, fontSize: "1rem", fontWeight: 700 }}>

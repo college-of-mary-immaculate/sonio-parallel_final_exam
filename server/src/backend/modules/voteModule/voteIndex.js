@@ -1,25 +1,19 @@
-// ===== voteIndex.js =====
 const VoteRepository = require("./voteRepository");
-const VoteService = require("./voteService");
+const VoteService    = require("./voteService");
 const VoteController = require("./voteController");
-const voteRoutes = require("./voteRoutes");
+const voteRoutes     = require("./voteRoutes");
 
-module.exports = ({ masterDb, slaveDb }, authMiddleware) => {
+// ── io is optional — only present when Socket.IO is set up ───────
+module.exports = ({ masterDb, slaveDb }, authMiddleware, { io } = {}) => {
 
-    const voteRepository = new VoteRepository({
-        masterDb,
-        slaveDb
-    });
+    const voteRepository = new VoteRepository({ masterDb, slaveDb });
 
-    const voteService = new VoteService(voteRepository);
+    // Pass io into service so it can emit after a successful submission
+    const voteService = new VoteService(voteRepository, { io });
 
     const voteController = new VoteController(voteService);
 
     const routes = voteRoutes(voteController, authMiddleware);
 
-    return {
-        routes,
-        voteService,
-        voteRepository
-    };
+    return { routes, voteService, voteRepository };
 };

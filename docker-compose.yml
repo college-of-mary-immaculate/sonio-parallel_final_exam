@@ -59,6 +59,19 @@ services:
       retries: 5
       start_period: 30s
 
+  # ── Redis — shared pub/sub bus for Socket.IO across all backends ──
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: always
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
   backend1:
     build:
       context: ./server
@@ -74,12 +87,17 @@ services:
       DB_NAME: voting_system
       DB_INIT: true
       JWT_SECRET: super_secret_key_change_this
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CLIENT_URL: http://localhost:5173
     depends_on:
       mysql_master:
         condition: service_healthy
       mysql_slave1:
         condition: service_healthy
       mysql_slave2:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     ports:
       - "3000:3000"
@@ -103,12 +121,17 @@ services:
       DB_PASS: 111
       DB_NAME: voting_system
       JWT_SECRET: super_secret_key_change_this
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CLIENT_URL: http://localhost:5173
     depends_on:
       mysql_master:
         condition: service_healthy
       mysql_slave1:
         condition: service_healthy
       mysql_slave2:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     ports:
       - "3001:3000"
@@ -132,12 +155,17 @@ services:
       DB_PASS: 111
       DB_NAME: voting_system
       JWT_SECRET: super_secret_key_change_this
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      CLIENT_URL: http://localhost:5173
     depends_on:
       mysql_master:
         condition: service_healthy
       mysql_slave1:
         condition: service_healthy
       mysql_slave2:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     ports:
       - "3002:3000"
@@ -168,7 +196,6 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
-
 
   client:
     build:

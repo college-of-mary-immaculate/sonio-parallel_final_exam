@@ -23,6 +23,9 @@ npm install jsonwebtoken
 # Live sync for docker
 npm install -g nodemon
 
+# websocket
+npm install socket.io
+
 
 
 

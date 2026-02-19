@@ -18,7 +18,8 @@ const electionTrackingModule  = require("../modules/electionTrackingModule/elect
 
 let container;
 
-async function buildContainer() {
+// ── io is passed in from bootstrap so voteModule can emit events ──
+async function buildContainer({ io } = {}) {
   if (container) return container;
 
   const masterDb = getMasterPool();
@@ -26,8 +27,8 @@ async function buildContainer() {
 
   const middlewares = { authMiddleware, roleMiddleware };
 
-  // base modules
-  const vote       = voteModule({ masterDb, slaveDb }, authMiddleware);
+  // base modules — pass io to voteModule so it can emit after submission
+  const vote       = voteModule({ masterDb, slaveDb }, authMiddleware, { io });
   const auth       = authModule({ slaveDb });
   const users      = userModule({ masterDb, slaveDb }, middlewares);
   const election   = electionModule({ masterDb, slaveDb }, middlewares);
@@ -55,8 +56,8 @@ async function buildContainer() {
   );
 
   const electionCandidateVoter = electionCandidateVoterModule(
-    electionCandidates.service, // reuse same service instance
-    middlewares                 // only authMiddleware will be used
+    electionCandidates.service,
+    middlewares
   );
 
   const electionTracking = electionTrackingModule(
@@ -77,8 +78,8 @@ async function buildContainer() {
       candidates,
       positions,
       electionPositions,
-      electionCandidates,       // admin routes
-      electionCandidateVoter,   // voter routes
+      electionCandidates,
+      electionCandidateVoter,
       electionTracking,
     },
   };

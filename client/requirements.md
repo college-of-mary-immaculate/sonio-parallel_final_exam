@@ -7,3 +7,6 @@ npm install react-router-dom axios
 # Install props
 npm install prop-types
 
+# Install web socket
+npm install socket.io-client
+

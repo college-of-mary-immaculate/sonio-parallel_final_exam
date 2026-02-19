@@ -1,17 +1,66 @@
 const express = require("express");
 const cors    = require("cors");
+const { Server } = require("socket.io");
+const { createAdapter } = require("@socket.io/redis-adapter");
+const { createClient }  = require("ioredis");
 
 const buildContainer = require("./backend/di/container");
 
-async function bootstrap() {
+async function bootstrap(httpServer) {
   const app = express();
 
   app.use(cors());
   app.use(express.json());
 
-  const container = await buildContainer();
+  // ── Attach Express to the http server ────────────────────────
+  httpServer.on("request", app);
 
-  // main routes
+  // ── Attach Socket.IO to the same http server ─────────────────
+  const io = new Server(httpServer, {
+    cors: {
+      origin: process.env.CLIENT_URL || "http://localhost:5173",
+      methods: ["GET", "POST"],
+      credentials: true,
+    },
+  });
+
+  // ── Redis adapter — syncs events across all backend instances ─
+  const REDIS_HOST = process.env.REDIS_HOST || "redis";
+  const REDIS_PORT = parseInt(process.env.REDIS_PORT || "6379");
+
+  const pubClient = createClient({ host: REDIS_HOST, port: REDIS_PORT });
+  const subClient = pubClient.duplicate();
+
+  pubClient.on("error", (err) => console.error("[redis] pub error:", err));
+  subClient.on("error", (err) => console.error("[redis] sub error:", err));
+
+  await Promise.all([pubClient.connect(), subClient.connect()]);
+  io.adapter(createAdapter(pubClient, subClient));
+
+  console.log(`[redis] adapter connected at ${REDIS_HOST}:${REDIS_PORT}`);
+
+  // ── Socket.IO connection handler ─────────────────────────────
+  io.on("connection", (socket) => {
+    console.log(`[ws] client connected: ${socket.id}`);
+
+    socket.on("join:election", (electionId) => {
+      socket.join(`election:${electionId}`);
+      console.log(`[ws] ${socket.id} joined election:${electionId}`);
+    });
+
+    socket.on("leave:election", (electionId) => {
+      socket.leave(`election:${electionId}`);
+    });
+
+    socket.on("disconnect", () => {
+      console.log(`[ws] client disconnected: ${socket.id}`);
+    });
+  });
+
+  // ── Build DI container — pass io so services can emit ────────
+  const container = await buildContainer({ io });
+
+  // ── Main routes ───────────────────────────────────────────────
   app.use("/api/auth",       container.modules.auth.routes);
   app.use("/api/users",      container.modules.users.routes);
   app.use("/api/votes",      container.modules.vote.routes);
@@ -19,18 +68,15 @@ async function bootstrap() {
   app.use("/api/candidates", container.modules.candidates.routes);
   app.use("/api/positions",  container.modules.positions.routes);
 
-  // nested election sub-routes (admin)
   app.use("/api/elections/:electionId/positions",  container.modules.electionPositions.routes);
   app.use("/api/elections/:electionId/candidates", container.modules.electionCandidates.routes);
   app.use("/api/elections/:electionId/tracking",   container.modules.electionTracking.routes);
 
-  // voter-accessible election candidates routes
   app.use(
     "/api/voters/elections/:electionId/candidates",
     container.modules.electionCandidateVoter
   );
 
-  // health checks
   app.get("/health", (req, res) => res.json({ status: "OK" }));
   app.get("/check",  (req, res) => res.json({ instance: process.env.HOSTNAME }));
 
