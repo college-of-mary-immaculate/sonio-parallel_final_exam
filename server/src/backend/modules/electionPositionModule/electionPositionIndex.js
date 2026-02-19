@@ -3,13 +3,12 @@ const ElectionPositionService = require("./electionPositionService");
 const electionPositionRoutes = require("./electionPositionRoutes");
 
 module.exports = ({ masterDb, slaveDb }, middlewares, dependencies) => {
-
   const repository = new ElectionPositionRepository({ masterDb, slaveDb });
 
-  const service = new ElectionPositionService(
-    repository,
-    dependencies.positionRepository // injected dependency
-  );
+  const service = new ElectionPositionService(repository, {
+    electionRepository: dependencies.electionRepository,
+    positionRepository: dependencies.positionRepository,
+  });
 
   const routes = electionPositionRoutes(service, middlewares);
 

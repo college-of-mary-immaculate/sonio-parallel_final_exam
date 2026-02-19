@@ -1,23 +1,25 @@
 import mainApi from "./mainApi";
 
-const ELECTION_POSITION_BASE = "/api/election-positions";
+const BASE = "/api/election-positions";
 
 export const electionPositionApi = {
-  // Get all positions configured for a specific election
+
   getByElection: async (electionId) => {
-    const res = await mainApi.get(`${ELECTION_POSITION_BASE}/elections/${electionId}`);
+    const res = await mainApi.get(`${BASE}/elections/${electionId}`);
     return res.data;
   },
 
-  // Add a position to an election
-  add: async (data) => {
-    const res = await mainApi.post(ELECTION_POSITION_BASE, data);
+  add: async (electionId, positionId) => {
+    const res = await mainApi.post(
+      `${BASE}/${positionId}/elections/${electionId}`
+    );
     return res.data;
   },
 
-  // Remove a position from an election
   remove: async (electionId, positionId) => {
-    const res = await mainApi.delete(`${ELECTION_POSITION_BASE}/${electionId}/${positionId}`);
+    const res = await mainApi.delete(
+      `${BASE}/${positionId}/elections/${electionId}`
+    );
     return res.data;
   }
 };

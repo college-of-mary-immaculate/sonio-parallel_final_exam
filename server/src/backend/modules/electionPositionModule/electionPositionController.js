@@ -1,5 +1,4 @@
 class ElectionPositionController {
-
   constructor(service) {
     this.service = service;
   }
@@ -7,14 +6,15 @@ class ElectionPositionController {
   async add(req, res) {
     try {
       const { electionId, positionId } = req.params;
+      const { candidate_count, winners_count, votes_per_voter } = req.body;
 
-      const result = await this.service.addPositionToElection(
-        electionId,
-        positionId
-      );
+      const result = await this.service.addPositionToElection(electionId, positionId, {
+        candidate_count,
+        winners_count,
+        votes_per_voter,
+      });
 
-      res.json(result);
-
+      res.status(201).json(result);
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
@@ -23,14 +23,8 @@ class ElectionPositionController {
   async remove(req, res) {
     try {
       const { electionId, positionId } = req.params;
-
-      const result = await this.service.removePositionFromElection(
-        electionId,
-        positionId
-      );
-
+      const result = await this.service.removePositionFromElection(electionId, positionId);
       res.json(result);
-
     } catch (err) {
       res.status(400).json({ error: err.message });
     }
@@ -39,11 +33,8 @@ class ElectionPositionController {
   async getByElection(req, res) {
     try {
       const { electionId } = req.params;
-
       const result = await this.service.getPositionsForElection(electionId);
-
       res.json(result);
-
     } catch (err) {
       res.status(400).json({ error: err.message });
     }

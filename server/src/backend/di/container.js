@@ -1,58 +1,69 @@
 const getMasterPool = require("../../database/db.master");
 const { getSlavePool } = require("../../database/db.slave");
 
-// middlewares
 const authMiddleware = require("../middlewares/authMiddleware");
 const roleMiddleware = require("../middlewares/roleMiddleware");
 
-// modules
-const voteModule              = require("../modules/voteModule/voteIndex");
-const authModule              = require("../modules/authModule/authIndex");
-const userModule              = require("../modules/userModule/userIndex");
-const electionModule          = require("../modules/electionModule/electionIndex");
-const candidateModule         = require("../modules/candidateModule/candidateIndex");
-const positionModule          = require("../modules/positionModule/positionIndex");
-const electionPositionModule  = require("../modules/electionPositionModule/electionPositionIndex");
+const voteModule             = require("../modules/voteModule/voteIndex");
+const authModule             = require("../modules/authModule/authIndex");
+const userModule             = require("../modules/userModule/userIndex");
+const electionModule         = require("../modules/electionModule/electionIndex");
+const candidateModule        = require("../modules/candidateModule/candidateIndex");
+const positionModule         = require("../modules/positionModule/positionIndex");
+const electionPositionModule = require("../modules/electionPositionModule/electionPositionIndex");
+const electionCandidateModule = require("../modules/electionCandidateModule/electionCandidateIndex");
 
 let container;
 
 async function buildContainer() {
-    if (container) return container;
+  if (container) return container;
 
-    const masterDb = getMasterPool();
-    const slaveDb  = getSlavePool();
+  const masterDb = getMasterPool();
+  const slaveDb  = getSlavePool();
 
-    // build modules
-    const vote       = voteModule({ masterDb, slaveDb }, authMiddleware);
-    const auth       = authModule({ slaveDb });
-    const users      = userModule({ masterDb, slaveDb });
-    const election   = electionModule({ masterDb, slaveDb }, { authMiddleware, roleMiddleware });
-    const candidates = candidateModule({ masterDb, slaveDb }, { authMiddleware, roleMiddleware });
-    const positions  = positionModule({ masterDb, slaveDb }, { authMiddleware, roleMiddleware });
+  const middlewares = { authMiddleware, roleMiddleware };
 
-    // ⭐ NEW MODULE
-    const electionPositions = electionPositionModule(
-        { masterDb, slaveDb },
-        { authMiddleware, roleMiddleware },
-        {
-            positionRepository: positions.repository // dependency injection
-        }
-    );
+  const vote       = voteModule({ masterDb, slaveDb }, authMiddleware);
+  const auth       = authModule({ slaveDb });
+  const users      = userModule({ masterDb, slaveDb });
+  const election   = electionModule({ masterDb, slaveDb }, middlewares);
+  const candidates = candidateModule({ masterDb, slaveDb }, middlewares);
+  const positions  = positionModule({ masterDb, slaveDb }, middlewares);
 
-    container = {
-        db: { masterDb, slaveDb },
-        modules: {
-            vote,
-            auth,
-            users,
-            election,
-            candidates,
-            positions,
-            electionPositions // ⭐ add here
-        }
-    };
+  const electionPositions = electionPositionModule(
+    { masterDb, slaveDb },
+    middlewares,
+    {
+      electionRepository: election.repository,   // ✅ was missing
+      positionRepository: positions.repository,
+    }
+  );
 
-    return container;
+  const electionCandidates = electionCandidateModule(
+    { masterDb, slaveDb },
+    middlewares,
+    {
+      electionRepository:  election.repository,
+      candidateRepository: candidates.repository,
+      positionRepository:  positions.repository,
+    }
+  );
+
+  container = {
+    db: { masterDb, slaveDb },
+    modules: {
+      vote,
+      auth,
+      users,
+      election,
+      candidates,
+      positions,
+      electionPositions,
+      electionCandidates,
+    },
+  };
+
+  return container;
 }
 
 module.exports = buildContainer;
