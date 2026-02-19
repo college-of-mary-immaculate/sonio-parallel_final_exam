@@ -70,14 +70,29 @@ class ElectionRepository {
       [title, start_date, end_date, created_by, status]
     );
 
-    const [rows] = await this.slaveDb.query(
+    // Read from master to avoid replication lag
+    const [rows] = await this.masterDb.query(
       `SELECT * FROM elections WHERE election_id = ?`,
       [result.insertId]
     );
 
-    // fallback if replication not yet caught up
-    return rows[0] ?? { election_id: result.insertId, title, start_date, end_date, created_by, status };
+    return rows[0]; // should now always have election_id
   }
+  async updateElection(electionId, { title, start_date, end_date, status }) {
+  await this.masterDb.query(
+    `UPDATE elections SET title = ?, start_date = ?, end_date = ?, status = ? WHERE election_id = ?`,
+    [title, start_date, end_date, status, electionId]
+  );
+
+  const [rows] = await this.slaveDb.query(
+    `SELECT * FROM elections WHERE election_id = ?`,
+    [electionId]
+  );
+
+  return rows[0] ?? { election_id: electionId, title, start_date, end_date, status };
+}
+
+
 
 }
 

@@ -51,6 +51,18 @@ class ElectionController {
       res.status(400).json({ error: err.message });
     }
   }
+
+  async updateElection(req, res) {
+    try {
+      const { electionId } = req.params;
+      const updatedData = req.body;
+      const election = await this.service.updateElection(electionId, updatedData);
+      res.json(election);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
 }
 
 module.exports = ElectionController;

@@ -45,6 +45,21 @@ class ElectionService {
     }
     return this.repo.insertElection({ title, start_date, end_date, created_by, status });
   }
+  async updateElection(electionId, data) {
+    const election = await this.repo.getElectionById(electionId);
+    if (!election) throw new Error("Election not found");
+
+    // Optional: prevent updating active/ended elections
+    if (election.status !== "draft") {
+      throw new Error("Only draft elections can be updated");
+    }
+
+    // Only allow specific fields to be updated
+    const { title, start_date, end_date, status } = data;
+
+    return this.repo.updateElection(electionId, { title, start_date, end_date, status });
+  }
+
 }
 
 module.exports = ElectionService;

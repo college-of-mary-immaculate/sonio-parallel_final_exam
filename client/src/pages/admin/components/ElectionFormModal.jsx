@@ -32,35 +32,29 @@ export default function ElectionFormModal({ election, onClose, onSaved }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSave = async () => {
+    const handleSave = async () => {
     try {
-      setSaving(true);
+        setSaving(true);
 
-      let savedElection;
+        let savedElection;
 
-      if (isEdit) {
-        alert("Editing elections is not yet supported!"); // or implement PUT backend
-        return;
-      } else {
-        // Call backend to create election
+        if (isEdit) {
+        // Call update endpoint instead of alert
+        savedElection = await electionApi.update(election.election_id, form);
+        } else {
         savedElection = await electionApi.create(form);
-
-        // Ensure backend returned a valid election_id
-        if (!savedElection?.election_id) {
-          throw new Error("Backend did not return a valid election ID");
         }
-      }
 
-      // Pass the full saved election to parent for table update
-      onSaved(savedElection);
-      onClose();
+        onSaved(savedElection);
+        onClose();
     } catch (err) {
-      console.error(err);
-      alert(err.response?.data?.error || err.message || "Save failed");
+        console.error(err);
+        alert(err.response?.data?.error || err.message || "Save failed");
     } finally {
-      setSaving(false);
+        setSaving(false);
     }
-  };
+    };
+
 
   return (
     <div className="modal-overlay">

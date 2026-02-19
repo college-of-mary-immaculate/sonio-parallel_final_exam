@@ -11,6 +11,12 @@ module.exports = (controller, middlewares) => {
 
   // Single POST route for creating elections
   router.post("/", authMiddleware, roleMiddleware(["admin"]), controller.createElection.bind(controller));
+  router.put(
+    "/:electionId",
+    authMiddleware,
+    roleMiddleware(["admin"]),
+    controller.updateElection.bind(controller)
+  );
 
   return router;
 };

@@ -15,8 +15,11 @@ export const electionApi = {
     const { data } = await mainApi.delete(`${base}/${id}`);
     return data;
   },
-  update: async (id, payload) => {
-    // Only implement if backend supports PUT
-    throw new Error("Update endpoint not yet implemented on backend");
-  },
+    update: async (id, payload) => {
+    const { data } = await mainApi.put(`${base}/${id}`, payload);
+    return data;
+    },
+
+
+
 };
