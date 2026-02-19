@@ -1,25 +1,27 @@
 import mainApi from "./mainApi";
 
-const BASE = "/api/election-positions";
+const base = (electionId) => `/api/elections/${electionId}/positions`;
 
 export const electionPositionApi = {
 
+  // GET /api/elections/:electionId/positions
   getByElection: async (electionId) => {
-    const res = await mainApi.get(`${BASE}/elections/${electionId}`);
-    return res.data;
+    const { data } = await mainApi.get(base(electionId));
+    return data;
   },
 
-  add: async (electionId, positionId) => {
-    const res = await mainApi.post(
-      `${BASE}/${positionId}/elections/${electionId}`
+  // POST /api/elections/:electionId/positions/:positionId
+  add: async (electionId, positionId, config) => {
+    const { data } = await mainApi.post(
+      `${base(electionId)}/${positionId}`,
+      config // { candidate_count, winners_count, votes_per_voter }
     );
-    return res.data;
+    return data;
   },
 
+  // DELETE /api/elections/:electionId/positions/:positionId
   remove: async (electionId, positionId) => {
-    const res = await mainApi.delete(
-      `${BASE}/${positionId}/elections/${electionId}`
-    );
-    return res.data;
-  }
+    const { data } = await mainApi.delete(`${base(electionId)}/${positionId}`);
+    return data;
+  },
 };
