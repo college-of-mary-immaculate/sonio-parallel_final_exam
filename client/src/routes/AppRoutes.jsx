@@ -3,6 +3,8 @@ import { useAuth } from "../context/AuthContext";
 
 import LoginPage from "../pages/LoginPage";
 import HomePage from "../pages/HomePage";
+import AdminCandidatesPage from "../pages/admin/AdminCandidatesPage";
+
 import ProtectedRoute from "./ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
 import Navbar from "../components/Navbar";
@@ -15,7 +17,7 @@ function AppRoutes() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Public routes wrapped in MainLayout WITHOUT navbar */}
+                {/* Public routes */}
                 <Route element={<MainLayout />}>
                     <Route
                         path="/login"
@@ -23,7 +25,7 @@ function AppRoutes() {
                     />
                 </Route>
 
-                {/* Protected routes wrapped in MainLayout WITH navbar */}
+                {/* Authenticated routes */}
                 <Route
                     element={
                         <ProtectedRoute>
@@ -32,9 +34,20 @@ function AppRoutes() {
                     }
                 >
                     <Route path="/" element={<HomePage />} />
-                    {/* Add more protected pages here */}
-                    {/* <Route path="dashboard" element={<Dashboard />} /> */}
-                    {/* <Route path="profile" element={<Profile />} /> */}
+                </Route>
+
+                {/* Admin-only routes */}
+                <Route
+                    element={
+                        <ProtectedRoute roles={["admin"]}>
+                            <MainLayout Navbar={Navbar} />
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route
+                        path="/admin/candidates"
+                        element={<AdminCandidatesPage />}
+                    />
                 </Route>
 
                 {/* Catch-all */}

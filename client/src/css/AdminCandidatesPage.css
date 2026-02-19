@@ -1,0 +1,103 @@
+/* ==========================================================
+   ADMINCANDIDATESPAGE.CSS — LEVEL 4: PAGE-SPECIFIC
+   Responsibility: Styling specific to AdminCandidatesPage
+   ✅ Uses role theme color variables
+   ❌ No hardcoded colors
+   ❌ No layout structure (handled by MainLayout.css)
+========================================================== */
+
+/* ── Page Wrapper ── */
+.admin-candidates-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Header Section ── */
+.admin-candidates-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-candidates-page .page-header h2 {
+  margin: 0;
+}
+
+/* ── Table Wrapper (optional scroll for small screens) ── */
+.admin-candidates-page table {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+/* Improve row spacing */
+.admin-candidates-page th,
+.admin-candidates-page td {
+  vertical-align: middle;
+}
+
+/* Muted text style for empty or loading states */
+.admin-candidates-page p {
+  color: var(--text-muted);
+}
+
+/* ── Actions Column ── */
+.admin-candidates-page td:last-child {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Hover refinement (keeps theme consistency) ── */
+.admin-candidates-page tbody tr:hover td {
+  background-color: var(--accent-color);
+}
+
+/* ── Responsive Improvements ── */
+@media (max-width: 768px) {
+
+  .admin-candidates-page table,
+  .admin-candidates-page thead,
+  .admin-candidates-page tbody,
+  .admin-candidates-page th,
+  .admin-candidates-page td,
+  .admin-candidates-page tr {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-candidates-page thead {
+    display: none;
+  }
+
+  .admin-candidates-page tr {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+  }
+
+  .admin-candidates-page td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    border-bottom: none;
+  }
+
+  .admin-candidates-page td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .admin-candidates-page td:last-child {
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+}
