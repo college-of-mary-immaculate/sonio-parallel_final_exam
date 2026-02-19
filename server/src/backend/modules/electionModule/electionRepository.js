@@ -79,18 +79,20 @@ class ElectionRepository {
     return rows[0]; // should now always have election_id
   }
   async updateElection(electionId, { title, start_date, end_date, status }) {
-  await this.masterDb.query(
-    `UPDATE elections SET title = ?, start_date = ?, end_date = ?, status = ? WHERE election_id = ?`,
-    [title, start_date, end_date, status, electionId]
-  );
+    await this.masterDb.query(
+      `UPDATE elections SET title = ?, start_date = ?, end_date = ?, status = ? WHERE election_id = ?`,
+      [title, start_date, end_date, status, electionId]
+    );
 
-  const [rows] = await this.slaveDb.query(
-    `SELECT * FROM elections WHERE election_id = ?`,
-    [electionId]
-  );
+    // Read from master to guarantee latest data
+    const [rows] = await this.masterDb.query(
+      `SELECT * FROM elections WHERE election_id = ?`,
+      [electionId]
+    );
 
-  return rows[0] ?? { election_id: electionId, title, start_date, end_date, status };
-}
+    return rows[0]; // always return full updated object
+  }
+
 
 
 

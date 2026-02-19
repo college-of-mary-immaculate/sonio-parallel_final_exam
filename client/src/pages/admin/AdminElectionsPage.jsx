@@ -128,11 +128,24 @@ export default function AdminElectionsPage() {
 
       {/* Modal */}
       {modalOpen && (
-        <ElectionFormModal
-          election={editingElection}
-          onClose={() => setModalOpen(false)}
-          onSaved={handleSaved}
-        />
+<ElectionFormModal
+  election={editingElection}
+  onSaved={(savedElection) => {
+    if (!savedElection) return setModalOpen(false); // cancel
+
+    setElections((prev) => {
+      const exists = prev.some(e => e.election_id === savedElection.election_id);
+      const updated = exists
+        ? prev.map(e => e.election_id === savedElection.election_id ? savedElection : e)
+        : [...prev, savedElection];
+
+      return updated.slice().sort((a, b) => (a.election_id ?? 0) - (b.election_id ?? 0));
+    });
+
+    setModalOpen(false); // close modal
+  }}
+/>
+
       )}
     </div>
   );

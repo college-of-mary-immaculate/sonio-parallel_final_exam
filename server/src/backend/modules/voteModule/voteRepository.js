@@ -1,23 +1,27 @@
 class VoteRepository {
     constructor({ masterDb, slaveDb }) {
-        this.masterDb = masterDb; // writes
-        this.slaveDb = slaveDb;   // reads
+        this.masterDb = masterDb;
+        this.slaveDb = slaveDb;
     }
 
-    // =============================
-    // READS → SLAVE
-    // =============================
+    getReadDb({ forceMaster = false } = {}) {
+        return forceMaster ? this.masterDb : this.slaveDb;
+    }
 
-    async getElectionById(electionId) {
-        const [rows] = await this.slaveDb.query(
+    async getElectionById(electionId, { forceMaster = false } = {}) {
+        const db = this.getReadDb({ forceMaster });
+
+        const [rows] = await db.query(
             `SELECT * FROM elections WHERE election_id = ?`,
             [electionId]
         );
         return rows[0];
     }
 
-    async hasVoterSubmitted(electionId, voterId) {
-        const [rows] = await this.slaveDb.query(
+    async hasVoterSubmitted(electionId, voterId, { forceMaster = false } = {}) {
+        const db = this.getReadDb({ forceMaster });
+
+        const [rows] = await db.query(
             `
             SELECT submission_id
             FROM voter_submissions
@@ -26,12 +30,9 @@ class VoteRepository {
             `,
             [electionId, voterId]
         );
+
         return rows.length > 0;
     }
-
-    // =============================
-    // WRITES → MASTER
-    // =============================
 
     async insertVotes(connection, votes) {
         const values = votes.map(v => [
@@ -62,10 +63,6 @@ class VoteRepository {
         );
     }
 
-    // =============================
-    // TRANSACTION (MASTER ONLY)
-    // =============================
-
     async withTransaction(callback) {
         const connection = await this.masterDb.getConnection();
         try {
@@ -79,23 +76,6 @@ class VoteRepository {
             connection.release();
         }
     }
-
-    async hasVoterSubmitted(electionId, voterId, options = {}) {
-        const db = options.useMaster ? this.masterDb : this.slaveDb;
-
-        const [rows] = await db.query(
-            `
-            SELECT submission_id
-            FROM voter_submissions
-            WHERE election_id = ?
-            AND voter_id = ?
-            `,
-            [electionId, voterId]
-        );
-
-        return rows.length > 0;
-    }
-
 }
 
 module.exports = VoteRepository;

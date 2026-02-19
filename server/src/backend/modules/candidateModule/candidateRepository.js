@@ -8,11 +8,21 @@ class CandidateRepository {
   }
 
   // =========================
+  // INTERNAL HELPERS
+  // =========================
+
+  getReadDb({ forceMaster = false } = {}) {
+    return forceMaster ? this.masterDb : this.slaveDb;
+  }
+
+  // =========================
   // READ OPERATIONS
   // =========================
 
-  async getAllCandidates() {
-    const [rows] = await this.slaveDb.query(`
+  async getAllCandidates({ forceMaster = false } = {}) {
+    const db = this.getReadDb({ forceMaster });
+
+    const [rows] = await db.query(`
       SELECT *
       FROM candidates
       ORDER BY full_name ASC
@@ -21,8 +31,10 @@ class CandidateRepository {
     return rows;
   }
 
-  async getCandidateById(candidateId) {
-    const [rows] = await this.slaveDb.query(
+  async getCandidateById(candidateId, { forceMaster = false } = {}) {
+    const db = this.getReadDb({ forceMaster });
+
+    const [rows] = await db.query(
       `SELECT * FROM candidates WHERE candidate_id = ?`,
       [candidateId]
     );
@@ -33,8 +45,10 @@ class CandidateRepository {
   /**
    * Returns election usage summary for business rules
    */
-  async getCandidateElectionUsage(candidateId) {
-    const [rows] = await this.slaveDb.query(
+  async getCandidateElectionUsage(candidateId, { forceMaster = false } = {}) {
+    const db = this.getReadDb({ forceMaster });
+
+    const [rows] = await db.query(
       `
       SELECT e.status, COUNT(*) as count
       FROM election_candidates ec

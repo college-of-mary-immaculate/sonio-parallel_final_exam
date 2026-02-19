@@ -1,22 +1,21 @@
 import { useEffect, useState } from "react";
-import "../../css/admin/AdminPage.css";           // ← shared admin base
-import "../../css/admin/AdminPositionsPage.css";  // ← page-specific overrides
+import "../../css/admin/AdminPage.css";           // shared admin base
+import "../../css/admin/AdminPositionsPage.css";  // page-specific overrides
 import Button from "../../components/Button";
 import PositionFormModal from "./components/PositionFormModal";
 import { positionApi } from "../../apis/positionApi";
 
 export default function AdminPositionsPage() {
-  const [positions, setPositions]   = useState([]);
-  const [loading, setLoading]       = useState(true);
+  const [positions, setPositions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [editingPosition, setEditingPosition] = useState(null);
-  const [modalOpen, setModalOpen]   = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const fetchPositions = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const data   = await positionApi.getAll();
-      const sorted = data.slice().sort((a, b) => a.position_id - b.position_id);
-      setPositions(sorted);
+      const data = await positionApi.getAll();
+      setPositions(data.slice().sort((a, b) => a.position_id - b.position_id));
     } catch (err) {
       console.error(err);
     } finally {
@@ -24,9 +23,14 @@ export default function AdminPositionsPage() {
     }
   };
 
-  useEffect(() => { fetchPositions(); }, []);
+  useEffect(() => {
+    fetchPositions();
+  }, []);
 
-  const handleEdit   = (position) => { setEditingPosition(position); setModalOpen(true); };
+  const handleEdit = (position) => {
+    setEditingPosition(position);
+    setModalOpen(true);
+  };
 
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this position?")) return;
@@ -39,21 +43,16 @@ export default function AdminPositionsPage() {
     }
   };
 
-  const handleSaved = (savedPosition) => {
-    setPositions(prev => {
-      const exists  = prev.find(p => p.position_id === savedPosition.position_id);
-      const updated = exists
-        ? prev.map(p => p.position_id === savedPosition.position_id ? savedPosition : p)
-        : [...prev, savedPosition];
-      return updated.slice().sort((a, b) => a.position_id - b.position_id);
-    });
+  const handleSaved = () => {
+    // Backend returns the latest, so simply refetch
+    fetchPositions();
     setModalOpen(false);
   };
 
   return (
     <div className="admin-page admin-positions-page">
 
-      {/* ── Header ── */}
+      {/* Header */}
       <div className="page-header">
         <h2>Position Management</h2>
         <Button onClick={() => { setEditingPosition(null); setModalOpen(true); }}>
@@ -61,7 +60,7 @@ export default function AdminPositionsPage() {
         </Button>
       </div>
 
-      {/* ── Table ── */}
+      {/* Table */}
       {loading ? (
         <p className="page-empty">Loading positions...</p>
       ) : (
@@ -82,7 +81,7 @@ export default function AdminPositionsPage() {
                 <td data-label="Description">{pos.description}</td>
                 <td data-label="Actions">
                   <Button variant="secondary" onClick={() => handleEdit(pos)}>Edit</Button>
-                  <Button variant="danger"    onClick={() => handleDelete(pos.position_id)}>Delete</Button>
+                  <Button variant="danger" onClick={() => handleDelete(pos.position_id)}>Delete</Button>
                 </td>
               </tr>
             ))}
@@ -90,7 +89,7 @@ export default function AdminPositionsPage() {
         </table>
       )}
 
-      {/* ── Modal ── */}
+      {/* Modal */}
       {modalOpen && (
         <PositionFormModal
           isOpen={modalOpen}

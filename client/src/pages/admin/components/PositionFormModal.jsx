@@ -19,21 +19,14 @@ export default function PositionFormModal({ isOpen, onClose, position, onSaved }
   }, [position]);
 
   const handleSave = async () => {
+    setSaving(true);
     try {
-      setSaving(true);
-
-      let savedPosition;
       if (position) {
-        // update returns the updated object
-        savedPosition = await positionApi.update(position.position_id, { name, description });
+        await positionApi.update(position.position_id, { name, description });
       } else {
-        // create returns the new object with position_id
-        savedPosition = await positionApi.create({ name, description });
+        await positionApi.create({ name, description });
       }
-
-      // Pass the saved object back to parent for instant update
-      onSaved(savedPosition);
-      onClose();
+      onSaved();  // parent will refetch from master
     } catch (err) {
       console.error("Save failed:", err);
       alert(err.response?.data?.error || err.message);

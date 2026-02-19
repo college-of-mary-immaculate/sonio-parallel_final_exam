@@ -3,18 +3,17 @@ import Button from "../../../components/Button";
 import { electionApi } from "../../../apis/electionApi";
 import "../../../css/components/CandidateFormModal.css";
 
-export default function ElectionFormModal({ election, onClose, onSaved }) {
+export default function ElectionFormModal({ election, onSaved }) {
   const isEdit = !!election;
   const [form, setForm] = useState({
     title: "",
     start_date: "",
     end_date: "",
     status: "draft",
-    created_by: 1, // default admin
+    created_by: 1,
   });
   const [saving, setSaving] = useState(false);
 
-  // Populate form if editing
   useEffect(() => {
     if (election) {
       setForm({
@@ -32,36 +31,27 @@ export default function ElectionFormModal({ election, onClose, onSaved }) {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-    const handleSave = async () => {
+  const handleSave = async () => {
     try {
-        setSaving(true);
+      setSaving(true);
+      const savedElection = isEdit
+        ? await electionApi.update(election.election_id, form)
+        : await electionApi.create(form);
 
-        let savedElection;
-
-        if (isEdit) {
-        // Call update endpoint and get the updated record
-        savedElection = await electionApi.update(election.election_id, form);
-        } else {
-        savedElection = await electionApi.create(form);
-        }
-
-        // Optimistically update the list in parent
-        onSaved(savedElection);
-
-        // Close modal
-        onClose();
+      // Pass saved record to parent for state update & modal close
+      onSaved(savedElection);
     } catch (err) {
-        console.error(err);
-        alert(err.response?.data?.error || err.message || "Save failed");
+      console.error(err);
+      alert(err.response?.data?.error || err.message || "Save failed");
     } finally {
-        setSaving(false);
+      setSaving(false);
     }
-    };
+  };
 
   return (
     <div className="modal-overlay">
       <div className="modal">
-        <h3>{isEdit ? "Edit Election (disabled)" : "Create Election"}</h3>
+        <h3>{isEdit ? "Edit Election" : "Create Election"}</h3>
 
         <label>
           Title
@@ -106,7 +96,7 @@ export default function ElectionFormModal({ election, onClose, onSaved }) {
         </label>
 
         <div className="modal-actions">
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={() => onSaved(null)}>
             Cancel
           </Button>
           <Button variant="primary" onClick={handleSave} disabled={saving}>
