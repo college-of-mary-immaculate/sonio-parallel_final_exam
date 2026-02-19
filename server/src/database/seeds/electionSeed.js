@@ -1,4 +1,3 @@
-// ===== File: ../../seeds/electionSeed.js =====
 module.exports = async (db) => {
     console.log("Seeding elections with positions and candidates...");
 
@@ -28,7 +27,7 @@ module.exports = async (db) => {
         );
         const electionId = result.insertId;
 
-        // Keep track of candidates already assigned in this election
+        // Track candidates already assigned in this election
         const usedCandidateIds = new Set();
 
         for (const [posName, posId] of Object.entries(positionIds)) {
@@ -43,12 +42,10 @@ module.exports = async (db) => {
                 [electionId, posId, candidateCount, winnersCount, votesPerVoter]
             );
 
-            // Assign candidates without repeating
+            // Assign candidates to this position without repeating in same election
             let assigned = 0;
-            let idx = 0;
-            while (assigned < candidateCount && idx < candidateIds.length) {
-                const candidateId = candidateIds[idx];
-                idx++;
+            for (const candidateId of candidateIds) {
+                if (assigned >= candidateCount) break;
                 if (!usedCandidateIds.has(candidateId)) {
                     await db.query(
                         `INSERT INTO election_candidates 
@@ -67,5 +64,5 @@ module.exports = async (db) => {
         }
     }
 
-    console.log("Elections seeded with positions and candidates (unique per election).");
+    console.log("Elections seeded with positions and unique candidates per election.");
 };

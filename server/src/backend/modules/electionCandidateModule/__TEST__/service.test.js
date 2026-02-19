@@ -37,6 +37,7 @@ describe("ElectionCandidateService", () => {
     mockCandidateRepo.getCandidateById.mockResolvedValue({ candidate_id: 3 });
     mockRepo.candidateExistsInPosition.mockResolvedValue(false);
     mockRepo.countCandidatesForPosition.mockResolvedValue(0);
+    mockRepo.getCandidatesForElection.mockResolvedValue([]); // ✅ fix
     mockRepo.addCandidateToElection.mockResolvedValue({ success: true });
 
     const result = await service.addCandidate(1, 2, 3);
@@ -71,8 +72,21 @@ describe("ElectionCandidateService", () => {
     mockPositionRepo.getPositionsForElection.mockResolvedValue([{ position_id: 2, candidate_count: 2 }]);
     mockCandidateRepo.getCandidateById.mockResolvedValue({ candidate_id: 3 });
     mockRepo.candidateExistsInPosition.mockResolvedValue(true);
+    mockRepo.getCandidatesForElection.mockResolvedValue([]); // ✅ fix
 
     await expect(service.addCandidate(1, 2, 3)).rejects.toThrow("Candidate already assigned to this position");
+  });
+
+  test("should throw if candidate already exists in another position", async () => {
+    mockElectionRepo.getElectionById.mockResolvedValue({ election_id: 1, status: "draft" });
+    mockPositionRepo.getPositionsForElection.mockResolvedValue([{ position_id: 2, candidate_count: 2 }]);
+    mockCandidateRepo.getCandidateById.mockResolvedValue({ candidate_id: 3 });
+    mockRepo.candidateExistsInPosition.mockResolvedValue(false);
+    mockRepo.getCandidatesForElection.mockResolvedValue([{ candidate_id: 3 }]); // ✅ simulate already exists elsewhere
+
+    await expect(service.addCandidate(1, 2, 3)).rejects.toThrow(
+      "Candidate is already assigned to another position in this election"
+    );
   });
 
   test("should throw if candidate_count exceeded", async () => {
@@ -81,6 +95,7 @@ describe("ElectionCandidateService", () => {
     mockCandidateRepo.getCandidateById.mockResolvedValue({ candidate_id: 3 });
     mockRepo.candidateExistsInPosition.mockResolvedValue(false);
     mockRepo.countCandidatesForPosition.mockResolvedValue(1);
+    mockRepo.getCandidatesForElection.mockResolvedValue([]); // ✅ fix
 
     await expect(service.addCandidate(1, 2, 3))
       .rejects.toThrow("Position already has the maximum 1 candidate(s)");
