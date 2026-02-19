@@ -75,6 +75,18 @@ class ElectionController {
   }
 
 
+  async getById(req, res) {
+    try {
+      const { electionId } = req.params;
+      const election = await this.service.getById(electionId);
+      if (!election) return res.status(404).json({ error: "Election not found" });
+      res.json(election);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
+
 }
 
 module.exports = ElectionController;

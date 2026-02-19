@@ -18,5 +18,13 @@ module.exports = (controller, middlewares) => {
     controller.deleteElection.bind(controller) // you will implement this in your controller
   );
 
+  router.get(
+    "/:electionId",
+    authMiddleware,
+    roleMiddleware(["admin"]),
+    controller.getById.bind(controller)
+  );
+
+
   return router;
 };

@@ -60,6 +60,13 @@ class ElectionService {
     return this.repo.updateElection(electionId, { title, start_date, end_date, status });
   }
 
+  async getById(electionId) {
+    const election = await this.repo.getElectionById(electionId);
+    if (!election) throw new Error("Election not found");
+    return election;
+  }
+
+
   async deleteElection(electionId) {
     const election = await this.repo.getElectionById(electionId);
     if (!election) throw new Error("Election not found");
