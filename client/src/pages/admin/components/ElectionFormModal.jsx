@@ -39,13 +39,16 @@ export default function ElectionFormModal({ election, onClose, onSaved }) {
         let savedElection;
 
         if (isEdit) {
-        // Call update endpoint instead of alert
+        // Call update endpoint and get the updated record
         savedElection = await electionApi.update(election.election_id, form);
         } else {
         savedElection = await electionApi.create(form);
         }
 
+        // Optimistically update the list in parent
         onSaved(savedElection);
+
+        // Close modal
         onClose();
     } catch (err) {
         console.error(err);
@@ -54,7 +57,6 @@ export default function ElectionFormModal({ election, onClose, onSaved }) {
         setSaving(false);
     }
     };
-
 
   return (
     <div className="modal-overlay">

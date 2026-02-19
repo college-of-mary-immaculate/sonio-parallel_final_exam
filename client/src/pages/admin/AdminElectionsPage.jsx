@@ -55,18 +55,18 @@ export default function AdminElectionsPage() {
       alert(err.response?.data?.error || "Delete failed");
     }
   };
-
-  const handleSaved = (savedElection) => {
+    const handleSaved = (savedElection) => {
     setElections((prev) => {
-      const exists = prev.find((e) => e.election_id === savedElection.election_id);
-      return exists
-        ? prev.map((e) =>
-            e.election_id === savedElection.election_id ? savedElection : e
-          )
+        const updated = prev.some(e => e.election_id === savedElection.election_id)
+        ? prev.map(e => e.election_id === savedElection.election_id ? savedElection : e)
         : [...prev, savedElection];
+
+        return updated.slice().sort((a, b) => (a.election_id ?? 0) - (b.election_id ?? 0));
     });
     setModalOpen(false);
-  };
+    };
+
+
 
   return (
     <div className="admin-page admin-elections-page">
