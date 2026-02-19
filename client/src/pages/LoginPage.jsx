@@ -1,4 +1,4 @@
-import "../css/LoginPage.css";
+import "../css/pages/LoginPage.css";
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";

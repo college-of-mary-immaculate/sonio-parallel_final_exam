@@ -1,4 +1,4 @@
-import "../css/Button.css";
+import "../css/components/Button.css";
 import PropTypes from "prop-types";
 
 /**

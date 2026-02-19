@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import Button from "../../components/Button";
+import Button from "../../../components/Button";
 import {
   createCandidate,
   updateCandidate,
-} from "../../apis/candidateApi";
+} from "../../../apis/candidateApi";
+import "../../../css/components/CandidateFormModal.css";
 
 export default function CandidateFormModal({
   candidate,

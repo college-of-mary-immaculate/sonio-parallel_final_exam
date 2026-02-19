@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import "../css/MainLayout.css"; // your layout CSS
+import "../css/layouts/MainLayout.css"; // your layout CSS
 
 /**
  * MainLayout can optionally accept a Navbar component

@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import "../../css/AdminCandidatesPage.css";
+import "../../css/admin/AdminCandidatesPage.css";
 import Button from "../../components/Button";
 import {
   getAllCandidates,
   deleteCandidate,
 } from "../../apis/candidateApi";
-import CandidateFormModal from "./CandidateFormModal";
+import CandidateFormModal from "./components/CandidateFormModal";
 
 export default function AdminCandidatesPage() {
   const [candidates, setCandidates] = useState([]);

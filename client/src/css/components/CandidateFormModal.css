@@ -1,0 +1,94 @@
+/* ==========================================================
+   CANDIDATEFORMMODAL.CSS — LEVEL 4: COMPONENT-SPECIFIC
+   Responsibility: Styling for CandidateFormModal only
+   ✅ Uses role theme variables
+   ❌ No hardcoded colors
+========================================================== */
+
+/* ── Overlay ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  z-index: 2000;
+
+  background-color: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(3px);
+}
+
+/* ── Modal Container ── */
+.modal {
+  width: 100%;
+  max-width: 600px;
+  background-color: var(--surface-color);
+  border-radius: var(--border-radius);
+  border: 1px solid var(--border-color);
+  padding: 1.75rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+
+  animation: modalFadeIn 0.18s ease-out;
+}
+
+/* ── Title ── */
+.modal h3 {
+  margin-bottom: 1.25rem;
+  color: var(--primary-color);
+}
+
+/* ── Form spacing refinement ── */
+.modal form {
+  gap: 0.9rem;
+}
+
+/* ── Textarea refinement ── */
+.modal textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+/* ── Input focus enhancement (inherits AdminGlobal focus) ── */
+.modal input:focus,
+.modal textarea:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 3px var(--accent-color);
+}
+
+/* ── Actions ── */
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ── Simple fade animation ── */
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Responsive ── */
+@media (max-width: 600px) {
+  .modal {
+    padding: 1.25rem;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modal-actions button {
+    width: 100%;
+  }
+}

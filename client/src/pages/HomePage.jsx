@@ -1,4 +1,4 @@
-import "../css/HomePage.css";
+import "../css/pages/HomePage.css";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 
