@@ -73,14 +73,15 @@ class CandidateRepository {
       education,
       years_experience,
       primary_advocacy,
-      secondary_advocacy
+      secondary_advocacy,
+      image_url   // <-- new
     } = candidateData;
 
     const [result] = await this.masterDb.query(
       `
       INSERT INTO candidates
-      (full_name, background, education, years_experience, primary_advocacy, secondary_advocacy)
-      VALUES (?, ?, ?, ?, ?, ?)
+      (full_name, background, education, years_experience, primary_advocacy, secondary_advocacy, image_url)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
       `,
       [
         full_name,
@@ -88,7 +89,8 @@ class CandidateRepository {
         education,
         years_experience,
         primary_advocacy,
-        secondary_advocacy
+        secondary_advocacy,
+        image_url   // <-- new
       ]
     );
 
@@ -98,6 +100,7 @@ class CandidateRepository {
     };
   }
 
+
   async updateCandidate(candidateId, candidateData) {
     const {
       full_name,
@@ -105,7 +108,8 @@ class CandidateRepository {
       education,
       years_experience,
       primary_advocacy,
-      secondary_advocacy
+      secondary_advocacy,
+      image_url   // <-- new
     } = candidateData;
 
     await this.masterDb.query(
@@ -116,7 +120,8 @@ class CandidateRepository {
           education = ?,
           years_experience = ?,
           primary_advocacy = ?,
-          secondary_advocacy = ?
+          secondary_advocacy = ?,
+          image_url = ?   -- <-- new
       WHERE candidate_id = ?
       `,
       [
@@ -126,12 +131,14 @@ class CandidateRepository {
         years_experience,
         primary_advocacy,
         secondary_advocacy,
+        image_url,   // <-- new
         candidateId
       ]
     );
 
     return { candidate_id: candidateId, ...candidateData };
   }
+
 
   async deleteCandidate(candidateId) {
     return this.masterDb.query(

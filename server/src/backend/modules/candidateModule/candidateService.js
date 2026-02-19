@@ -26,6 +26,11 @@ class CandidateService {
   // =========================
 
   async createCandidate(candidateData) {
+    // enforce default image_url if not provided
+    if (!candidateData.image_url) {
+      candidateData.image_url = `https://i.pravatar.cc/150?u=${encodeURIComponent(candidateData.full_name)}`;
+    }
+
     // future validation can go here
     return this.repo.createCandidate(candidateData);
   }
@@ -39,6 +44,11 @@ class CandidateService {
 
     if (!existing) {
       throw new Error("Candidate not found");
+    }
+
+    // enforce default image_url if not provided
+    if (!candidateData.image_url) {
+      candidateData.image_url = `https://i.pravatar.cc/150?u=${encodeURIComponent(candidateData.full_name)}`;
     }
 
     return this.repo.updateCandidate(candidateId, candidateData);
@@ -57,17 +67,7 @@ class CandidateService {
 
     const usage = await this.repo.getCandidateElectionUsage(candidateId);
 
-    /**
-     * usage example:
-     * [
-     *   { status: 'draft', count: 2 },
-     *   { status: 'ended', count: 1 }
-     * ]
-     */
-
-    const usedInEndedElection = usage.some(
-      u => u.status === "ended"
-    );
+    const usedInEndedElection = usage.some(u => u.status === "ended");
 
     if (usedInEndedElection) {
       throw new Error(
@@ -75,7 +75,6 @@ class CandidateService {
       );
     }
 
-    // allowed if unused or only draft/active
     await this.repo.deleteCandidate(candidateId);
 
     return { success: true };

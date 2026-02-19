@@ -8,7 +8,8 @@ module.exports = async (db) => {
             education TEXT,
             years_experience INT,
             primary_advocacy TEXT,
-            secondary_advocacy TEXT
+            secondary_advocacy TEXT,
+            image_url VARCHAR(255)
         )
     `);
 };

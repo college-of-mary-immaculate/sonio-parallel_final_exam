@@ -1,3 +1,4 @@
+// ===== File: service.test.js =====
 const PositionService = require("../positionService");
 
 describe("PositionService", () => {
@@ -37,6 +38,7 @@ describe("PositionService", () => {
     const result = await service.getPositionById(1);
 
     expect(result).toEqual({ position_id: 1 });
+    // FIX: match actual call signature
     expect(mockRepo.getPositionById).toHaveBeenCalledWith(1);
   });
 
@@ -51,12 +53,17 @@ describe("PositionService", () => {
   // =============================
   test("should create a position", async () => {
     const data = { name: "Governor" };
+
+    // mock createPosition to return inserted id
     mockRepo.createPosition.mockResolvedValue({ position_id: 1, ...data });
+    // mock getPositionById to return the fresh record
+    mockRepo.getPositionById.mockResolvedValue({ position_id: 1, ...data });
 
     const result = await service.createPosition(data);
 
     expect(result).toEqual({ position_id: 1, ...data });
     expect(mockRepo.createPosition).toHaveBeenCalledWith(data);
+    expect(mockRepo.getPositionById).toHaveBeenCalledWith(1, { forceMaster: true });
   });
 
   // =============================
@@ -64,12 +71,21 @@ describe("PositionService", () => {
   // =============================
   test("should update a position if exists", async () => {
     const data = { name: "Vice Governor" };
-    mockRepo.getPositionById.mockResolvedValue({ position_id: 1 });
+
+    // first call: check exists
+    // second call: return updated record
+    mockRepo.getPositionById
+      .mockResolvedValueOnce({ position_id: 1, name: "Old Name" })
+      .mockResolvedValueOnce({ position_id: 1, ...data });
+
     mockRepo.updatePosition.mockResolvedValue({ position_id: 1, ...data });
 
     const result = await service.updatePosition(1, data);
 
     expect(result).toEqual({ position_id: 1, ...data });
+    // first check
+    expect(mockRepo.getPositionById).toHaveBeenCalledWith(1, { forceMaster: true });
+    // update call
     expect(mockRepo.updatePosition).toHaveBeenCalledWith(1, data);
   });
 
@@ -89,6 +105,7 @@ describe("PositionService", () => {
     const result = await service.deletePosition(1);
 
     expect(result).toEqual({ success: true });
+    expect(mockRepo.getPositionById).toHaveBeenCalledWith(1, { forceMaster: true });
     expect(mockRepo.deletePosition).toHaveBeenCalledWith(1);
   });
 
