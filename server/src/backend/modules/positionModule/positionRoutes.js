@@ -11,6 +11,7 @@ module.exports = (service, middlewares) => {
   router.post("/", authMiddleware, roleMiddleware(["admin"]), controller.create.bind(controller));
   router.put("/:positionId", authMiddleware, roleMiddleware(["admin"]), controller.update.bind(controller));
   router.delete("/:positionId", authMiddleware, roleMiddleware(["admin"]), controller.delete.bind(controller));
+  
 
   return router;
 };

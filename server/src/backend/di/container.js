@@ -6,12 +6,13 @@ const authMiddleware = require("../middlewares/authMiddleware");
 const roleMiddleware = require("../middlewares/roleMiddleware");
 
 // modules
-const voteModule      = require("../modules/voteModule/voteIndex");
-const authModule      = require("../modules/authModule/authIndex");
-const userModule      = require("../modules/userModule/userIndex");
-const electionModule  = require("../modules/electionModule/electionIndex");
-const candidateModule = require("../modules/candidateModule/candidateIndex");
-const positionModule  = require("../modules/positionModule/positionIndex");
+const voteModule              = require("../modules/voteModule/voteIndex");
+const authModule              = require("../modules/authModule/authIndex");
+const userModule              = require("../modules/userModule/userIndex");
+const electionModule          = require("../modules/electionModule/electionIndex");
+const candidateModule         = require("../modules/candidateModule/candidateIndex");
+const positionModule          = require("../modules/positionModule/positionIndex");
+const electionPositionModule  = require("../modules/electionPositionModule/electionPositionIndex");
 
 let container;
 
@@ -21,6 +22,7 @@ async function buildContainer() {
     const masterDb = getMasterPool();
     const slaveDb  = getSlavePool();
 
+    // build modules
     const vote       = voteModule({ masterDb, slaveDb }, authMiddleware);
     const auth       = authModule({ slaveDb });
     const users      = userModule({ masterDb, slaveDb });
@@ -28,9 +30,26 @@ async function buildContainer() {
     const candidates = candidateModule({ masterDb, slaveDb }, { authMiddleware, roleMiddleware });
     const positions  = positionModule({ masterDb, slaveDb }, { authMiddleware, roleMiddleware });
 
+    // ⭐ NEW MODULE
+    const electionPositions = electionPositionModule(
+        { masterDb, slaveDb },
+        { authMiddleware, roleMiddleware },
+        {
+            positionRepository: positions.repository // dependency injection
+        }
+    );
+
     container = {
         db: { masterDb, slaveDb },
-        modules: { vote, auth, users, election, candidates, positions }
+        modules: {
+            vote,
+            auth,
+            users,
+            election,
+            candidates,
+            positions,
+            electionPositions // ⭐ add here
+        }
     };
 
     return container;

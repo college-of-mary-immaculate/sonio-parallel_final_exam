@@ -3,9 +3,11 @@ import { useAuth } from "../context/AuthContext";
 
 import LoginPage from "../pages/LoginPage";
 import HomePage from "../pages/HomePage";
+
 import AdminCandidatesPage from "../pages/admin/AdminCandidatesPage";
 import AdminPositionsPage from "../pages/admin/AdminPositionsPage";
 import AdminElectionsPage from "../pages/admin/AdminElectionsPage";
+import AdminElectionConfigPage from "../pages/admin/pages/AdminElectionConfigPage"; // NEW
 
 import ProtectedRoute from "./ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
@@ -19,7 +21,8 @@ function AppRoutes() {
     return (
         <BrowserRouter>
             <Routes>
-                {/* Public routes */}
+
+                {/* ================= PUBLIC ROUTES ================= */}
                 <Route element={<MainLayout />}>
                     <Route
                         path="/login"
@@ -27,7 +30,8 @@ function AppRoutes() {
                     />
                 </Route>
 
-                {/* Authenticated routes */}
+
+                {/* ================= AUTHENTICATED ROUTES ================= */}
                 <Route
                     element={
                         <ProtectedRoute>
@@ -38,7 +42,8 @@ function AppRoutes() {
                     <Route path="/" element={<HomePage />} />
                 </Route>
 
-                {/* Admin-only routes */}
+
+                {/* ================= ADMIN ROUTES ================= */}
                 <Route
                     element={
                         <ProtectedRoute roles={["admin"]}>
@@ -48,11 +53,21 @@ function AppRoutes() {
                 >
                     <Route path="/admin/candidates" element={<AdminCandidatesPage />} />
                     <Route path="/admin/positions" element={<AdminPositionsPage />} />
+
+                    {/* Election Management */}
                     <Route path="/admin/elections" element={<AdminElectionsPage />} />
+
+                    {/* NEW: Election Config Page */}
+                    <Route
+                        path="/admin/elections/:electionId"
+                        element={<AdminElectionConfigPage />}
+                    />
                 </Route>
 
-                {/* Catch-all */}
+
+                {/* ================= FALLBACK ================= */}
                 <Route path="*" element={<Navigate to="/" />} />
+
             </Routes>
         </BrowserRouter>
     );

@@ -18,6 +18,12 @@ async function bootstrap() {
     app.use("/api/candidates", container.modules.candidates.routes);
     app.use("/api/positions",  container.modules.positions.routes);
 
+    // ⭐ NEW ROUTE
+    app.use(
+        "/api/election-positions",
+        container.modules.electionPositions.routes
+    );
+
     app.get("/health", (req, res) => res.json({ status: "OK" }));
     app.get("/check",  (req, res) => res.json({ instance: process.env.HOSTNAME }));
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../../css/admin/AdminPage.css";
 import Button from "../../components/Button";
 import ElectionFormModal from "./components/ElectionFormModal";
@@ -10,24 +11,27 @@ export default function AdminElectionsPage() {
   const [editingElection, setEditingElection] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
+  const navigate = useNavigate();
+
+  // ===============================
+  // Fetch Elections
+  // ===============================
   const fetchElections = async () => {
     try {
       setLoading(true);
+
       const response = await electionApi.getAll();
 
-      // Ensure we have an array
       const electionsArray = Array.isArray(response)
         ? response
         : response.elections || [];
 
-      const sorted = electionsArray.slice().sort((a, b) => {
-        // fallback to 0 if election_id missing
-        const aId = a.election_id ?? 0;
-        const bId = b.election_id ?? 0;
-        return aId - bId;
-      });
+      const sorted = electionsArray
+        .slice()
+        .sort((a, b) => (a.election_id ?? 0) - (b.election_id ?? 0));
 
       setElections(sorted);
+
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Failed to load elections");
@@ -40,39 +44,45 @@ export default function AdminElectionsPage() {
     fetchElections();
   }, []);
 
+  // ===============================
+  // Navigation
+  // ===============================
+  const handleView = (election) => {
+    if (!election?.election_id) return;
+    navigate(`/admin/elections/${election.election_id}`);
+  };
+
+  // ===============================
+  // Edit / Delete
+  // ===============================
   const handleEdit = (election) => {
     setEditingElection(election);
     setModalOpen(true);
   };
 
   const handleDelete = async (id) => {
+    if (!id) return;
     if (!confirm("Are you sure you want to delete this election?")) return;
+
     try {
       await electionApi.delete(id);
-      setElections((prev) => prev.filter((e) => e.election_id !== id));
+      setElections(prev => prev.filter(e => e.election_id !== id));
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Delete failed");
     }
   };
-    const handleSaved = (savedElection) => {
-    setElections((prev) => {
-        const updated = prev.some(e => e.election_id === savedElection.election_id)
-        ? prev.map(e => e.election_id === savedElection.election_id ? savedElection : e)
-        : [...prev, savedElection];
 
-        return updated.slice().sort((a, b) => (a.election_id ?? 0) - (b.election_id ?? 0));
-    });
-    setModalOpen(false);
-    };
-
-
-
+  // ===============================
+  // Render
+  // ===============================
   return (
     <div className="admin-page admin-elections-page">
+
       {/* Header */}
       <div className="page-header">
         <h2>Election Management</h2>
+
         <Button
           onClick={() => {
             setEditingElection(null);
@@ -100,6 +110,7 @@ export default function AdminElectionsPage() {
               <th>Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {elections.map((e, index) => (
               <tr key={e.election_id ?? index}>
@@ -108,17 +119,32 @@ export default function AdminElectionsPage() {
                 <td data-label="Start">{e.start_date?.split("T")[0] ?? "-"}</td>
                 <td data-label="End">{e.end_date?.split("T")[0] ?? "-"}</td>
                 <td data-label="Status">{e.status ?? "-"}</td>
+
                 <td data-label="Actions">
-                  <Button variant="secondary" onClick={() => handleEdit(e)}>
+
+                  {/* NEW VIEW BUTTON */}
+                  <Button
+                    variant="info"
+                    onClick={() => handleView(e)}
+                  >
+                    View
+                  </Button>
+
+                  <Button
+                    variant="secondary"
+                    onClick={() => handleEdit(e)}
+                  >
                     Edit
                   </Button>
+
                   <Button
                     variant="danger"
                     onClick={() => handleDelete(e.election_id)}
-                    disabled={e.election_id == null}
+                    disabled={!e.election_id}
                   >
                     Delete
                   </Button>
+
                 </td>
               </tr>
             ))}
@@ -128,25 +154,37 @@ export default function AdminElectionsPage() {
 
       {/* Modal */}
       {modalOpen && (
-<ElectionFormModal
-  election={editingElection}
-  onSaved={(savedElection) => {
-    if (!savedElection) return setModalOpen(false); // cancel
+        <ElectionFormModal
+          election={editingElection}
+          onSaved={(savedElection) => {
+            if (!savedElection) {
+              setModalOpen(false);
+              return;
+            }
 
-    setElections((prev) => {
-      const exists = prev.some(e => e.election_id === savedElection.election_id);
-      const updated = exists
-        ? prev.map(e => e.election_id === savedElection.election_id ? savedElection : e)
-        : [...prev, savedElection];
+            setElections(prev => {
+              const exists = prev.some(
+                e => e.election_id === savedElection.election_id
+              );
 
-      return updated.slice().sort((a, b) => (a.election_id ?? 0) - (b.election_id ?? 0));
-    });
+              const updated = exists
+                ? prev.map(e =>
+                    e.election_id === savedElection.election_id
+                      ? savedElection
+                      : e
+                  )
+                : [...prev, savedElection];
 
-    setModalOpen(false); // close modal
-  }}
-/>
+              return updated.sort(
+                (a, b) => (a.election_id ?? 0) - (b.election_id ?? 0)
+              );
+            });
 
+            setModalOpen(false);
+          }}
+        />
       )}
+
     </div>
   );
 }
