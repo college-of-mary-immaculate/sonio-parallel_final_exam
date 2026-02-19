@@ -1,8 +1,12 @@
 import mainApi from "./mainApi";
 
 const base = (electionId) => `/api/elections/${electionId}/candidates`;
+const voterBase = (electionId) => `/api/voters/elections/${electionId}/candidates`;
 
 export const electionCandidateApi = {
+  // ======================
+  // ADMIN ROUTES
+  // ======================
 
   // GET /api/elections/:electionId/candidates
   getByElection: async (electionId) => {
@@ -17,7 +21,6 @@ export const electionCandidateApi = {
   },
 
   // POST /api/elections/:electionId/candidates
-  // body: { positionId, candidateId }
   add: async (electionId, positionId, candidateId) => {
     const { data } = await mainApi.post(base(electionId), { positionId, candidateId });
     return data;
@@ -28,6 +31,19 @@ export const electionCandidateApi = {
     const { data } = await mainApi.delete(
       `${base(electionId)}/${candidateId}/positions/${positionId}`
     );
+    return data;
+  },
+
+  // ======================
+  // VOTER ROUTES
+  // ======================
+
+  // GET /api/voters/elections/:electionId/candidates
+  // optionally can filter by positionId if provided
+  getForVoter: async (electionId, positionId = null) => {
+    let url = voterBase(electionId);
+    if (positionId) url += `?positionId=${positionId}`;
+    const { data } = await mainApi.get(url);
     return data;
   },
 };

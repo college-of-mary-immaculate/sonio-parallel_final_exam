@@ -9,7 +9,8 @@ import AdminPositionsPage from "../pages/admin/AdminPositionsPage";
 import AdminElectionsPage from "../pages/admin/AdminElectionsPage";
 import AdminElectionDetailPage from "../pages/admin/pages/AdminElectionDetailPage";
 
-import UserElectionsPage from "../pages/user/UserElectionsPage"; // ✅ NEW
+import UserElectionsPage from "../pages/user/UserElectionsPage";
+import BallotPage from "../pages/user/BallotPage"; // ✅ NEW
 
 import ProtectedRoute from "./ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
@@ -42,8 +43,11 @@ function AppRoutes() {
                 >
                     <Route path="/" element={<HomePage />} />
 
-                    {/* ✅ USER ELECTIONS */}
+                    {/* USER ELECTIONS */}
                     <Route path="/elections" element={<UserElectionsPage />} />
+
+                    {/* BALLOT PAGE */}
+                    <Route path="/vote/:electionId" element={<BallotPage />} />
                 </Route>
 
                 {/* ADMIN ONLY */}

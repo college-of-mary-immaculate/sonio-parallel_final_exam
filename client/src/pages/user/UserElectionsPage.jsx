@@ -1,74 +1,72 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useEffect, useState } from "react";
+import { electionApi } from "../../apis/electionApi";
+import Button from "../../components/Button";
+import { useNavigate } from "react-router-dom";
 
-import LoginPage from "../pages/LoginPage";
-import HomePage from "../pages/HomePage";
+export default function UserElectionsPage() {
 
-import AdminCandidatesPage from "../pages/admin/AdminCandidatesPage";
-import AdminPositionsPage from "../pages/admin/AdminPositionsPage";
-import AdminElectionsPage from "../pages/admin/AdminElectionsPage";
-import AdminElectionDetailPage from "../pages/admin/pages/AdminElectionDetailPage";
+  const [elections, setElections] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-import UserElectionsPage from "../pages/user/UserElectionsPage";
-import BallotPage from "../pages/user/BallotPage"; // ✅ NEW
+  const navigate = useNavigate();
 
-import ProtectedRoute from "./ProtectedRoute";
-import MainLayout from "../layouts/MainLayout";
-import Navbar from "../components/Navbar";
+  useEffect(() => {
+    load();
+  }, []);
 
-function AppRoutes() {
-    const { user, loading } = useAuth();
+  const load = async () => {
+    try {
 
-    if (loading) return <p>Loading app...</p>;
+      // ✅ use voter-safe endpoint
+      const data = await electionApi.getPublic();
 
-    return (
-        <BrowserRouter>
-            <Routes>
+      setElections(data);
 
-                {/* PUBLIC */}
-                <Route element={<MainLayout />}>
-                    <Route
-                        path="/login"
-                        element={user ? <Navigate to="/" replace /> : <LoginPage />}
-                    />
-                </Route>
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                {/* AUTHENTICATED USERS (admin + voter) */}
-                <Route
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout Navbar={Navbar} />
-                        </ProtectedRoute>
-                    }
-                >
-                    <Route path="/" element={<HomePage />} />
+  if (loading) return <div>Loading elections...</div>;
 
-                    {/* USER ELECTIONS */}
-                    <Route path="/elections" element={<UserElectionsPage />} />
+  return (
+    <div>
 
-                    {/* BALLOT PAGE */}
-                    <Route path="/vote/:electionId" element={<BallotPage />} />
-                </Route>
+      <h2>Available Elections</h2>
 
-                {/* ADMIN ONLY */}
-                <Route
-                    element={
-                        <ProtectedRoute roles={["admin"]}>
-                            <MainLayout Navbar={Navbar} />
-                        </ProtectedRoute>
-                    }
-                >
-                    <Route path="/admin/candidates" element={<AdminCandidatesPage />} />
-                    <Route path="/admin/positions" element={<AdminPositionsPage />} />
-                    <Route path="/admin/elections" element={<AdminElectionsPage />} />
-                    <Route path="/admin/elections/:electionId" element={<AdminElectionDetailPage />} />
-                </Route>
+      {elections.map(election => (
+        <div key={election.election_id}>
 
-                <Route path="*" element={<Navigate to="/" />} />
+          <h3>{election.title}</h3>
 
-            </Routes>
-        </BrowserRouter>
-    );
+          <p>Status: {election.status}</p>
+
+          <p>
+            {new Date(election.start_date).toLocaleString()}
+            {" - "}
+            {new Date(election.end_date).toLocaleString()}
+          </p>
+
+    {election.status === "active" ? (
+      <Button onClick={() =>
+        navigate(`/vote/${election.election_id}`)
+      }>
+        Vote Now
+      </Button>
+    ) : (
+      <Button onClick={() =>
+        navigate(`/elections/${election.election_id}`)
+      }>
+        View Details
+      </Button>
+    )}
+
+
+        </div>
+      ))}
+
+    </div>
+  );
 }
-
-export default AppRoutes;

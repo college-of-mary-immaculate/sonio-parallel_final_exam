@@ -1,10 +1,9 @@
-// ===== File: BallotPage.jsx =====
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { electionPositionApi } from "../apis/electionPositionApi";
-import { electionCandidateApi } from "../apis/electionCandidateApi";
-import mainApi from "../apis/mainApi";
-import "../../css/ballot/BallotPage.css";
+import { electionPositionApi } from "../../apis/electionPositionApi";
+import { electionCandidateApi } from "../../apis/electionCandidateApi"; // make sure this exports voter API
+import mainApi from "../../apis/mainApi";
+//import "../../css/ballot/BallotPage.css";
 
 export default function BallotPage() {
   const { electionId } = useParams();
@@ -20,12 +19,13 @@ export default function BallotPage() {
     async function fetchData() {
       try {
         setLoading(true);
-        // 1️⃣ get all positions
-        const pos = await electionPositionApi.getByElection(electionId);
 
-        // 2️⃣ get candidates for each position
+        // 1️⃣ Get positions for voter
+        const pos = await electionPositionApi.getForVoter(electionId);
+
+        // 2️⃣ Get candidates for voter for each position
         for (const p of pos) {
-          const candidates = await electionCandidateApi.getByPosition(
+          const candidates = await electionCandidateApi.getForVoter(
             electionId,
             p.position_id
           );
@@ -52,14 +52,10 @@ export default function BallotPage() {
 
       let updated;
       if (current.includes(candidateId)) {
-        // deselect
         updated = current.filter((id) => id !== candidateId);
       } else {
-        // select
         if (current.length >= maxVotes) {
-          alert(
-            `You can only vote for ${maxVotes} candidate(s) in this position.`
-          );
+          alert(`You can only vote for ${maxVotes} candidate(s) in this position.`);
           return prev;
         }
         updated = [...current, candidateId];
@@ -74,7 +70,6 @@ export default function BallotPage() {
       setSubmitting(true);
       setError("");
 
-      // prepare vote payload
       const voteArray = [];
       for (const [positionId, candidateIds] of Object.entries(votes)) {
         for (const candidateId of candidateIds) {
@@ -123,7 +118,9 @@ export default function BallotPage() {
                     ? "selected"
                     : ""
                 }`}
-                onClick={() => handleSelect(position.position_id, c.candidate_id)}
+                onClick={() =>
+                  handleSelect(position.position_id, c.candidate_id)
+                }
               >
                 {c.image_url && <img src={c.image_url} alt={c.full_name} />}
                 <div className="candidate-info">

@@ -15,5 +15,7 @@ module.exports = (service, middlewares) => {
   // DELETE /elections/:electionId/positions/:positionId
   router.delete("/:positionId", authMiddleware, roleMiddleware(["admin"]), controller.remove.bind(controller));
 
+  router.get("/voter", authMiddleware, controller.getByElection.bind(controller));
+
   return router;
 };

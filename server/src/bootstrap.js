@@ -11,6 +11,7 @@ async function bootstrap() {
 
   const container = await buildContainer();
 
+  // main routes
   app.use("/api/auth",       container.modules.auth.routes);
   app.use("/api/users",      container.modules.users.routes);
   app.use("/api/votes",      container.modules.vote.routes);
@@ -18,11 +19,18 @@ async function bootstrap() {
   app.use("/api/candidates", container.modules.candidates.routes);
   app.use("/api/positions",  container.modules.positions.routes);
 
-  // nested election sub-routes
+  // nested election sub-routes (admin)
   app.use("/api/elections/:electionId/positions",  container.modules.electionPositions.routes);
   app.use("/api/elections/:electionId/candidates", container.modules.electionCandidates.routes);
   app.use("/api/elections/:electionId/tracking",   container.modules.electionTracking.routes);
 
+  // voter-accessible election candidates routes
+  app.use(
+    "/api/voters/elections/:electionId/candidates",
+    container.modules.electionCandidateVoter
+  );
+
+  // health checks
   app.get("/health", (req, res) => res.json({ status: "OK" }));
   app.get("/check",  (req, res) => res.json({ instance: process.env.HOSTNAME }));
 
