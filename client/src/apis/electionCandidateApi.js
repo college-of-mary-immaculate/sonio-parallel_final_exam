@@ -38,11 +38,13 @@ export const electionCandidateApi = {
   // VOTER ROUTES
   // ======================
 
-  // GET /api/voters/elections/:electionId/candidates
-  // optionally can filter by positionId if provided
+  // Previously sent ?positionId=X as a query param — but the backend route is:
+  //   GET /api/voters/elections/:electionId/candidates/positions/:positionId
+  // Fixed to use path param to match the existing backend route.
   getForVoter: async (electionId, positionId = null) => {
-    let url = voterBase(electionId);
-    if (positionId) url += `?positionId=${positionId}`;
+    const url = positionId
+      ? `${voterBase(electionId)}/positions/${positionId}` // ← path param, matches backend
+      : voterBase(electionId);
     const { data } = await mainApi.get(url);
     return data;
   },

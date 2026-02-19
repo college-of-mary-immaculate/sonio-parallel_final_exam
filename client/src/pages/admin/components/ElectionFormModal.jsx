@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Button from "../../../components/Button";
 import { electionApi } from "../../../apis/electionApi";
 import { positionApi } from "../../../apis/positionApi";
@@ -68,6 +68,19 @@ export default function ElectionFormModal({ election, onSaved }) {
     setSelectedPositions(map);
   }, [election]);
 
+  // ── Derive the set of ALL candidate IDs already assigned across
+  //    every position — used to block duplicates in other positions.
+  //    Memoized so it only recomputes when selectedPositions changes.
+  const assignedCandidateIds = useMemo(() => {
+    const ids = new Set();
+    for (const pos of Object.values(selectedPositions)) {
+      for (const c of pos.candidates) {
+        ids.add(c.candidate_id);
+      }
+    }
+    return ids;
+  }, [selectedPositions]);
+
   // ── Handlers ─────────────────────────────────────────────────
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -108,18 +121,42 @@ export default function ElectionFormModal({ election, onSaved }) {
 
   const toggleCandidate = (positionId, candidate) => {
     if (!isDraft) return;
+
     setSelectedPositions((prev) => {
       const pos = prev[positionId];
-      const alreadyIn = pos.candidates.some(
+      const alreadyInThisPosition = pos.candidates.some(
         (c) => c.candidate_id === candidate.candidate_id
       );
+
+      // ── Deselect: always allowed
+      if (alreadyInThisPosition) {
+        return {
+          ...prev,
+          [positionId]: {
+            ...pos,
+            candidates: pos.candidates.filter(
+              (c) => c.candidate_id !== candidate.candidate_id
+            ),
+          },
+        };
+      }
+
+      // ── Prevent adding if already assigned to another position
+      const assignedElsewhere = Object.entries(prev).some(
+        ([pid, p]) =>
+          pid !== String(positionId) &&
+          p.candidates.some((c) => c.candidate_id === candidate.candidate_id)
+      );
+      if (assignedElsewhere) return prev; // silently blocked (UI already shows it)
+
+      // ── Prevent adding if this position's slot count is already full
+      if (pos.candidates.length >= pos.config.candidate_count) return prev;
+
       return {
         ...prev,
         [positionId]: {
           ...pos,
-          candidates: alreadyIn
-            ? pos.candidates.filter((c) => c.candidate_id !== candidate.candidate_id)
-            : [...pos.candidates, candidate],
+          candidates: [...pos.candidates, candidate],
         },
       };
     });
@@ -132,17 +169,30 @@ export default function ElectionFormModal({ election, onSaved }) {
     if (!form.end_date)     return "End date is required";
     if (new Date(form.end_date) <= new Date(form.start_date))
       return "End date must be after start date";
+
     const positions = Object.values(selectedPositions);
     if (positions.length === 0) return "Select at least one position";
+
+    // Cross-position duplicate check (second line of defence)
+    const seen = new Map(); // candidateId → positionName
     for (const pos of positions) {
       const { config, candidates } = pos;
+
       if (config.winners_count > config.candidate_count)
         return `"${pos.name}": winners cannot exceed candidate count`;
       if (config.votes_per_voter > config.winners_count)
         return `"${pos.name}": votes per voter cannot exceed winners count`;
       if (candidates.length < config.candidate_count)
         return `"${pos.name}": needs ${config.candidate_count} candidate(s), only ${candidates.length} selected`;
+
+      for (const c of candidates) {
+        if (seen.has(c.candidate_id)) {
+          return `"${c.full_name}" is assigned to both "${seen.get(c.candidate_id)}" and "${pos.name}" — a candidate can only appear in one position`;
+        }
+        seen.set(c.candidate_id, pos.name);
+      }
     }
+
     return null;
   };
 
@@ -180,8 +230,6 @@ export default function ElectionFormModal({ election, onSaved }) {
   // ── Render ────────────────────────────────────────────────────
   return (
     <div className="modal-overlay">
-
-      {/* Shell: fixed height, flex column so header+footer stay put */}
       <div style={{
         background: "#fff",
         borderRadius: 12,
@@ -193,7 +241,7 @@ export default function ElectionFormModal({ election, onSaved }) {
         overflow: "hidden",
       }}>
 
-        {/* ── Sticky header ──────────────────────────────────────── */}
+        {/* ── Sticky header ── */}
         <div style={{
           padding: "20px 24px 16px",
           borderBottom: "1px solid #f0f0f0",
@@ -210,8 +258,6 @@ export default function ElectionFormModal({ election, onSaved }) {
               ×
             </button>
           </div>
-
-          {/* Progress hint */}
           <p style={{ margin: "6px 0 0", fontSize: "0.8rem", color: "#9ca3af" }}>
             {selectedCount === 0
               ? "Fill in election details, then select positions below"
@@ -219,15 +265,13 @@ export default function ElectionFormModal({ election, onSaved }) {
           </p>
         </div>
 
-        {/* ── Scrollable body ────────────────────────────────────── */}
+        {/* ── Scrollable body ── */}
         <div style={{ flex: 1, overflowY: "auto", padding: "20px 24px" }}>
 
           {/* Basic Info */}
           <section style={{ marginBottom: 24 }}>
             <p style={sectionLabel}>Election Details</p>
-
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-              {/* Title spans both columns */}
               <div style={{ gridColumn: "1 / -1" }}>
                 <FieldLabel>Title</FieldLabel>
                 <input
@@ -239,7 +283,6 @@ export default function ElectionFormModal({ election, onSaved }) {
                   style={inputStyle(isDraft)}
                 />
               </div>
-
               <div>
                 <FieldLabel>Start Date</FieldLabel>
                 <input
@@ -251,7 +294,6 @@ export default function ElectionFormModal({ election, onSaved }) {
                   style={inputStyle(isDraft)}
                 />
               </div>
-
               <div>
                 <FieldLabel>End Date</FieldLabel>
                 <input
@@ -265,29 +307,28 @@ export default function ElectionFormModal({ election, onSaved }) {
               </div>
             </div>
 
-          {isEdit && (
-            <div style={{ marginTop: 14 }}>
-              <FieldLabel>Status</FieldLabel>
-              <select
-                name="status"
-                value={form.status}
-                onChange={handleChange}
-                style={{ ...inputStyle(true), cursor: "pointer" }}
-              >
-                {/* Only show valid forward transitions */}
-                <option value="draft"   disabled={form.status !== "draft"}>Draft</option>
-                <option value="pending" disabled={!["draft","pending"].includes(form.status)}>Pending</option>
-                <option value="active"  disabled={!["pending","active"].includes(form.status)}>Active</option>
-                <option value="ended"   disabled={!["active","ended"].includes(form.status)}>Ended</option>
-              </select>
-              <p style={{ margin: "4px 0 0", fontSize: "0.75rem", color: "#9ca3af" }}>
-                {form.status === "draft"   && "Draft → set to Pending when ballot is ready for voters to preview"}
-                {form.status === "pending" && "Pending → set to Active once the start date has passed"}
-                {form.status === "active"  && "Active → set to Ended once the end date has passed"}
-                {form.status === "ended"   && "This election has ended"}
-              </p>
-            </div>
-          )}
+            {isEdit && (
+              <div style={{ marginTop: 14 }}>
+                <FieldLabel>Status</FieldLabel>
+                <select
+                  name="status"
+                  value={form.status}
+                  onChange={handleChange}
+                  style={{ ...inputStyle(true), cursor: "pointer" }}
+                >
+                  <option value="draft"   disabled={form.status !== "draft"}>Draft</option>
+                  <option value="pending" disabled={!["draft","pending"].includes(form.status)}>Pending</option>
+                  <option value="active"  disabled={!["pending","active"].includes(form.status)}>Active</option>
+                  <option value="ended"   disabled={!["active","ended"].includes(form.status)}>Ended</option>
+                </select>
+                <p style={{ margin: "4px 0 0", fontSize: "0.75rem", color: "#9ca3af" }}>
+                  {form.status === "draft"   && "Draft → set to Pending when ballot is ready for voters to preview"}
+                  {form.status === "pending" && "Pending → set to Active once the start date has passed"}
+                  {form.status === "active"  && "Active → set to Ended once the end date has passed"}
+                  {form.status === "ended"   && "This election has ended"}
+                </p>
+              </div>
+            )}
           </section>
 
           <hr style={{ border: "none", borderTop: "1px solid #f0f0f0", margin: "0 0 20px" }} />
@@ -331,7 +372,7 @@ export default function ElectionFormModal({ election, onSaved }) {
                         background: isSelected ? "#fafcff" : "#fafafa",
                       }}
                     >
-                      {/* Position row */}
+                      {/* Position header row */}
                       <label style={{
                         display: "flex",
                         alignItems: "center",
@@ -404,53 +445,101 @@ export default function ElectionFormModal({ election, onSaved }) {
                               marginTop: 6,
                             }}>
                               {globalCandidates.map((c) => {
-                                const picked = selPos.candidates.some(
+                                const pickedHere = selPos.candidates.some(
                                   (sc) => sc.candidate_id === c.candidate_id
                                 );
-                                const maxed  = !picked && selPos.candidates.length >= selPos.config.candidate_count;
+                                // Is this candidate already used in a DIFFERENT position?
+                                const takenElsewhere =
+                                  !pickedHere && assignedCandidateIds.has(c.candidate_id);
+                                // Is this position's slot already full (and candidate not already here)?
+                                const slotsFull =
+                                  !pickedHere && selPos.candidates.length >= selPos.config.candidate_count;
+
+                                const isDisabled = !isDraft || takenElsewhere || slotsFull;
+
+                                // Tooltip hint shown on hover via title attr
+                                const hint = takenElsewhere
+                                  ? "Already assigned to another position"
+                                  : slotsFull
+                                  ? "Slot limit reached for this position"
+                                  : undefined;
 
                                 return (
-                                        <label
-                                          key={c.candidate_id}
-                                          style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: 7,
-                                            padding: "7px 10px",
-                                            borderRadius: 6,
-                                            border: picked ? "1.5px solid #3b82f6" : "1.5px solid #e5e7eb",
-                                            background: picked ? "#eff6ff" : maxed ? "#f9fafb" : "#fff",
-                                            cursor: (!isDraft || maxed) ? "not-allowed" : "pointer",
-                                            opacity: maxed ? 0.45 : 1,
-                                            fontSize: "0.82rem",
-                                            fontWeight: picked ? 600 : 400,
-                                            color: picked ? "#1d4ed8" : "#374151",
-                                            transition: "all 0.12s",
-                                            userSelect: "none",
-                                          }}
-                                        >
-                                          <input
-                                            type="checkbox"
-                                            checked={picked}
-                                            onChange={() => toggleCandidate(pos.position_id, c)}
-                                            disabled={!isDraft || maxed}
-                                            style={{ width: 13, height: 13, accentColor: "#3b82f6", flexShrink: 0 }}
-                                          />
-                                          <img
-                                            src={c.image_url}
-                                            alt={c.full_name}
-                                            style={{
-                                              width: 24,
-                                              height: 24,
-                                              borderRadius: "50%",
-                                              objectFit: "cover",
-                                              border: "1.5px solid #e5e7eb",
-                                              flexShrink: 0,
-                                            }}
-                                            onError={e => { e.target.src = `https://i.pravatar.cc/150?u=${c.candidate_id}`; }}
-                                          />
-                                          {c.full_name}
-                                        </label>
+                                  <label
+                                    key={c.candidate_id}
+                                    title={hint}
+                                    style={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 7,
+                                      padding: "7px 10px",
+                                      borderRadius: 6,
+                                      border: pickedHere
+                                        ? "1.5px solid #3b82f6"
+                                        : takenElsewhere
+                                        ? "1.5px solid #fca5a5"   // red tint — taken elsewhere
+                                        : "1.5px solid #e5e7eb",
+                                      background: pickedHere
+                                        ? "#eff6ff"
+                                        : takenElsewhere
+                                        ? "#fff5f5"               // red bg — taken elsewhere
+                                        : slotsFull
+                                        ? "#f9fafb"
+                                        : "#fff",
+                                      cursor: isDisabled ? "not-allowed" : "pointer",
+                                      opacity: (slotsFull && !pickedHere) ? 0.45 : 1,
+                                      fontSize: "0.82rem",
+                                      fontWeight: pickedHere ? 600 : 400,
+                                      color: pickedHere
+                                        ? "#1d4ed8"
+                                        : takenElsewhere
+                                        ? "#ef4444"               // red text — taken elsewhere
+                                        : "#374151",
+                                      transition: "all 0.12s",
+                                      userSelect: "none",
+                                      position: "relative",
+                                    }}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      checked={pickedHere}
+                                      onChange={() => toggleCandidate(pos.position_id, c)}
+                                      disabled={isDisabled}
+                                      style={{ width: 13, height: 13, accentColor: "#3b82f6", flexShrink: 0 }}
+                                    />
+                                    <img
+                                      src={c.image_url}
+                                      alt={c.full_name}
+                                      style={{
+                                        width: 24,
+                                        height: 24,
+                                        borderRadius: "50%",
+                                        objectFit: "cover",
+                                        border: takenElsewhere ? "1.5px solid #fca5a5" : "1.5px solid #e5e7eb",
+                                        flexShrink: 0,
+                                        filter: takenElsewhere ? "grayscale(60%)" : "none",
+                                      }}
+                                      onError={e => { e.target.src = `https://i.pravatar.cc/150?u=${c.candidate_id}`; }}
+                                    />
+                                    <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                                      {c.full_name}
+                                    </span>
+                                    {/* "Taken" badge */}
+                                    {takenElsewhere && (
+                                      <span style={{
+                                        fontSize: "0.65rem",
+                                        fontWeight: 600,
+                                        color: "#ef4444",
+                                        background: "#fee2e2",
+                                        borderRadius: 4,
+                                        padding: "1px 5px",
+                                        flexShrink: 0,
+                                        letterSpacing: "0.02em",
+                                      }}>
+                                        taken
+                                      </span>
+                                    )}
+                                  </label>
                                 );
                               })}
                             </div>
@@ -465,7 +554,7 @@ export default function ElectionFormModal({ election, onSaved }) {
           </section>
         </div>
 
-        {/* ── Sticky footer ───────────────────────────────────────── */}
+        {/* ── Sticky footer ── */}
         <div style={{
           padding: "14px 24px",
           borderTop: "1px solid #f0f0f0",
