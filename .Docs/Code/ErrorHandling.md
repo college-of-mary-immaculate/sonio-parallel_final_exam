@@ -1,0 +1,5 @@
+Not found	[404]
+Validation error	[400]
+Unauthorized	[401]
+Forbidden (role fail)	[403]
+Server error	[500]

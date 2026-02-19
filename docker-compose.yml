@@ -1,5 +1,4 @@
 services:
-
   mysql_master:
     image: mysql:8.0
     container_name: mysql_master
@@ -11,6 +10,12 @@ services:
     volumes:
       - ./server/db/master/conf:/etc/mysql/conf.d
       - master_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p111"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   mysql_slave1:
     image: mysql:8.0
@@ -24,7 +29,14 @@ services:
       - ./server/db/slave1/conf:/etc/mysql/conf.d
       - slave1_data:/var/lib/mysql
     depends_on:
-      - mysql_master
+      mysql_master:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p111"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   mysql_slave2:
     image: mysql:8.0
@@ -38,7 +50,14 @@ services:
       - ./server/db/slave2/conf:/etc/mysql/conf.d
       - slave2_data:/var/lib/mysql
     depends_on:
-      - mysql_master
+      mysql_master:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p111"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   backend1:
     build:
@@ -48,16 +67,27 @@ services:
     volumes:
       - ./server:/app
     environment:
-      DB_HOST: mysql_master
+      DB_WRITE_HOST: mysql_master
+      DB_READ_HOSTS: mysql_slave1,mysql_slave2
       DB_USER: root
       DB_PASS: 111
       DB_NAME: voting_system
       DB_INIT: true
       JWT_SECRET: super_secret_key_change_this
     depends_on:
-      - mysql_master
+      mysql_master:
+        condition: service_healthy
+      mysql_slave1:
+        condition: service_healthy
+      mysql_slave2:
+        condition: service_healthy
     ports:
       - "3000:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
   backend2:
     build:
@@ -67,15 +97,26 @@ services:
     volumes:
       - ./server:/app
     environment:
-      DB_HOST: mysql_master
+      DB_WRITE_HOST: mysql_master
+      DB_READ_HOSTS: mysql_slave1,mysql_slave2
       DB_USER: root
       DB_PASS: 111
       DB_NAME: voting_system
       JWT_SECRET: super_secret_key_change_this
     depends_on:
-      - mysql_master
+      mysql_master:
+        condition: service_healthy
+      mysql_slave1:
+        condition: service_healthy
+      mysql_slave2:
+        condition: service_healthy
     ports:
       - "3001:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
   backend3:
     build:
@@ -85,27 +126,49 @@ services:
     volumes:
       - ./server:/app
     environment:
-      DB_HOST: mysql_master
+      DB_WRITE_HOST: mysql_master
+      DB_READ_HOSTS: mysql_slave1,mysql_slave2
       DB_USER: root
       DB_PASS: 111
       DB_NAME: voting_system
       JWT_SECRET: super_secret_key_change_this
     depends_on:
-      - mysql_master
+      mysql_master:
+        condition: service_healthy
+      mysql_slave1:
+        condition: service_healthy
+      mysql_slave2:
+        condition: service_healthy
     ports:
       - "3002:3000"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "-", "http://localhost:3000/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
 
   nginx:
-    image: nginx:alpine
+    build:
+      context: ./loadbalancer
+      dockerfile: Dockerfile
     container_name: load_balancer
     ports:
       - "8080:80"
     volumes:
       - ./loadbalancer/nginx.conf:/etc/nginx/nginx.conf
     depends_on:
-      - backend1
-      - backend2
-      - backend3
+      backend1:
+        condition: service_healthy
+      backend2:
+        condition: service_healthy
+      backend3:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
 
   client:
     build:
@@ -118,7 +181,8 @@ services:
     ports:
       - "5173:5173"
     depends_on:
-      - nginx
+      nginx:
+        condition: service_healthy
 
 volumes:
   master_data:

@@ -27,6 +27,12 @@ Client/
         routes/
             AppRoutes.jsx
 
+        AppWrapper.jsx
         App.jsx
         main.jsx
+
+Level of design:
+[Global style]
+    * Fonts
+    * Conta
         

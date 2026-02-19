@@ -1,13 +1,8 @@
 const express = require("express");
 
-module.exports = (service, middlewares) => {
-
+module.exports = (controller, middlewares) => {
   const router = express.Router();
-
   const { authMiddleware, roleMiddleware } = middlewares;
-
-  const ElectionController = require("./electionController");
-  const controller = new ElectionController(service);
 
   router.get(
     "/:electionId/config",
