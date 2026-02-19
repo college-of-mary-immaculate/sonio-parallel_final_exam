@@ -1,3 +1,4 @@
+// ===== File: positionService.js =====
 class PositionService {
   constructor(repository) {
     this.repo = repository;
@@ -18,13 +19,21 @@ class PositionService {
   }
 
   async createPosition(data) {
-    return this.repo.createPosition(data);
+    const result = await this.repo.createPosition(data);
+    // Read immediately from master to get the freshest data
+    const fresh = await this.repo.getPositionById(result.position_id, { forceMaster: true });
+    return fresh;
   }
 
   async updatePosition(positionId, data) {
     const existing = await this.repo.getPositionById(positionId, { forceMaster: true });
     if (!existing) throw new Error("Position not found");
-    return this.repo.updatePosition(positionId, data);
+
+    await this.repo.updatePosition(positionId, data);
+
+    // Read the updated record from master explicitly
+    const fresh = await this.repo.getPositionById(positionId, { forceMaster: true });
+    return fresh;
   }
 
   async deletePosition(positionId) {
