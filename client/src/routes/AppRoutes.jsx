@@ -7,7 +7,7 @@ import HomePage from "../pages/HomePage";
 import AdminCandidatesPage from "../pages/admin/AdminCandidatesPage";
 import AdminPositionsPage from "../pages/admin/AdminPositionsPage";
 import AdminElectionsPage from "../pages/admin/AdminElectionsPage";
-import AdminElectionConfigPage from "../pages/admin/pages/AdminElectionConfigPage"; // NEW
+import AdminElectionDetailPage from "../pages/admin/pages/AdminElectionDetailPage"; // ✅ fixed name
 
 import ProtectedRoute from "./ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
@@ -22,7 +22,6 @@ function AppRoutes() {
         <BrowserRouter>
             <Routes>
 
-                {/* ================= PUBLIC ROUTES ================= */}
                 <Route element={<MainLayout />}>
                     <Route
                         path="/login"
@@ -30,8 +29,6 @@ function AppRoutes() {
                     />
                 </Route>
 
-
-                {/* ================= AUTHENTICATED ROUTES ================= */}
                 <Route
                     element={
                         <ProtectedRoute>
@@ -42,8 +39,6 @@ function AppRoutes() {
                     <Route path="/" element={<HomePage />} />
                 </Route>
 
-
-                {/* ================= ADMIN ROUTES ================= */}
                 <Route
                     element={
                         <ProtectedRoute roles={["admin"]}>
@@ -52,20 +47,13 @@ function AppRoutes() {
                     }
                 >
                     <Route path="/admin/candidates" element={<AdminCandidatesPage />} />
-                    <Route path="/admin/positions" element={<AdminPositionsPage />} />
+                    <Route path="/admin/positions"  element={<AdminPositionsPage />} />
+                    <Route path="/admin/elections"  element={<AdminElectionsPage />} />
 
-                    {/* Election Management */}
-                    <Route path="/admin/elections" element={<AdminElectionsPage />} />
-
-                    {/* NEW: Election Config Page */}
-                    <Route
-                        path="/admin/elections/:electionId"
-                        element={<AdminElectionConfigPage />}
-                    />
+                    {/* ✅ correct name */}
+                    <Route path="/admin/elections/:electionId" element={<AdminElectionDetailPage />} />
                 </Route>
 
-
-                {/* ================= FALLBACK ================= */}
                 <Route path="*" element={<Navigate to="/" />} />
 
             </Routes>
