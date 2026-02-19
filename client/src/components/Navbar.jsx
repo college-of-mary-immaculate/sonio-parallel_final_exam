@@ -18,6 +18,7 @@ export default function Navbar() {
                     <>
                         <li><Link to="/admin/candidates">Candidates</Link></li>
                         <li><Link to="/admin/positions">Positions</Link></li>
+                        <li><Link to="/admin/elections">Elections</Link></li>
                     </>
                 )}
             </ul>

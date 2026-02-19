@@ -31,3 +31,28 @@ Styles architecture:
     - use of components
     - etc.
 
+Architecture:
+Apis:
+    - api endpoints helper
+
+Components:
+    - reusable components (ex. buttons, navbars)
+
+Pages:
+    - Page itself
+
+Layout:
+    - Organize the page and accept the navbar or sidebar to structure it correctly
+
+Context:
+    - Holds the source of truth of datas
+
+AppRoutes:
+    - Organize the layouts, pages. (The dependency injection file)
+
+AppWrapper:
+    - Just a helper wrapper for the app.jsx
+
+App:
+    - Implement the global styles
+    - Starter

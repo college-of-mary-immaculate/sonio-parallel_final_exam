@@ -7,7 +7,6 @@ class ElectionController {
     try {
       const { electionId } = req.params;
       const { positionId, candidateData } = req.body;
-
       const candidate = await this.service.addCandidate(electionId, positionId, candidateData);
       res.json(candidate);
     } catch (err) {
@@ -30,6 +29,24 @@ class ElectionController {
       const { electionId } = req.params;
       const config = await this.service.getElectionConfig(electionId);
       res.json(config);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
+  async listElections(req, res) {
+    try {
+      const elections = await this.service.listElections();
+      res.json(elections);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
+  async createElection(req, res) {
+    try {
+      const election = await this.service.createElection(req.body);
+      res.status(201).json(election);
     } catch (err) {
       res.status(400).json({ error: err.message });
     }

@@ -5,6 +5,7 @@ import LoginPage from "../pages/LoginPage";
 import HomePage from "../pages/HomePage";
 import AdminCandidatesPage from "../pages/admin/AdminCandidatesPage";
 import AdminPositionsPage from "../pages/admin/AdminPositionsPage";
+import AdminElectionsPage from "../pages/admin/AdminElectionsPage";
 
 import ProtectedRoute from "./ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
@@ -47,6 +48,7 @@ function AppRoutes() {
                 >
                     <Route path="/admin/candidates" element={<AdminCandidatesPage />} />
                     <Route path="/admin/positions" element={<AdminPositionsPage />} />
+                    <Route path="/admin/elections" element={<AdminElectionsPage />} />
                 </Route>
 
                 {/* Catch-all */}
