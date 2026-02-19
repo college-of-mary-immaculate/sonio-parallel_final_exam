@@ -26,12 +26,13 @@ class CandidateService {
   // =========================
 
   async createCandidate(candidateData) {
-    // enforce default image_url if not provided
+    // assign a random avatar if image_url not provided
     if (!candidateData.image_url) {
-      candidateData.image_url = `https://i.pravatar.cc/150?u=${encodeURIComponent(candidateData.full_name)}`;
+      // generate a random number between 1 and 70 (Pravatar has 70 images)
+      const randomId = Math.floor(Math.random() * 70) + 1;
+      candidateData.image_url = `https://i.pravatar.cc/150?img=${randomId}`;
     }
 
-    // future validation can go here
     return this.repo.createCandidate(candidateData);
   }
 
@@ -46,9 +47,10 @@ class CandidateService {
       throw new Error("Candidate not found");
     }
 
-    // enforce default image_url if not provided
+    // assign a random avatar if image_url not provided
     if (!candidateData.image_url) {
-      candidateData.image_url = `https://i.pravatar.cc/150?u=${encodeURIComponent(candidateData.full_name)}`;
+      const randomId = Math.floor(Math.random() * 70) + 1;
+      candidateData.image_url = `https://i.pravatar.cc/150?img=${randomId}`;
     }
 
     return this.repo.updateCandidate(candidateId, candidateData);

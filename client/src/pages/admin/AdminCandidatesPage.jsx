@@ -47,36 +47,45 @@ export default function AdminCandidatesPage() {
         <Button onClick={openCreate}>+ Add Candidate</Button>
       </div>
 
-      {/* ── Table ── */}
-      {loading ? (
-        <p className="page-empty">Loading...</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Education</th>
-              <th>Experience</th>
-              <th>Primary Advocacy</th>
-              <th>Actions</th>
+    {/* ── Table ── */}
+    {loading ? (
+      <p className="page-empty">Loading...</p>
+    ) : (
+      <table>
+        <thead>
+          <tr>
+            <th>Photo</th> {/* new */}
+            <th>Name</th>
+            <th>Education</th>
+            <th>Experience</th>
+            <th>Primary Advocacy</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {candidates.map((c) => (
+            <tr key={c.candidate_id}>
+              <td data-label="Photo">
+                <img 
+                  src={c.image_url} 
+                  alt={c.full_name} 
+                  style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover" }} 
+                />
+              </td>
+              <td data-label="Name">{c.full_name}</td>
+              <td data-label="Education">{c.education}</td>
+              <td data-label="Experience">{c.years_experience} yrs</td>
+              <td data-label="Primary Advocacy">{c.primary_advocacy}</td>
+              <td data-label="Actions">
+                <Button variant="secondary" onClick={() => openEdit(c)}>Edit</Button>
+                <Button variant="danger"    onClick={() => handleDelete(c.candidate_id)}>Delete</Button>
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {candidates.map((c) => (
-              <tr key={c.candidate_id}>
-                <td data-label="Name">{c.full_name}</td>
-                <td data-label="Education">{c.education}</td>
-                <td data-label="Experience">{c.years_experience} yrs</td>
-                <td data-label="Primary Advocacy">{c.primary_advocacy}</td>
-                <td data-label="Actions">
-                  <Button variant="secondary" onClick={() => openEdit(c)}>Edit</Button>
-                  <Button variant="danger"    onClick={() => handleDelete(c.candidate_id)}>Delete</Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+          ))}
+        </tbody>
+      </table>
+    )}
+
 
       {/* ── Modal ── */}
       {showModal && (
