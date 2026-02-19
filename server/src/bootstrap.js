@@ -1,8 +1,8 @@
 const express = require("express");
-const cors    = require("cors");
+const cors = require("cors");
 const { Server } = require("socket.io");
 const { createAdapter } = require("@socket.io/redis-adapter");
-const { createClient }  = require("ioredis");
+const Redis = require("ioredis"); // ✅ correct import
 
 const buildContainer = require("./backend/di/container");
 
@@ -28,16 +28,34 @@ async function bootstrap(httpServer) {
   const REDIS_HOST = process.env.REDIS_HOST || "redis";
   const REDIS_PORT = parseInt(process.env.REDIS_PORT || "6379");
 
-  const pubClient = createClient({ host: REDIS_HOST, port: REDIS_PORT });
+  // ✅ ioredis auto-connects — DO NOT call .connect()
+  const pubClient = new Redis({
+    host: REDIS_HOST,
+    port: REDIS_PORT,
+  });
+
   const subClient = pubClient.duplicate();
 
-  pubClient.on("error", (err) => console.error("[redis] pub error:", err));
-  subClient.on("error", (err) => console.error("[redis] sub error:", err));
+  pubClient.on("connect", () =>
+    console.log(`[redis] pub connected to ${REDIS_HOST}:${REDIS_PORT}`)
+  );
 
-  await Promise.all([pubClient.connect(), subClient.connect()]);
+  subClient.on("connect", () =>
+    console.log(`[redis] sub connected to ${REDIS_HOST}:${REDIS_PORT}`)
+  );
+
+  pubClient.on("error", (err) =>
+    console.error("[redis] pub error:", err)
+  );
+
+  subClient.on("error", (err) =>
+    console.error("[redis] sub error:", err)
+  );
+
+  // ❌ REMOVE await Promise.all([...connect()])
   io.adapter(createAdapter(pubClient, subClient));
 
-  console.log(`[redis] adapter connected at ${REDIS_HOST}:${REDIS_PORT}`);
+  console.log(`[redis] adapter initialized`);
 
   // ── Socket.IO connection handler ─────────────────────────────
   io.on("connection", (socket) => {
@@ -61,16 +79,27 @@ async function bootstrap(httpServer) {
   const container = await buildContainer({ io });
 
   // ── Main routes ───────────────────────────────────────────────
-  app.use("/api/auth",       container.modules.auth.routes);
-  app.use("/api/users",      container.modules.users.routes);
-  app.use("/api/votes",      container.modules.vote.routes);
-  app.use("/api/elections",  container.modules.election.routes);
+  app.use("/api/auth", container.modules.auth.routes);
+  app.use("/api/users", container.modules.users.routes);
+  app.use("/api/votes", container.modules.vote.routes);
+  app.use("/api/elections", container.modules.election.routes);
   app.use("/api/candidates", container.modules.candidates.routes);
-  app.use("/api/positions",  container.modules.positions.routes);
+  app.use("/api/positions", container.modules.positions.routes);
 
-  app.use("/api/elections/:electionId/positions",  container.modules.electionPositions.routes);
-  app.use("/api/elections/:electionId/candidates", container.modules.electionCandidates.routes);
-  app.use("/api/elections/:electionId/tracking",   container.modules.electionTracking.routes);
+  app.use(
+    "/api/elections/:electionId/positions",
+    container.modules.electionPositions.routes
+  );
+
+  app.use(
+    "/api/elections/:electionId/candidates",
+    container.modules.electionCandidates.routes
+  );
+
+  app.use(
+    "/api/elections/:electionId/tracking",
+    container.modules.electionTracking.routes
+  );
 
   app.use(
     "/api/voters/elections/:electionId/candidates",
@@ -78,7 +107,9 @@ async function bootstrap(httpServer) {
   );
 
   app.get("/health", (req, res) => res.json({ status: "OK" }));
-  app.get("/check",  (req, res) => res.json({ instance: process.env.HOSTNAME }));
+  app.get("/check", (req, res) =>
+    res.json({ instance: process.env.HOSTNAME })
+  );
 
   return app;
 }

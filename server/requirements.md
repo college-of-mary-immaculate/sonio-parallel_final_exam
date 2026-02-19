@@ -26,6 +26,10 @@ npm install -g nodemon
 # websocket
 npm install socket.io
 
+# Install redis adapter
+npm install @socket.io/redis-adapter ioredis
+
+
 
 
 
