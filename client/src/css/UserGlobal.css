@@ -1,56 +1,38 @@
-/* ==========================================================
-   USERGLOBAL.CSS — LEVEL 2: USER ROLE THEME
-   Responsibility: all colors for the voter/user role.
-   ✅ Applied when <body> has class "user-theme"
-   ✅ Defines --btn-* slots so Button.jsx picks up correct colors
-   ❌ No layout/structure — that's Global.css and MainLayout.css
-
-   HOW TO ADD A NEW COMPONENT'S COLORS:
-   When you create a new component with its own CSS variable slots,
-   add the values here (and in AdminGlobal.css) so the component
-   automatically gets the right color per role. Example:
-     --card-header-bg: #1e40af;
-     --badge-bg: #bfdbfe;
-     etc.
-========================================================== */
-
 body.user-theme {
 
   /* ── Page colors ── */
-  --primary-color:   #1e40af;
-  --secondary-color: #3b82f6;
-  --accent-color:    #bfdbfe;
-  --bg-color:        #f0f4ff;
+  --primary-color:   #166534; /* green */
+  --secondary-color: #22c55e; /* lighter green */
+  --accent-color:    #bbf7d0; /* light green accent */
+  --bg-color:        #f0fff4;
   --surface-color:   #ffffff;
   --text-color:      #111827;
   --text-muted:      #6b7280;
-  --border-color:    #c7d2fe;
+  --border-color:    #86efac;
   --danger-color:    #dc2626;
 
-  /* ── Button component color slots ──────────────────────
-     Button.css reads these. Add new button variants here.
-  ──────────────────────────────────────────────────────── */
-  --btn-primary-bg:      #1e40af;
-  --btn-primary-hover:   #1d4ed8;
+  /* ── Button slots ── */
+  --btn-primary-bg:      #166534;
+  --btn-primary-hover:   #15803d;
   --btn-primary-text:    #ffffff;
 
-  --btn-secondary-bg:    #bfdbfe;
-  --btn-secondary-hover: #93c5fd;
-  --btn-secondary-text:  #1e3a8a;
+  --btn-secondary-bg:    #bbf7d0;
+  --btn-secondary-hover: #86efac;
+  --btn-secondary-text:  #14532d;
 
   --btn-danger-bg:       #dc2626;
   --btn-danger-hover:    #b91c1c;
   --btn-danger-text:     #ffffff;
 
-  --btn-ghost-color:     #1e40af;
-  --btn-ghost-hover-bg:  #eff6ff;
+  --btn-ghost-color:     #166534;
+  --btn-ghost-hover-bg:  #f0fff4;
 
   /* ── Page background & text ── */
   background-color: var(--bg-color);
   color:            var(--text-color);
 }
 
-/* ── Generic button fallback (non-Button.jsx buttons) ── */
+/* Generic button fallback */
 body.user-theme button {
   background-color: var(--btn-primary-bg);
   color:            var(--btn-primary-text);
@@ -60,16 +42,15 @@ body.user-theme button:hover {
   background-color: var(--btn-primary-hover);
 }
 
-/* ── Links ── */
+/* Links */
 body.user-theme a {
   color: var(--primary-color);
 }
-
 body.user-theme a:hover {
   color: var(--secondary-color);
 }
 
-/* ── Inputs ── */
+/* Inputs */
 body.user-theme input:focus,
 body.user-theme textarea:focus,
 body.user-theme select:focus {
@@ -77,12 +58,11 @@ body.user-theme select:focus {
   box-shadow:   0 0 0 3px var(--accent-color);
 }
 
-/* ── Tables ── */
+/* Tables */
 body.user-theme th {
   background-color: var(--accent-color);
   color:            var(--primary-color);
 }
-
 body.user-theme tr:hover td {
-  background-color: #eff6ff;
+  background-color: #f0fff4;
 }

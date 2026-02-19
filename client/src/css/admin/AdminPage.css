@@ -1,0 +1,123 @@
+/* ==========================================================
+   ADMINPAGE.CSS — LEVEL 3.5: SHARED ADMIN PAGE BASE
+   Responsibility: Common layout & patterns for ALL admin pages
+   ✅ Uses role theme color variables
+   ✅ Imported by every admin page
+   ❌ No hardcoded colors
+   ❌ No page-specific rules — those go in each page's CSS
+   ========================================================== */
+
+/* ── Page Wrapper ── */
+.admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* ── Page Header ── */
+.admin-page .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.admin-page .page-header h2 {
+  margin: 0;
+  color: var(--primary-color);
+}
+
+/* ── Section Card (wraps tables, forms, etc.) ── */
+.admin-page .page-section {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+/* ── Shared Table Styles ── */
+.admin-page table {
+  background-color: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.admin-page th,
+.admin-page td {
+  vertical-align: middle;
+}
+
+.admin-page tbody tr:hover td {
+  background-color: var(--accent-color);
+}
+
+/* ── Actions Column ── */
+.admin-page td:last-child {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ── Empty / Loading State ── */
+.admin-page .page-empty {
+  color: var(--text-muted);
+  padding: 2rem 0;
+  text-align: center;
+}
+
+/* ── Badge (optional reusable chip/tag) ── */
+.admin-page .badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background-color: var(--accent-color);
+  color: var(--primary-color);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .admin-page table,
+  .admin-page thead,
+  .admin-page tbody,
+  .admin-page th,
+  .admin-page td,
+  .admin-page tr {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-page thead {
+    display: none;
+  }
+
+  .admin-page tr {
+    background-color: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+  }
+
+  .admin-page td {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    border-bottom: none;
+  }
+
+  .admin-page td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--text-muted);
+  }
+
+  .admin-page td:last-child {
+    justify-content: flex-start;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+}

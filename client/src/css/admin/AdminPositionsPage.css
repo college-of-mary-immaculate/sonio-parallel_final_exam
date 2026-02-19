@@ -1,0 +1,17 @@
+/* ==========================================================
+   ADMINPOSITIONSPAGE.CSS — LEVEL 4: PAGE-SPECIFIC
+   Responsibility: Styling specific to AdminPositionsPage only
+   ✅ Uses role theme color variables
+   ❌ No hardcoded colors
+   ========================================================== */
+
+/* ── Actions column: shrink to content, buttons always side by side ── */
+.admin-positions-page th:last-child,
+.admin-positions-page td:last-child {
+  white-space: nowrap;
+  width: 20%;
+}
+
+.admin-positions-page td:last-child {
+  flex-wrap: nowrap;
+}
