@@ -7,7 +7,13 @@ import { electionTrackingApi } from "../../../apis/electionTrackingApi";
 import { positionApi } from "../../../apis/positionApi";
 import { getAllCandidates } from "../../../apis/candidateApi";
 import Button from "../../../components/Button";
-import { joinElectionRoom, leaveElectionRoom, onVoteUpdated } from "../../../sockets/socket";
+import {
+  joinElectionRoom,
+  leaveElectionRoom,
+  onVoteUpdated,
+  onConnectionChange,
+  getSocket,
+} from "../../../sockets/socket";
 import "../../../css/admin/AdminPage.css";
 
 const CHART_HEIGHT = 220;
@@ -196,8 +202,6 @@ function PositionBarChart({ position }) {
   );
 }
 
-// ─── Live tracking section ────────────────────────────────────────────────────
-// ✅ Now uses Socket.IO instead of polling interval
 function LiveTrackingSection({ electionId }) {
   const [data,        setData]        = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
@@ -217,25 +221,38 @@ function LiveTrackingSection({ electionId }) {
   };
 
   useEffect(() => {
-    // 1️⃣ Initial fetch
     fetchLive();
 
-    // 2️⃣ Join Socket.IO room for this election
-    joinElectionRoom(electionId);
-    setConnected(true);
+    const s = getSocket();
 
-    // 3️⃣ Listen for vote:updated — re-fetch live data when a voter submits
-    const cleanup = onVoteUpdated((payload) => {
+    const onConnect = () => {
+      setConnected(true);
+      s.emit("join:election", electionId);   // re-join on reconnect too
+    };
+    const onDisconnect = () => setConnected(false);
+
+    s.on("connect",    onConnect);
+    s.on("disconnect", onDisconnect);
+
+    // Connect (or join immediately if already connected)
+    if (s.connected) {
+      setConnected(true);
+      s.emit("join:election", electionId);
+    } else {
+      s.connect();
+    }
+
+    const cleanupVote = onVoteUpdated((payload) => {
       if (String(payload.electionId) === String(electionId)) {
         fetchLive();
       }
     });
 
-    // 4️⃣ Cleanup on unmount
     return () => {
-      cleanup();
-      leaveElectionRoom(electionId);
-      setConnected(false);
+      cleanupVote();
+      s.off("connect",    onConnect);
+      s.off("disconnect", onDisconnect);
+      s.emit("leave:election", electionId);
     };
   }, [electionId]);
 

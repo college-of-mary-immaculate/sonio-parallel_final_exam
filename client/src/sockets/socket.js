@@ -2,54 +2,55 @@ import { io } from "socket.io-client";
 
 const SOCKET_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
 
-// ── Singleton socket instance ─────────────────────────────────────────────────
-// Created once, reused across the app. Auth token is attached so the server
-// can optionally verify the connection (add authMiddleware to io if needed later).
-
 let socket = null;
 
 export function getSocket() {
   if (!socket) {
     socket = io(SOCKET_URL, {
-      autoConnect: false,       // connect manually when needed
+      autoConnect: false,
       withCredentials: true,
-      auth: () => ({
-        token: localStorage.getItem("token"),
-      }),
+      auth: () => ({ token: localStorage.getItem("token") }),
     });
 
-    socket.on("connect", () => {
-      console.log("[ws] connected:", socket.id);
-    });
-
-    socket.on("disconnect", (reason) => {
-      console.log("[ws] disconnected:", reason);
-    });
-
-    socket.on("connect_error", (err) => {
-      console.warn("[ws] connection error:", err.message);
-    });
+    socket.on("connect",       () => console.log("[ws] connected:", socket.id));
+    socket.on("disconnect",    (r) => console.log("[ws] disconnected:", r));
+    socket.on("connect_error", (e) => console.warn("[ws] connection error:", e.message));
   }
-
   return socket;
 }
 
-// ── Helpers used by components ────────────────────────────────────────────────
-
 export function joinElectionRoom(electionId) {
   const s = getSocket();
-  if (!s.connected) s.connect();
-  s.emit("join:election", electionId);
+
+  if (s.connected) {
+    // Already connected — join immediately
+    s.emit("join:election", electionId);
+  } else {
+    // Wait for connection, then join
+    s.once("connect", () => {
+      s.emit("join:election", electionId);
+    });
+    s.connect();
+  }
 }
 
 export function leaveElectionRoom(electionId) {
-  const s = getSocket();
-  s.emit("leave:election", electionId);
+  getSocket().emit("leave:election", electionId);
 }
 
 export function onVoteUpdated(callback) {
   const s = getSocket();
   s.on("vote:updated", callback);
-  // Return cleanup function
   return () => s.off("vote:updated", callback);
+}
+
+// ✅ New — lets components subscribe to connection state changes
+export function onConnectionChange(onConnect, onDisconnect) {
+  const s = getSocket();
+  s.on("connect",    onConnect);
+  s.on("disconnect", onDisconnect);
+  return () => {
+    s.off("connect",    onConnect);
+    s.off("disconnect", onDisconnect);
+  };
 }
