@@ -11,11 +11,12 @@ async function bootstrap() {
 
     const container = await buildContainer();
 
-    app.use("/api/auth",      container.modules.auth.routes);
-    app.use("/api/users",     container.modules.users.routes);
-    app.use("/api/votes",     container.modules.vote.routes);
-    app.use("/api/elections", container.modules.election.routes);
+    app.use("/api/auth",       container.modules.auth.routes);
+    app.use("/api/users",      container.modules.users.routes);
+    app.use("/api/votes",      container.modules.vote.routes);
+    app.use("/api/elections",  container.modules.election.routes);
     app.use("/api/candidates", container.modules.candidates.routes);
+    app.use("/api/positions",  container.modules.positions.routes);
 
     app.get("/health", (req, res) => res.json({ status: "OK" }));
     app.get("/check",  (req, res) => res.json({ instance: process.env.HOSTNAME }));
