@@ -402,34 +402,47 @@ export default function ElectionFormModal({ election, onSaved }) {
                                 const maxed  = !picked && selPos.candidates.length >= selPos.config.candidate_count;
 
                                 return (
-                                  <label
-                                    key={c.candidate_id}
-                                    style={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      gap: 7,
-                                      padding: "7px 10px",
-                                      borderRadius: 6,
-                                      border: picked ? "1.5px solid #3b82f6" : "1.5px solid #e5e7eb",
-                                      background: picked ? "#eff6ff" : maxed ? "#f9fafb" : "#fff",
-                                      cursor: (!isDraft || maxed) ? "not-allowed" : "pointer",
-                                      opacity: maxed ? 0.45 : 1,
-                                      fontSize: "0.82rem",
-                                      fontWeight: picked ? 600 : 400,
-                                      color: picked ? "#1d4ed8" : "#374151",
-                                      transition: "all 0.12s",
-                                      userSelect: "none",
-                                    }}
-                                  >
-                                    <input
-                                      type="checkbox"
-                                      checked={picked}
-                                      onChange={() => toggleCandidate(pos.position_id, c)}
-                                      disabled={!isDraft || maxed}
-                                      style={{ width: 13, height: 13, accentColor: "#3b82f6", flexShrink: 0 }}
-                                    />
-                                    {c.full_name}
-                                  </label>
+                                        <label
+                                          key={c.candidate_id}
+                                          style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 7,
+                                            padding: "7px 10px",
+                                            borderRadius: 6,
+                                            border: picked ? "1.5px solid #3b82f6" : "1.5px solid #e5e7eb",
+                                            background: picked ? "#eff6ff" : maxed ? "#f9fafb" : "#fff",
+                                            cursor: (!isDraft || maxed) ? "not-allowed" : "pointer",
+                                            opacity: maxed ? 0.45 : 1,
+                                            fontSize: "0.82rem",
+                                            fontWeight: picked ? 600 : 400,
+                                            color: picked ? "#1d4ed8" : "#374151",
+                                            transition: "all 0.12s",
+                                            userSelect: "none",
+                                          }}
+                                        >
+                                          <input
+                                            type="checkbox"
+                                            checked={picked}
+                                            onChange={() => toggleCandidate(pos.position_id, c)}
+                                            disabled={!isDraft || maxed}
+                                            style={{ width: 13, height: 13, accentColor: "#3b82f6", flexShrink: 0 }}
+                                          />
+                                          <img
+                                            src={c.image_url}
+                                            alt={c.full_name}
+                                            style={{
+                                              width: 24,
+                                              height: 24,
+                                              borderRadius: "50%",
+                                              objectFit: "cover",
+                                              border: "1.5px solid #e5e7eb",
+                                              flexShrink: 0,
+                                            }}
+                                            onError={e => { e.target.src = `https://i.pravatar.cc/150?u=${c.candidate_id}`; }}
+                                          />
+                                          {c.full_name}
+                                        </label>
                                 );
                               })}
                             </div>

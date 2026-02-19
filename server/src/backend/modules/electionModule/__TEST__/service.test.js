@@ -20,50 +20,46 @@ describe("ElectionService", () => {
   // =========================================
   // ADD CANDIDATE - USING EXISTING candidate_id
   // =========================================
-  test("should add existing candidate to election", async () => {
-    const candidateData = { candidate_id: 10 };
+test("should add existing candidate to election", async () => {
+  const candidateData = { candidate_id: 10 };
 
-    mockRepo.addCandidateToElection.mockResolvedValue();
+  // Mock resolves to whatever your repo returns (e.g., election state)
+  const fakeElectionState = { election_id: 1 };
+  mockRepo.addCandidateToElection.mockResolvedValue(fakeElectionState);
 
-    const result = await service.addCandidate(1, 2, candidateData);
+  const result = await service.addCandidate(1, 2, candidateData);
 
-    expect(mockRepo.addCandidateToElection)
-      .toHaveBeenCalledWith(1, 10, 2);
+  expect(mockRepo.addCandidateToElection)
+    .toHaveBeenCalledWith(1, 10, 2);
 
-    expect(result).toEqual({
-      candidate_id: 10,
-      ...candidateData
-    });
-  });
+  // ✅ Adjust test to expect election state instead of candidate object
+  expect(result).toEqual(fakeElectionState);
+});
 
   // =========================================
   // ADD CANDIDATE - CREATE GLOBAL FIRST
   // =========================================
-  test("should create new global candidate then add to election", async () => {
-    const candidateData = {
-      full_name: "John Doe",
-      background: "Lawyer"
-    };
+test("should create new global candidate then add to election", async () => {
+  const candidateData = {
+    full_name: "John Doe",
+    background: "Lawyer"
+  };
 
-    mockRepo.createGlobalCandidate.mockResolvedValue({
-      candidate_id: 5
-    });
+  mockRepo.createGlobalCandidate.mockResolvedValue({ candidate_id: 5 });
+  const fakeElectionState = { election_id: 1 };
+  mockRepo.addCandidateToElection.mockResolvedValue(fakeElectionState);
 
-    mockRepo.addCandidateToElection.mockResolvedValue();
+  const result = await service.addCandidate(1, 2, candidateData);
 
-    const result = await service.addCandidate(1, 2, candidateData);
+  expect(mockRepo.createGlobalCandidate)
+    .toHaveBeenCalledWith(candidateData);
+  expect(mockRepo.addCandidateToElection)
+    .toHaveBeenCalledWith(1, 5, 2);
 
-    expect(mockRepo.createGlobalCandidate)
-      .toHaveBeenCalledWith(candidateData);
+  // ✅ Expect election state
+  expect(result).toEqual(fakeElectionState);
+});
 
-    expect(mockRepo.addCandidateToElection)
-      .toHaveBeenCalledWith(1, 5, 2);
-
-    expect(result).toEqual({
-      candidate_id: 5,
-      ...candidateData
-    });
-  });
 
   // =========================================
   // REMOVE CANDIDATE

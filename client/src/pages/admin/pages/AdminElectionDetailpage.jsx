@@ -358,26 +358,41 @@ export default function AdminElectionDetailPage() {
                   {posCandidates.length === 0 ? (
                     <p style={{ margin: 0, fontSize: "0.85rem", color: "#9ca3af" }}>No candidates assigned yet.</p>
                   ) : (
-                    posCandidates.map(c => (
-                      <div key={c.candidate_id} style={candidateRow}>
-                        <div>
-                          <span style={{ fontWeight: 500 }}>{c.full_name}</span>
-                          {c.primary_advocacy && (
-                            <span style={{ fontSize: "0.78rem", color: "#6b7280", marginLeft: 8 }}>
-                              {c.primary_advocacy}
-                            </span>
-                          )}
-                        </div>
-                        {isDraft && (
-                          <Button
-                            variant="danger"
-                            onClick={() => handleRemoveCandidate(pos.position_id, c.candidate_id)}
-                          >
-                            Remove
-                          </Button>
+                posCandidates.map(c => (
+                  <div key={c.candidate_id} style={candidateRow}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <img
+                        src={c.image_url}
+                        alt={c.full_name}
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                          border: "2px solid #e5e7eb",
+                          flexShrink: 0,
+                        }}
+                        onError={e => { e.target.src = `https://i.pravatar.cc/150?u=${c.candidate_id}`; }}
+                      />
+                      <div>
+                        <span style={{ fontWeight: 500, fontSize: "0.9rem" }}>{c.full_name}</span>
+                        {c.primary_advocacy && (
+                          <div style={{ fontSize: "0.75rem", color: "#6b7280" }}>
+                            {c.primary_advocacy}
+                          </div>
                         )}
                       </div>
-                    ))
+                    </div>
+                    {isDraft && (
+                      <Button
+                        variant="danger"
+                        onClick={() => handleRemoveCandidate(pos.position_id, c.candidate_id)}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                  </div>
+                ))
                   )}
                 </div>
 

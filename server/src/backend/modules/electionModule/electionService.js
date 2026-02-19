@@ -13,8 +13,8 @@ class ElectionService {
       candidateId = newCandidate.candidate_id;
     }
 
-    await this.repo.addCandidateToElection(electionId, candidateId, positionId);
-    return { candidate_id: candidateId, ...candidateData };
+    // ✅ Add candidate and return latest election state
+    return this.repo.addCandidateToElection(electionId, candidateId, positionId);
   }
 
   async removeCandidate(electionId, positionId, candidateId) {
@@ -39,7 +39,7 @@ class ElectionService {
   }
 
   async createElection(data) {
-    const { title, start_date, end_date, created_by, positions } = data;
+    const { positions } = data;
 
     if (!positions || positions.length === 0)
       throw new Error("Election must have positions");
@@ -47,13 +47,14 @@ class ElectionService {
     for (const pos of positions) {
       if (!pos.candidates || pos.candidates.length === 0)
         throw new Error(`Position ${pos.position_id} has no candidates`);
-
       if (pos.candidates.length < pos.candidate_count)
         throw new Error(`Not enough candidates for position ${pos.position_id}`);
     }
 
+    // ✅ Creates election and reads latest from master
     return this.repo.createElectionWithBallot(data);
   }
+
 
   async updateElection(electionId, data) {
 
