@@ -5,7 +5,7 @@
 
 ### System Architecture Diagram
 
-<img src="./.Docs/assets/chart.png" alt="System Architecture Diagram" width="600"/>
+<img src="./.Docs/assets/chart.png" alt="System Architecture Diagram" height = "400" width="600"/>
 
 This diagram illustrates the overall flow and distributed architecture of the voting system. Client requests are routed through a centralized load balancer to multiple backend servers. Real-time communication is coordinated using Redis, while persistent data storage is managed through a MySQL master–slave replication strategy consisting of one master database and two read replicas.
 
