@@ -23,8 +23,7 @@ function initSlavePools() {
 }
 
 function getSlavePool() {
-    initSlavePools();
-    // 🎯 simple round-robin
+    initSlavePools(); // simple round-robin
     const pool = slavePools.shift();
     slavePools.push(pool);
     return pool;
