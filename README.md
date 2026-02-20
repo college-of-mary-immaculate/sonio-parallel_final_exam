@@ -1,6 +1,6 @@
 ---
 
-## 📸 Architecture Diagrams and System Interface Documentation
+## Architecture Diagrams and System Interface Documentation
 
 ### System Architecture Diagram
 
@@ -16,7 +16,7 @@ This diagram illustrates the overall flow and distributed architecture of the vo
 
 ---
 
-## 🐳 Containerized Deployment Overview
+## Containerized Deployment Overview
 
 <img src="./.Docs/assets/docker.png" alt="Docker Deployment Overview" width="600"/>
 
@@ -30,7 +30,7 @@ Each component—including the client, backend servers, load balancer, Redis, an
 
 ---
 
-## 🚀 Setup & Deployment
+## Setup & Deployment
 
 ### Prerequisites
 
@@ -73,7 +73,7 @@ This will automatically:
 
 ---
 
-## 🛠️ Administrative Module Interfaces
+## Administrative Module Interfaces
 
 ### Candidate Management Interface
 
@@ -130,7 +130,7 @@ Displays live vote rankings and counts.
 
 ---
 
-## 🧑‍💻 Voter Module Interfaces
+## Voter Module Interfaces
 
 ### Election Selection Interface
 
@@ -161,7 +161,7 @@ Allows voters to cast votes per position.
 
 ---
 
-## 📌 Documentation Summary
+## Documentation Summary
 
 The figures above illustrate the voting system's:
 
