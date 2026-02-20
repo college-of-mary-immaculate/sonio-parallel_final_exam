@@ -5,7 +5,7 @@
 
 ### System Architecture Diagram
 
-<img src="./Docs/assets/chart.png" alt="System Architecture Diagram" width="600"/>
+<img src="./.Docs/assets/chart.png" alt="System Architecture Diagram" width="600"/>
 
 This diagram illustrates the overall flow and distributed architecture of the voting system. Client requests are routed through a centralized load balancer to multiple backend servers. Real-time communication is coordinated using Redis, while persistent data storage is managed through a MySQL master–slave replication strategy consisting of one master database and two read replicas.
 
@@ -19,7 +19,7 @@ This diagram illustrates the overall flow and distributed architecture of the vo
 
 ## 🐳 Containerized Deployment Overview
 
-<img src="./Docs/assets/docker.png" alt="Docker Deployment Overview" width="600"/>
+<img src="./.Docs/assets/docker.png" alt="Docker Deployment Overview" width="600"/>
 
 Each component—including the client, backend servers, load balancer, Redis, and MySQL databases—is deployed in its own Docker container.
 
@@ -35,7 +35,7 @@ Each component—including the client, backend servers, load balancer, Redis, an
 
 ### Candidate Management Interface
 
-<img src="./Docs/assets/admin/candidatemanagement.png" alt="Candidate Management Interface" width="500"/>
+<img src="./.Docs/assets/admin/candidatemanagement.png" alt="Candidate Management Interface" width="500"/>
 
 Administrators can **add, edit, remove, and display candidates**.
 
@@ -48,7 +48,7 @@ Administrators can **add, edit, remove, and display candidates**.
 
 ### Election Management Interface
 
-<img src="./Docs/assets/admin/electionmanagement.png" alt="Election Management Interface" width="500"/>
+<img src="./.Docs/assets/admin/electionmanagement.png" alt="Election Management Interface" width="500"/>
 
 Administrators can **add, edit, remove, and display elections**.
 
@@ -61,7 +61,7 @@ Administrators can **add, edit, remove, and display elections**.
 
 ### Position Management Interface
 
-<img src="./Docs/assets/admin/positionmanagement.png" alt="Position Management Interface" width="500"/>
+<img src="./.Docs/assets/admin/positionmanagement.png" alt="Position Management Interface" width="500"/>
 
 Allows **management of election positions**, which organize the voting process.
 
@@ -74,9 +74,9 @@ Allows **management of election positions**, which organize the voting process.
 
 ### Real-Time Vote Tracking
 
-<img src="./Docs/assets/admin/livetracking.png" alt="Live Tracking View 1" width="500"/>  
-<img src="./Docs/assets/admin/livetracking2.png" alt="Live Tracking View 2" width="500"/>  
-<img src="./Docs/assets/admin/livetracking3.png" alt="Live Tracking View 3" width="500"/>
+<img src="./.Docs/assets/admin/livetracking.png" alt="Live Tracking View 1" width="500"/>  
+<img src="./.Docs/assets/admin/livetracking2.png" alt="Live Tracking View 2" width="500"/>  
+<img src="./.Docs/assets/admin/livetracking3.png" alt="Live Tracking View 3" width="500"/>
 
 Displays live vote rankings and counts.
 
@@ -92,7 +92,7 @@ Displays live vote rankings and counts.
 
 ### Election Selection Interface
 
-<img src="./Docs/assets/voter/electionuser.png" alt="Election Selection Interface" width="500"/>
+<img src="./.Docs/assets/voter/electionuser.png" alt="Election Selection Interface" width="500"/>
 
 Voters can view elections and select which to participate in.
 
@@ -106,8 +106,8 @@ Voters can view elections and select which to participate in.
 
 ### Voting Interface
 
-<img src="./Docs/assets/voter/vote.png" alt="Voting Interface View 1" width="500"/>  
-<img src="./Docs/assets/voter/vote2.png" alt="Voting Interface View 2" width="500"/>
+<img src="./.Docs/assets/voter/vote.png" alt="Voting Interface View 1" width="500"/>  
+<img src="./.Docs/assets/voter/vote2.png" alt="Voting Interface View 2" width="500"/>
 
 Allows voters to cast votes per position.
 
