@@ -1,4 +1,3 @@
-// modules/authModule/authRoutes.js
 const express = require("express");
 
 module.exports = (authController) => {

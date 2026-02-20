@@ -1,4 +1,3 @@
-// modules/userModule/userIndex.js
 const UserRepository = require("./userRepository");
 const UserService = require("./userService");
 const UserController = require("./userController");

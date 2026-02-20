@@ -1,4 +1,3 @@
-// modules/authModule/authIndex.js
 const AuthRepository = require("./authRepository");
 const AuthService = require("./authService");
 const AuthController = require("./authController");

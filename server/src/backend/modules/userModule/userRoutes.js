@@ -1,4 +1,4 @@
-// modules/userModule/userRoutes.js
+
 const express = require("express");
 const authMiddleware = require("../../middlewares/authMiddleware");
 const roleMiddleware = require("../../middlewares/roleMiddleware");

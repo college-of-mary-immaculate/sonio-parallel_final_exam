@@ -1,4 +1,4 @@
-// modules/userModule/userService.js
+
 const bcrypt = require("bcrypt");
 
 class UserService {

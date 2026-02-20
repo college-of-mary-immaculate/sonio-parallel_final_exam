@@ -1,5 +1,3 @@
-// modules/authModule/authController.js
-
 class AuthController {
     constructor(authService) {
         this.authService = authService;

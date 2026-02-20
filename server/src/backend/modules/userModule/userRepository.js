@@ -1,5 +1,3 @@
-// modules/userModule/userRepository.js
-
 class UserRepository {
     constructor({ masterDb, slaveDb }) {
         this.masterDb = masterDb; // writes

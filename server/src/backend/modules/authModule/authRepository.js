@@ -1,5 +1,3 @@
-// modules/authModule/authRepository.js
-
 class AuthRepository {
     constructor({ slaveDb }) {
         this.slaveDb = slaveDb; // auth only ever reads to verify credentials

@@ -1,4 +1,3 @@
-// modules/authModule/authService.js
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 

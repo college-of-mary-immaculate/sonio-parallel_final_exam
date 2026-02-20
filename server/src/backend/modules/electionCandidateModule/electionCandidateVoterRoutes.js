@@ -1,4 +1,3 @@
-// electionCandidateVoterRoutes.js
 const express = require("express");
 const ElectionCandidateController = require("./electionCandidateController");
 
