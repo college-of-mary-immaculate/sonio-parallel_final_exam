@@ -1,229 +1,81 @@
 
 ---
 
-# Voting System (Distributed, Scalable & Real-Time)
+## 📸 Architecture Diagrams and System Interface Documentation
 
-A distributed **Voting System** built with **containerized backends, MySQL master–slave replication, Redis-coordinated WebSockets, and a React frontend**, designed for **horizontal scaling, real-time updates, and automated deployment**.
+### System Architecture Diagram
 
----
+![System Architecture Diagram](./Docs/assets/chart.png)
 
-# Overview
-
-This project demonstrates:
-
-* **Multiple backend instances** for horizontal scaling
-* **Multiple WebSocket servers (one per backend)**
-* **Redis-based pub/sub** to synchronize WebSocket events across instances
-* **MySQL replication** (1 master, 2 read replicas)
-* **Automated containerized deployment** using Docker & Docker Compose
-* **Database initialization and seeding**
-* **Load balancing** via Nginx (HTTP + WebSocket)
-* **React frontend client**
-* **Automated test gating** during build using **Jest**
-
-The system supports **read/write separation**, **real-time communication**, and **scalable backend architecture**.
+This diagram illustrates the overall system flow and distributed architecture of the voting system. A single client communicates with the platform through a centralized load balancer, which routes requests to multiple backend servers. Real-time communication is coordinated using Redis, while persistent data storage is handled through a MySQL master–slave replication setup consisting of one master database and two read replicas.
 
 ---
 
-# Architecture
+## 🐳 Containerized Deployment Overview
 
-## Layers
+![Docker Deployment Overview](./Docs/assets/docker.png)
 
-### 1. Client Layer
-
-* React frontend running in a Docker container
-* Communicates with the system via:
-
-  * REST APIs (HTTP)
-  * WebSockets for real-time updates
-* All traffic passes through Nginx
+This figure presents the Dockerized environment of the system. All major components are deployed as independent containers, including the client application, backend services, load balancer, Redis service, and MySQL databases. This approach ensures service isolation, scalability, and consistent deployment across environments.
 
 ---
 
-### 2. Load Balancer Layer
+## 🛠️ Administrative Module Interfaces
 
-* Nginx container
-* Single entry point for the system
-* Responsibilities:
+### Candidate Management Interface
 
-  * Distributes HTTP API requests across backend instances
-  * Proxies WebSocket connections using HTTP upgrade headers
-* Ensures clients can connect to any backend transparently
+![Candidate Management](./Docs/assets/admin/candidatemanagement.png)
+
+The candidate management module allows administrators to perform full lifecycle operations on candidates, including creation, modification, removal, and display of candidate records.
 
 ---
 
-### 3. Backend & WebSocket Layer
+### Election Management Interface
 
-* Three Node.js / Express backend instances:
+![Election Management](./Docs/assets/admin/electionmanagement.png)
 
-  * `backend1`
-  * `backend2`
-  * `backend3`
-* Each backend:
-
-  * Is **stateless**
-  * Exposes REST APIs
-  * Runs its **own WebSocket server**
-* Because there are three backends, there are also **three WebSocket servers**
+This interface enables administrators to manage elections by adding new elections, updating existing records, removing elections, and viewing all configured elections.
 
 ---
 
-### 4. Redis (WebSocket Coordination Layer)
+### Position Management Interface
 
-* Redis is used as a **shared pub/sub message bus**
-* All backend WebSocket servers connect to Redis
-* When one backend emits a WebSocket event:
+![Position Management](./Docs/assets/admin/positionmanagement.png)
 
-  * The event is published to Redis
-  * Redis broadcasts it to the other backends
-  * Each backend forwards the event to its connected clients
-
-This makes the system behave like **one logical WebSocket system**, even though multiple WebSocket servers exist.
+The position management module supports the creation, editing, deletion, and visualization of election positions, which serve as the basis for candidate assignment during elections.
 
 ---
 
-### 5. Database Layer
+### Real-Time Vote Tracking Interface
 
-* **mysql_master** – handles all write operations
-* **mysql_slave1** – read replica
-* **mysql_slave2** – read replica
+![Live Tracking View 1](./Docs/assets/admin/livetracking.png)
+![Live Tracking View 2](./Docs/assets/admin/livetracking2.png)
+![Live Tracking View 3](./Docs/assets/admin/livetracking3.png)
 
-**Replication Strategy:**
-
-* Master handles all writes
-* Slaves handle read queries
-* Asynchronous replication for read scalability
+These views demonstrate the system’s real-time vote monitoring capability. Vote rankings and counts are updated dynamically using WebSocket communication coordinated through Redis, allowing administrators to observe election progress without requiring manual refresh.
 
 ---
 
-# Architecture Diagram
+## 🧑‍💻 Voter Module Interfaces
 
-```
-             React Client
-          (HTTP + WebSocket)
-                   │
-                   ▼
-              ┌──────────┐
-              │   NGINX   │  <- Load Balancer
-              └─────┬─────┘
-                    │
-    ┌───────────────┼───────────────┐
-    │               │               │
- backend1        backend2         backend3
-   WS               WS               WS
-    │               │               │
-    └───────────────┬───────────────┘
-                    │
-                  Redis
-                    │
-               mysql_master
-                    │
-          mysql_slave1  mysql_slave2
-```
+### Election Selection Interface
+
+![Election Selection](./Docs/assets/voter/electionuser.png)
+
+This interface allows voters to view available elections categorized by status, including pending and active elections. Users may select an active election and proceed to the voting process.
 
 ---
 
-# Database Strategy
+### Voting Interface
 
-### Writes
+![Voting Interface 1](./Docs/assets/voter/vote.png)
+![Voting Interface 2](./Docs/assets/voter/vote2.png)
 
-* All **INSERT / UPDATE / DELETE** operations go to **mysql_master**
-
-### Reads
-
-* Read queries are distributed across **mysql_slave1** and **mysql_slave2**
-* Reduces load on the master and improves scalability
-
-### Consistency
-
-* Read replicas may lag slightly behind the master
-* The system uses **eventual consistency**
-* WebSocket events are emitted after successful writes to keep clients updated in near real-time
+The voting interface enables users to cast votes per position. The system enforces voting constraints, performs input validation, and ensures that vote submissions comply with predefined rules before final submission.
 
 ---
 
-# Real-Time Communication Strategy
+## 📌 Documentation Summary
 
-* Each backend runs a **WebSocket server**
-* Redis ensures all WebSocket servers are aware of events from other instances
-* Clients receive real-time updates regardless of which backend they are connected to
-* No sticky sessions are required because Redis synchronizes events across nodes
-
----
-
-# Deployment & Test-Aware Build
-
-This project uses **Jest tests in the backend** and a **build script that acts like a simple CI/CD pipeline**.
-
-* Backend Dockerfile runs:
-
-```dockerfile
-# Run Jest tests
-RUN npm test
-```
-
-* If any test **fails**, the Docker build **stops immediately**
-* The `build.sh` script uses `set -e` so any failed command halts deployment
-* This guarantees **only tested code is deployed**
-
----
-
-### Deployment Flow
-
-1. Stops existing containers and cleans volumes
-2. Builds backend and client images
-3. Runs Jest tests during backend build
-4. If tests fail → deployment stops
-5. Starts MySQL master
-6. Waits for readiness and configures replication
-7. Starts MySQL slave replicas
-8. Initializes database schema and seed data
-9. Starts Redis
-10. Starts backend instances, Nginx, and React client
-
----
-
-# Tech Stack
-
-* **Backend:** Node.js, Express, WebSockets / Socket.IO, Redis adapter, Jest
-* **Frontend:** React.js (Vite)
-* **Database:** MySQL 8 (master–slave replication)
-* **Messaging:** Redis (pub/sub for WebSockets)
-* **Infrastructure:** Docker, Docker Compose, Nginx
-* **Automation:** Bash scripting with test-gated builds
-
----
-
-# Services
-
-| Service            | URL                                            |
-| ------------------ | ---------------------------------------------- |
-| React Client       | [http://localhost:5173](http://localhost:5173) |
-| API (via Nginx)    | [http://localhost:8080](http://localhost:8080) |
-| WebSocket Endpoint | ws://localhost:8080                            |
-| Redis              | Internal (Docker only)                         |
-
----
-
-# Future Improvements
-
-* Backend auto-scaling
-* MySQL master failover
-* Monitoring and logging
-* WebSocket metrics and connection tracking
-* CI/CD with GitHub Actions or GitLab CI
-
----
-
-# Notes
-
-* Demonstrates **distributed systems, real-time communication, and horizontal scaling**
-* Suitable for **learning, prototyping, and portfolio projects**
-* **Not production-ready**
-
-  * No auto-scaling
-  * No DB failover
-  * Limited security hardening
-* **Build is test-gated** — broken backends never deploy
+The figures presented above collectively demonstrate the system’s distributed architecture, real-time communication capabilities, administrative management features, and voter interaction flow. They provide visual support for the design decisions implemented in the system, including containerized deployment, load balancing, WebSocket-based real-time updates, and database replication.
 
 ---
