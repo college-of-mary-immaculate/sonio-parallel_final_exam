@@ -22,5 +22,11 @@ module.exports = (service, middlewares) => {
     controller.getVoteSummary.bind(controller)
   );
 
-  return router;
+  router.get(
+    "/final",
+    authMiddleware,
+    controller.getFinalResults.bind(controller)
+  );
+
+    return router;
 };

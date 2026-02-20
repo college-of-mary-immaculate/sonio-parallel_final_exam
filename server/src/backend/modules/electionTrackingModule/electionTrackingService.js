@@ -9,9 +9,9 @@ class ElectionTrackingService {
     if (!election) throw new Error("Election not found");
 
     // Available for pending, active, and ended elections
-    if (election.status === "draft") {
-      throw new Error("Results are not available for draft elections");
-    }
+  if (election.status !== "active") {
+    throw new Error("Live results are only available while the election is active");
+  }
 
     const [positions, totalSubmissions] = await Promise.all([
       this.repo.getLiveResults(electionId),
@@ -48,6 +48,36 @@ class ElectionTrackingService {
       status:            election.status,
       total_submissions: totalSubmissions,
       votes_by_position: votesByPosition,
+    };
+  }
+
+  async getFinalResults(electionId) {
+    const election = await this.electionRepo.getElectionById(
+      electionId,
+      { forceMaster: true } // 🔒 IMPORTANT
+    );
+
+    if (!election) throw new Error("Election not found");
+
+    if (election.status !== "ended") {
+      throw new Error("Final results are only available for ended elections");
+    }
+
+    const [positions, totalSubmissions] = await Promise.all([
+      this.repo.getLiveResults(electionId, { forceMaster: true }),
+      this.repo.getTotalSubmissions(electionId, { forceMaster: true }),
+    ]);
+
+    return {
+      election_id: election.election_id,
+      title: election.title,
+      status: election.status,
+      ended_at: election.end_date,
+      total_submissions: totalSubmissions,
+      positions: positions.map(pos => ({
+        ...pos,
+        candidates: pos.candidates.filter(c => c.is_leading),
+      })),
     };
   }
 }

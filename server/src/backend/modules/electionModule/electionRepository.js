@@ -57,7 +57,10 @@ class ElectionRepository {
   // --- Get election by ID ---
   async getElectionById(electionId, { forceMaster = false } = {}) {
     const db = forceMaster ? this.masterDb : this.slaveDb;
-    const [rows] = await db.query(`SELECT * FROM elections WHERE election_id = ?`, [electionId]);
+    const [rows] = await db.query(
+      `SELECT * FROM elections WHERE election_id = ?`,
+      [electionId]
+    );
     return rows[0];
   }
 

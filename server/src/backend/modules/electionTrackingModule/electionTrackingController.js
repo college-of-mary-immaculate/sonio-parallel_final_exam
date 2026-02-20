@@ -26,6 +26,16 @@ class ElectionTrackingController {
       res.status(400).json({ error: err.message });
     }
   }
+
+  async getFinalResults(req, res) {
+    try {
+      const { electionId } = req.params;
+      const results = await this.service.getFinalResults(electionId);
+      res.json(results);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
 }
 
 module.exports = ElectionTrackingController;

@@ -16,14 +16,23 @@ describe("ElectionTrackingService", () => {
       getElectionById: jest.fn()
     };
 
-    service = new ElectionTrackingService(mockRepo, { electionRepository: mockElectionRepo });
+    service = new ElectionTrackingService(mockRepo, {
+      electionRepository: mockElectionRepo
+    });
   });
 
   // =========================================
   // GET LIVE RESULTS - SUCCESS
   // =========================================
   test("should return live results for an election", async () => {
-    const election = { election_id: 1, status: "active", title: "Test Election", start_date: new Date(), end_date: new Date() };
+    const election = {
+      election_id: 1,
+      status: "active",
+      title: "Test Election",
+      start_date: new Date(),
+      end_date: new Date()
+    };
+
     mockElectionRepo.getElectionById.mockResolvedValue(election);
     mockRepo.getLiveResults.mockResolvedValue([{ position_id: 1 }]);
     mockRepo.getTotalSubmissions.mockResolvedValue(5);
@@ -42,22 +51,39 @@ describe("ElectionTrackingService", () => {
   });
 
   // =========================================
-  // GET LIVE RESULTS - DRAFT ERROR
+  // GET LIVE RESULTS - NOT ACTIVE ERROR
   // =========================================
-  test("should throw if election is draft", async () => {
-    const election = { election_id: 1, status: "draft" };
+  test("should throw if election is not active", async () => {
+    const election = {
+      election_id: 1,
+      status: "draft"
+    };
+
     mockElectionRepo.getElectionById.mockResolvedValue(election);
 
-    await expect(service.getLiveResults(1)).rejects.toThrow("Results are not available for draft elections");
+    await expect(
+      service.getLiveResults(1)
+    ).rejects.toThrow(
+      "Live results are only available while the election is active"
+    );
   });
 
   // =========================================
   // GET VOTE SUMMARY - SUCCESS
   // =========================================
   test("should return vote summary", async () => {
-    const election = { election_id: 1, status: "active", title: "Election", start_date: new Date(), end_date: new Date() };
+    const election = {
+      election_id: 1,
+      status: "active",
+      title: "Election",
+      start_date: new Date(),
+      end_date: new Date()
+    };
+
     mockElectionRepo.getElectionById.mockResolvedValue(election);
-    mockRepo.getVoteCountsByPosition.mockResolvedValue([{ position_id: 1, total_votes: 10 }]);
+    mockRepo.getVoteCountsByPosition.mockResolvedValue([
+      { position_id: 1, total_votes: 10 }
+    ]);
     mockRepo.getTotalSubmissions.mockResolvedValue(5);
 
     const result = await service.getVoteSummary(1);
@@ -75,9 +101,17 @@ describe("ElectionTrackingService", () => {
   // GET VOTE SUMMARY - DRAFT ERROR
   // =========================================
   test("should throw if election is draft when getting summary", async () => {
-    const election = { election_id: 1, status: "draft" };
+    const election = {
+      election_id: 1,
+      status: "draft"
+    };
+
     mockElectionRepo.getElectionById.mockResolvedValue(election);
 
-    await expect(service.getVoteSummary(1)).rejects.toThrow("Summary not available for draft elections");
+    await expect(
+      service.getVoteSummary(1)
+    ).rejects.toThrow(
+      "Summary not available for draft elections"
+    );
   });
 });

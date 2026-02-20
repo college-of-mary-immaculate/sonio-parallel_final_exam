@@ -379,6 +379,9 @@ export default function AdminElectionDetailPage() {
 
   const isDraft  = election?.status === "draft";
   const isActive = election?.status === "active";
+  const isEnded =
+  election?.status === "ended" ||
+  (election?.end_date && new Date() >= new Date(election.end_date));
 
   const handleInfoChange = (e) => {
     const { name, value } = e.target;
@@ -497,8 +500,9 @@ export default function AdminElectionDetailPage() {
         </div>
       </section>
 
-      {/* ── Live tracking — active elections only ── */}
+      {/* ── Tracking section ── */}
       {isActive && <LiveTrackingSection electionId={electionId} />}
+      {isEnded  && <FinalResultsSection electionId={electionId} />}
 
       {/* ── Ballot positions ── */}
       <section style={{ marginTop: 28 }}>
@@ -584,6 +588,73 @@ export default function AdminElectionDetailPage() {
         })}
       </section>
     </div>
+  );
+}
+
+function FinalResultsSection({ electionId }) {
+  const [data,  setData]  = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchFinalWithRetry = async (retries = 5, delay = 200) => {
+      for (let i = 0; i < retries; i++) {
+        try {
+          const res = await electionTrackingApi.getFinal(electionId);
+          if (mounted) setData(res);
+          setError(null);
+          return;
+        } catch (err) {
+          // If 400, wait and retry
+          if (err.response?.status === 400 && i < retries - 1) {
+            await new Promise(r => setTimeout(r, delay));
+          } else {
+            console.error(err);
+            if (mounted) setError("Failed to load final results");
+            return;
+          }
+        }
+      }
+    };
+
+    fetchFinalWithRetry();
+
+    return () => { mounted = false; };
+  }, [electionId]);
+
+  return (
+    <section style={{
+      background: BG,
+      border: `1px solid ${BORDER}`,
+      borderRadius: 12,
+      padding: "20px 24px",
+      marginTop: 24,
+    }}>
+      <div style={{ marginBottom: 12 }}>
+        <h4 style={{ margin: 0, fontSize: "1rem", fontWeight: 700, color: TEXT }}>
+          🏁 Final Results
+        </h4>
+        <p style={{ margin: "4px 0 0", fontSize: "0.7rem", color: MUTED }}>
+          Election has ended · results are final
+        </p>
+      </div>
+
+      {error && <p style={{ color: "#f87171" }}>{error}</p>}
+      {!data && !error && <p style={{ color: MUTED }}>Loading final results…</p>}
+
+      {data?.positions?.length === 0 && (
+        <p style={{ color: MUTED }}>No results available.</p>
+      )}
+
+      {data?.positions && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
+          {data.positions.map(pos => (
+            <PositionBarChart key={pos.position_id} position={pos} />
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
