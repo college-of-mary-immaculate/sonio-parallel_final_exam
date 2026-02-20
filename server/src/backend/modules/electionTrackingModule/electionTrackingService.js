@@ -52,10 +52,7 @@ class ElectionTrackingService {
   }
 
   async getFinalResults(electionId) {
-    const election = await this.electionRepo.getElectionById(
-      electionId,
-      { forceMaster: true } // 🔒 IMPORTANT
-    );
+    const election = await this.electionRepo.getElectionById(electionId);
 
     if (!election) throw new Error("Election not found");
 
@@ -64,8 +61,8 @@ class ElectionTrackingService {
     }
 
     const [positions, totalSubmissions] = await Promise.all([
-      this.repo.getLiveResults(electionId, { forceMaster: true }),
-      this.repo.getTotalSubmissions(electionId, { forceMaster: true }),
+      this.repo.getLiveResults(electionId),
+      this.repo.getTotalSubmissions(electionId),
     ]);
 
     return {
