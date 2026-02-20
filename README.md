@@ -1,4 +1,3 @@
-
 ---
 
 ## 📸 Architecture Diagrams and System Interface Documentation
@@ -28,6 +27,49 @@ Each component—including the client, backend servers, load balancer, Redis, an
 * Stateless backend design allows horizontal scaling
 * Nginx load balancer handles both **HTTP API requests** and **WebSocket connections**
 * Deployment uses Docker Compose for automated startup and initialization
+
+---
+
+## 🚀 Setup & Deployment
+
+### Prerequisites
+
+Make sure you have the following installed:
+
+* [Docker](https://www.docker.com/)
+* [Docker Compose](https://docs.docker.com/compose/)
+
+### Running the Project
+
+1. **Clone the repository**
+
+```bash
+git clone <your-repo-url>
+cd <your-repo-folder>
+```
+
+2. **Run the build script**
+
+```bash
+bash build.sh
+```
+
+This will automatically:
+- Stop any existing containers and clean volumes
+- Build all images (backend tests run during this step)
+- Set up MySQL master and slave replicas with replication
+- Initialize the database schema and seed data
+- Start Redis, all backend instances, Nginx, and the React client
+
+> ⚠️ If any Jest test fails during the build, deployment stops immediately. Fix the failing tests before retrying.
+
+### Accessing the App
+
+| Service         | URL                        |
+| --------------- | -------------------------- |
+| React Client    | http://localhost:5173      |
+| API (via Nginx) | http://localhost:8080      |
+| WebSocket       | ws://localhost:8080        |
 
 ---
 
@@ -121,7 +163,7 @@ Allows voters to cast votes per position.
 
 ## 📌 Documentation Summary
 
-The figures above illustrate the voting system’s:
+The figures above illustrate the voting system's:
 
 * **Distributed architecture** with multiple backend instances
 * **Containerized deployment** for isolation and scalability
