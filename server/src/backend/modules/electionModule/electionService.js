@@ -80,10 +80,9 @@ class ElectionService {
       }
 
       // active → ended: voting closes, must be on or after end date
-      else if (from === "active" && to === "ended") {
-        if (now < end)
-          throw new Error(`Cannot end before end date (${end.toLocaleDateString()})`);
-      }
+    else if (from === "active" && to === "ended") {
+      // allow admin to end anytime
+    }
 
       // draft → active shortcut still blocked — must go through pending
       else {
