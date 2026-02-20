@@ -9,21 +9,21 @@ module.exports = async (db) => {
     const [e1] = await db.query(
         `INSERT INTO elections (title, status, start_date, end_date, created_by)
          VALUES (?, 'active', ?, ?, ?)`,
-        ["Provincial Election Feb 11", "2026-02-11 08:00:00", "2026-02-15 17:00:00", createdBy]
+        ["Provincial Election Feb 11", "2026-02-11 08:00:00", "2026-03-15 17:00:00", createdBy]
     );
     const electionId1 = e1.insertId;
 
     const [e2] = await db.query(
         `INSERT INTO elections (title, status, start_date, end_date, created_by)
          VALUES (?, 'active', ?, ?, ?)`,
-        ["Provincial Election Feb 12", "2026-02-12 08:00:00", "2026-02-16 17:00:00", createdBy]
+        ["Provincial Election Feb 12", "2026-02-12 08:00:00", "2026-03-16 17:00:00", createdBy]
     );
     const electionId2 = e2.insertId;
 
     const [e3] = await db.query(
         `INSERT INTO elections (title, status, start_date, end_date, created_by)
          VALUES (?, 'active', ?, ?, ?)`,
-        ["Provincial Election Feb 13", "2026-02-13 08:00:00", "2026-02-17 17:00:00", createdBy]
+        ["Provincial Election Feb 13", "2026-02-13 08:00:00", "2026-03-17 17:00:00", createdBy]
     );
     const electionId3 = e3.insertId;
 
