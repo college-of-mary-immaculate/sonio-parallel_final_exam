@@ -5,17 +5,29 @@
 
 ### System Architecture Diagram
 
-![System Architecture Diagram](./Docs/assets/chart.png)
+<img src="./Docs/assets/chart.png" alt="System Architecture Diagram" width="600"/>
 
 This diagram illustrates the overall flow and distributed architecture of the voting system. Client requests are routed through a centralized load balancer to multiple backend servers. Real-time communication is coordinated using Redis, while persistent data storage is managed through a MySQL master–slave replication strategy consisting of one master database and two read replicas.
+
+**Key Details:**
+
+* 3 backend servers (each runs its own WebSocket server)
+* Redis synchronizes events across backends for **real-time updates**
+* MySQL master handles all writes, slaves handle reads for scalability
 
 ---
 
 ## 🐳 Containerized Deployment Overview
 
-![Docker Deployment Overview](./Docs/assets/docker.png)
+<img src="./Docs/assets/docker.png" alt="Docker Deployment Overview" width="600"/>
 
-This figure presents the containerized deployment of the system. Each core component—including the client application, backend services, load balancer, Redis service, and MySQL databases—is deployed in its own Docker container. This design promotes isolation, scalability, and consistent deployment across environments.
+Each component—including the client, backend servers, load balancer, Redis, and MySQL databases—is deployed in its own Docker container.
+
+**Key Details:**
+
+* Stateless backend design allows horizontal scaling
+* Nginx load balancer handles both **HTTP API requests** and **WebSocket connections**
+* Deployment uses Docker Compose for automated startup and initialization
 
 ---
 
@@ -23,35 +35,56 @@ This figure presents the containerized deployment of the system. Each core compo
 
 ### Candidate Management Interface
 
-![Candidate Management Interface](./Docs/assets/admin/candidatemanagement.png)
+<img src="./Docs/assets/admin/candidatemanagement.png" alt="Candidate Management Interface" width="500"/>
 
-This interface allows administrators to manage candidate records through create, update, delete, and view operations.
+Administrators can **add, edit, remove, and display candidates**.
+
+**Key Details:**
+
+* Operations update the database through the backend APIs
+* Changes are immediately reflected in **real-time vote tracking**
 
 ---
 
 ### Election Management Interface
 
-![Election Management Interface](./Docs/assets/admin/electionmanagement.png)
+<img src="./Docs/assets/admin/electionmanagement.png" alt="Election Management Interface" width="500"/>
 
-Administrators can configure and maintain elections by adding new entries, modifying existing elections, removing obsolete records, and viewing all available elections.
+Administrators can **add, edit, remove, and display elections**.
+
+**Key Details:**
+
+* Works with associated positions and candidates
+* Live updates are sent to connected clients via Redis/WebSocket
 
 ---
 
 ### Position Management Interface
 
-![Position Management Interface](./Docs/assets/admin/positionmanagement.png)
+<img src="./Docs/assets/admin/positionmanagement.png" alt="Position Management Interface" width="500"/>
 
-This module supports the management of election positions, which define the structure of the voting process and candidate assignments.
+Allows **management of election positions**, which organize the voting process.
+
+**Key Details:**
+
+* Positions are linked to elections and candidates
+* Updates propagate to all active voter sessions in real time
 
 ---
 
 ### Real-Time Vote Tracking
 
-![Real-Time Vote Tracking View 1](./Docs/assets/admin/livetracking.png)
-![Real-Time Vote Tracking View 2](./Docs/assets/admin/livetracking2.png)
-![Real-Time Vote Tracking View 3](./Docs/assets/admin/livetracking3.png)
+<img src="./Docs/assets/admin/livetracking.png" alt="Live Tracking View 1" width="500"/>  
+<img src="./Docs/assets/admin/livetracking2.png" alt="Live Tracking View 2" width="500"/>  
+<img src="./Docs/assets/admin/livetracking3.png" alt="Live Tracking View 3" width="500"/>
 
-These views demonstrate the system’s real-time monitoring capability. Vote counts and rankings are updated dynamically using WebSocket communication coordinated through Redis, enabling immediate visibility of election results without manual page refresh.
+Displays live vote rankings and counts.
+
+**Key Details:**
+
+* Uses WebSockets coordinated with Redis for real-time updates
+* No page refresh required
+* Works seamlessly across multiple backend instances
 
 ---
 
@@ -59,24 +92,43 @@ These views demonstrate the system’s real-time monitoring capability. Vote cou
 
 ### Election Selection Interface
 
-![Election Selection Interface](./Docs/assets/voter/electionuser.png)
+<img src="./Docs/assets/voter/electionuser.png" alt="Election Selection Interface" width="500"/>
 
-Voters can view elections based on their current status, including pending and active elections, and select an election to proceed to the voting phase.
+Voters can view elections and select which to participate in.
+
+**Key Details:**
+
+* Shows pending and active elections
+* Selecting an election opens the voting page
+* Real-time updates ensure accurate election status
 
 ---
 
 ### Voting Interface
 
-![Voting Interface View 1](./Docs/assets/voter/vote.png)
-![Voting Interface View 2](./Docs/assets/voter/vote2.png)
+<img src="./Docs/assets/voter/vote.png" alt="Voting Interface View 1" width="500"/>  
+<img src="./Docs/assets/voter/vote2.png" alt="Voting Interface View 2" width="500"/>
 
-This interface enables voters to cast votes per position. The system enforces voting constraints, performs input validation, and ensures that all submissions comply with predefined voting rules before acceptance.
+Allows voters to cast votes per position.
+
+**Key Details:**
+
+* Enforces **vote limits and input validation**
+* Updates are sent immediately to the live tracking interface
+* Submissions are processed via backend APIs and recorded in MySQL
 
 ---
 
 ## 📌 Documentation Summary
 
-The figures presented above collectively illustrate the system’s distributed architecture, containerized deployment model, administrative management capabilities, real-time vote tracking, and voter interaction workflow. These visuals support the architectural and implementation decisions described throughout this documentation.
+The figures above illustrate the voting system’s:
+
+* **Distributed architecture** with multiple backend instances
+* **Containerized deployment** for isolation and scalability
+* **Administrative modules** for managing elections, candidates, and positions
+* **Real-time vote tracking** via WebSockets + Redis
+* **Voter interaction flow** with constraints and validation
+
+This setup demonstrates **scalable, real-time, and test-gated distributed system design**, while remaining simplified for demonstration and educational purposes.
 
 ---
-
