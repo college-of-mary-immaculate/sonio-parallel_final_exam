@@ -38,3 +38,7 @@ candidatemanagement.png
     * voting stage
     * voting candidate per positions
     * with validation and limit per votes and submit
+
+./Docs/assets/docker.png
+    * contains the view of docker 
+    * containing all (client,server, masterslave, load balancer,redisadapter)

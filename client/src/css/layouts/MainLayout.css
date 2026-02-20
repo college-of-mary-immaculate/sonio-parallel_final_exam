@@ -23,7 +23,7 @@
 
 /* When a navbar is present, push content down to avoid overlap */
 .content.with-navbar {
-  margin-top: 64px; /* matches navbar height */
+  margin-top: 96px; /* matches navbar height */
 }
 
 /* ── Sidebar layout variant (future use) ── */
@@ -51,7 +51,7 @@
   top:             0;
   left:            0;
   right:           0;
-  height:          64px;
+  height:          96px;
   display:         flex;
   justify-content: space-between;
   align-items:     center;
@@ -121,7 +121,7 @@
 ========================================================== */
 .sidebar {
   position:         fixed;
-  top:              64px; /* below navbar */
+  top:              96px; /* below navbar */
   left:             0;
   bottom:           0;
   width:            240px;

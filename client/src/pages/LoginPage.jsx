@@ -19,7 +19,7 @@ export default function LoginPage() {
         try {
             await login(email, password);
             setIsError(false);
-            setResult("Login successful");
+            setResult("Login successful! Redirecting…");
         } catch (err) {
             setIsError(true);
             setResult(err.response?.data?.message || err.message || "Login failed");
@@ -32,17 +32,16 @@ export default function LoginPage() {
         <div className="login-page">
             <div className="login-card">
 
-                {/* Brand / logo slot */}
+                {/* Brand */}
                 <div className="login-brand">
                     <div className="brand-icon">
-                        {/* simple lock icon — swap for your own logo */}
                         <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
                             <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                         </svg>
                     </div>
                     <h2>Welcome back</h2>
-                    <p>Sign in to your account</p>
+                    <p>Sign in to your account to continue</p>
                 </div>
 
                 <form onSubmit={handleSubmit}>
@@ -57,6 +56,7 @@ export default function LoginPage() {
                             required
                         />
                     </div>
+
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
                         <input
@@ -83,7 +83,7 @@ export default function LoginPage() {
                 </form>
 
                 {result && (
-                    <div className={`login-result ${isError ? "error" : ""}`}>
+                    <div className={`login-result ${isError ? "error" : "success"}`}>
                         {result}
                     </div>
                 )}

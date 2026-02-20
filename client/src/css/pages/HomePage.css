@@ -1,41 +1,316 @@
 /* ==========================================================
-   HOMEPAGE.CSS — LEVEL 4: PAGE STYLES
-   Responsibility: layout and positioning of THIS page only.
-   ✅ Scoped under .home-page — nothing bleeds out
-   ✅ Uses role theme vars for any color needed
-   ✅ Page is free to define its own components (e.g. .logout-btn)
+   HomePage.css — Enhanced Welcome Page
+   Uses CSS variables from admin-theme / user-theme.
 ========================================================== */
 
+/* ── Page wrapper ── */
 .home-page {
-  max-width: 600px;
-  margin:    2rem auto;
-  padding:   2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 64px);
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── Decorative background blobs ── */
+.home-page::before,
+.home-page::after {
+  content: "";
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.home-page::before {
+  width: 520px;
+  height: 520px;
+  background: var(--secondary-color);
+  top: -160px;
+  right: -160px;
+}
+
+.home-page::after {
+  width: 400px;
+  height: 400px;
+  background: var(--accent-color);
+  bottom: -120px;
+  left: -120px;
+}
+
+/* ── Card ── */
+.welcome-card {
+  position: relative;
+  z-index: 1;
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 3.5rem 3rem;
+  max-width: 580px;
+  width: 100%;
   text-align: center;
+  box-shadow:
+    0 0 0 1px var(--border-color),
+    0 8px 32px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.04);
+  animation: fadeSlideUp 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.home-page h2 {
-  font-size:     2rem;
-  margin-bottom: 0.5rem;
-  color:         var(--primary-color);
+/* Subtle top accent line */
+.welcome-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--primary-color),
+    var(--secondary-color),
+    transparent
+  );
 }
 
-.home-page .welcome-text {
-  font-size:     1rem;
-  color:         var(--text-muted, #6b7280);
-  margin-bottom: 1.5rem;
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
-/* 
-  Logout button: page defines its OWN color here.
-  This overrides the role theme button color intentionally.
-  That's fine — pages are allowed to force their own style.
-*/
-.home-page .logout-btn {
-  background-color: var(--danger-color, #dc2626);
-  color:            #ffffff;
-  padding:          0.5rem 1.5rem;
+/* ── Icon circle ── */
+.welcome-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent-color), var(--secondary-color));
+  font-size: 2rem;
+  margin: 0 auto 1.5rem;
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--secondary-color) 40%, transparent);
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s both;
 }
 
-.home-page .logout-btn:hover {
-  background-color: #b91c1c;
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ── Role badge ── */
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: color-mix(in srgb, var(--accent-color) 60%, transparent);
+  color: var(--primary-color);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 0.32rem 1rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--primary-color) 20%, transparent);
+  margin-bottom: 1.25rem;
+  animation: fadeSlideUp 0.4s ease 0.1s both;
+}
+
+/* ── Divider ── */
+.welcome-divider {
+  width: 48px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+  border-radius: 4px;
+  margin: 1rem auto 1.25rem;
+  border: none;
+}
+
+/* ── Heading ── */
+.welcome-heading {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: var(--text-color);
+  margin-bottom: 0;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  animation: fadeSlideUp 0.4s ease 0.15s both;
+}
+
+.welcome-heading span {
+  color: var(--primary-color);
+}
+
+/* ── Sub-text ── */
+.welcome-sub {
+  color: var(--text-muted);
+  font-size: 0.97rem;
+  line-height: 1.7;
+  margin: 0.85rem 0 2rem;
+  animation: fadeSlideUp 0.4s ease 0.2s both;
+}
+
+/* ── Stats row ── */
+.welcome-stats {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  margin-bottom: 2rem;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  overflow: hidden;
+  animation: fadeSlideUp 0.4s ease 0.25s both;
+}
+
+.stat-item {
+  flex: 1;
+  padding: 0.9rem 1rem;
+  border-right: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--bg-color) 50%, transparent);
+}
+
+.stat-item:last-child {
+  border-right: none;
+}
+
+.stat-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--primary-color);
+  line-height: 1;
+  display: block;
+}
+
+.stat-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+  display: block;
+  margin-top: 0.2rem;
+}
+
+/* ── Action buttons ── */
+.welcome-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  animation: fadeSlideUp 0.4s ease 0.3s both;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.65rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  transition:
+    background-color 0.18s,
+    transform 0.15s,
+    box-shadow 0.18s;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+}
+
+.action-btn:hover {
+  text-decoration: none;
+  transform: translateY(-2px);
+}
+
+.action-btn:active {
+  transform: scale(0.97) translateY(0);
+}
+
+.action-btn.primary {
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--primary-color) 30%, transparent);
+}
+
+.action-btn.primary:hover {
+  background-color: var(--btn-primary-hover);
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--primary-color) 40%, transparent);
+}
+
+.action-btn.secondary {
+  background-color: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+.action-btn.secondary:hover {
+  background-color: var(--btn-secondary-hover);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Footer hint ── */
+.welcome-hint {
+  margin-top: 2rem;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  animation: fadeSlideUp 0.4s ease 0.35s both;
+}
+
+.welcome-hint::before {
+  content: "🔒";
+  font-size: 0.75rem;
+}
+
+/* ── Not-logged-in fallback ── */
+.not-logged-in {
+  color: var(--text-muted);
+  font-size: 1rem;
+}
+
+/* ── Responsive ── */
+@media (max-width: 520px) {
+  .welcome-card {
+    padding: 2.5rem 1.5rem;
+  }
+
+  .welcome-heading {
+    font-size: 1.65rem;
+  }
+
+  .welcome-stats {
+    flex-direction: column;
+  }
+
+  .stat-item {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .stat-item:last-child {
+    border-bottom: none;
+  }
+
+  .welcome-actions {
+    flex-direction: column;
+  }
+
+  .action-btn {
+    width: 100%;
+  }
 }
