@@ -54,7 +54,7 @@ export default function LiveTrackingSection({ electionId }) {
       s.emit("leave:election", String(electionId));
       s.disconnect();
     };
-  }, [electionId]);
+  }, [electionId, setConnected]);
 
   return (
     <div style={{ background: SURFACE, border: `1px solid ${BORDER}`, borderRadius: 12, padding: "20px 24px", marginBottom: 24 }}>
