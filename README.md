@@ -32,32 +32,102 @@ Each component—including the client, backend servers, load balancer, Redis, an
 
 ## Setup & Deployment
 
+### Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Express.js |
+| Frontend | React.js (Vite) |
+| WebSockets | Socket.IO |
+| Load Balancer | Nginx |
+| Cache / Pub-Sub | Redis (with Socket.IO Redis Adapter) |
+| Database | MySQL (master–slave replication) |
+| Containerization | Docker & Docker Compose |
+
+---
+
 ### Prerequisites
 
-Make sure you have the following installed:
+Install the following before getting started:
 
-* [Docker](https://www.docker.com/)
-* [Docker Compose](https://docs.docker.com/compose/)
+- **Node.js** (LTS) — [https://nodejs.org/en/download](https://nodejs.org/en/download)
+- **Docker Desktop** (includes Docker Compose) — [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
+
+Then install the required npm packages for each — refer to:
+- **Server** — `server/requirements.md`
+- **Client** — `client/requirements.md`
+
+---
+
+### Environment Variables
+
+#### Server — `.env` (inside `/server` or root, depending on your structure)
+
+Create a `.env` file and configure the following:
+
+```env
+NODE_ENV=development
+
+# Server Ports
+SERVER_PORT=3000
+SERVER_PORT_2=3001
+SERVER_PORT_3=3002
+SERVER_HOST=localhost
+
+# Database
+DB_HOST=mysql_master
+DB_PORT=3306
+DB_USER=root
+DB_PASS=111
+DB_NAME=voting_system
+DB_INIT=true
+
+# JWT & OTP
+JWT_SECRET=super_secret_key_change_this
+JWT_EXPIRES_IN=1h
+OTP_EXPIRY_MINUTES=5
+```
+
+#### Client — `.env` (inside `/client`)
+
+```env
+# Points to the Nginx load balancer
+VITE_API_URL=http://localhost:8080
+```
+
+---
 
 ### Running the Project
 
-1. **Clone the repository**
+**1. Clone the repository**
 
 ```bash
-git clone <your-repo-url>
-cd <your-repo-folder>
+git clone 
+cd 
 ```
 
-2. **Run the build script**
+**2. Set MySQL config file permissions**
+
+Required for MySQL master–slave replication to initialize correctly:
 
 ```bash
-bash build.sh
+chmod 644 ./master/conf/replication.cnf
+chmod 644 ./slave1/conf/replication.cnf
+chmod 644 ./slave2/conf/replication.cnf
 ```
 
-This will automatically:
+**3. Run the build script**
+
+```bash
+chmod +x build.sh
+./build.sh
+```
+
+This script will automatically:
+
 - Stop any existing containers and clean volumes
-- Build all images (backend tests run during this step)
-- Set up MySQL master and slave replicas with replication
+- Build all Docker images (backend tests run during this step)
+- Configure MySQL master–slave replication
 - Initialize the database schema and seed data
 - Start Redis, all backend instances, Nginx, and the React client
 
