@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+echo "Grant permission for the databases! master, slave1 and slave2!"
+
+chmod +x build.sh
+chmod 644 ./server/db/master/conf/replication.cnf
+chmod 644 ./server/db/slave1/conf/replication.cnf
+chmod 644 ./server/db/slave2/conf/replication.cnf
+
 echo "===================================="
 echo "Stopping containers & volumes..."
 echo "===================================="

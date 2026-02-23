@@ -1,7 +1,7 @@
 # Permission executable (if not done yet)
-chmod 644 ./master/conf/replication.cnf
-chmod 644 ./slave1/conf/replication.cnf
-chmod 644 ./slave2/conf/replication.cnf
+chmod 644 ./server/db/master/conf/replication.cnf
+chmod 644 ./server/db/slave1/conf/replication.cnf
+chmod 644 ./server/db/slave2/conf/replication.cnf
 
 # Run build.sh 
 chmod +x build.sh
@@ -19,6 +19,11 @@ npm install socket.io
 
 # Install redis adapter
 npm install @socket.io/redis-adapter ioredis
+
+# Install needed for V SSR (Vite server side rendering)
+npm install react react-dom express vite
+# OR 
+npm install react react-dom express vite @vitejs/plugin-react
 
 # docker fresh
 docker compose down -v

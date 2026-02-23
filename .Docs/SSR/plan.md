@@ -22,4 +22,18 @@ Final:
     * rendered html and data fetched combined = hydrated page 
     * faster than csr
 
+---------------------------------------------
+
+Second solution: 
+Vite ssr!
+
+In server side , i'm gonna install the npm packge express react dom vite or what it is. then have some codes added to support the ssr.
+client create file like entry client.jsx containig the rendered html , calling the routes of react pages components etc.
+entry server.jsx will be having the fetched data to hydrate the rendered html
+Each pages that calls api that are use in useeffect or any that hydrate needed by api calls data. will be having
+static fetch data function to check if there's ssr data, if non then trigger it to hydrate
+
+server.js or anotherfile in server side will be having tosupport the set up! converting the jsx of client that was use to do ssr
+using vite commands. to make it executable by js! jsx will be convert dist js! 
+
     

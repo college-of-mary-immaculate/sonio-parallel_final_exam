@@ -6,8 +6,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Optional: install nodemon globally for dev
-RUN npm install -g nodemon
+# Install curl (needed for healthcheck)
+RUN apk add --no-cache curl
 
 # Copy all source code
 COPY . .
@@ -21,5 +21,5 @@ RUN npm test
 # Expose port
 EXPOSE 3000
 
-# Start app
-CMD ["nodemon", "src/server.js"]
+# Start app in production mode
+CMD ["node", "src/server.js"]

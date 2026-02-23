@@ -1,73 +1,38 @@
-const cors    = require("cors");
+// bootstrap.js
+const cors = require("cors");
 const express = require("express");
-const { Server } = require("socket.io");
-const { createAdapter } = require("@socket.io/redis-adapter");
-const Redis = require("ioredis");
-
 const buildContainer = require("./backend/di/container");
+const initSocket = require("./socket");
 
-async function bootstrap(httpServer, app) { // ← receive app
-  // ── NO MORE httpServer.on("request", app) ────────────────────
-  // app is already bound to httpServer via http.createServer(app)
+async function bootstrap(httpServer) {
+  const app = express();
 
+  // Middlewares
   app.use(cors());
   app.use(express.json());
 
-  const io = new Server(httpServer, {
-    cors: {
-      origin: process.env.CLIENT_URL || "http://localhost:5173",
-      methods: ["GET", "POST"],
-      credentials: true,
-    },
-    transports: ["websocket"],
-  });
+  // Socket.IO
+  const io = initSocket(httpServer);
 
-  const REDIS_HOST = process.env.REDIS_HOST || "redis";
-  const REDIS_PORT = parseInt(process.env.REDIS_PORT || "6379");
-
-  const pubClient = new Redis({ host: REDIS_HOST, port: REDIS_PORT });
-  const subClient = pubClient.duplicate();
-
-  pubClient.on("connect", () => console.log(`[redis] pub connected to ${REDIS_HOST}:${REDIS_PORT}`));
-  subClient.on("connect", () => console.log(`[redis] sub connected to ${REDIS_HOST}:${REDIS_PORT}`));
-  pubClient.on("error",   (err) => console.error("[redis] pub error:", err));
-  subClient.on("error",   (err) => console.error("[redis] sub error:", err));
-
-  io.adapter(createAdapter(pubClient, subClient));
-  console.log(`[redis] adapter initialized`);
-
-  io.on("connection", (socket) => {
-    console.log(`[ws] client connected: ${socket.id}`);
-
-    socket.on("join:election", (electionId) => {
-      socket.join(`election:${electionId}`);
-      console.log(`[ws] ${socket.id} joined election:${electionId}`);
-    });
-
-    socket.on("leave:election", (electionId) => {
-      socket.leave(`election:${electionId}`);
-    });
-
-    socket.on("disconnect", () => {
-      console.log(`[ws] client disconnected: ${socket.id}`);
-    });
-  });
-
+  // Dependency Injection container
   const container = await buildContainer({ io });
+  const routes = container.modules;
 
-  app.use("/api/auth",       container.modules.auth.routes);
-  app.use("/api/users",      container.modules.users.routes);
-  app.use("/api/votes",      container.modules.vote.routes);
-  app.use("/api/elections",  container.modules.election.routes);
-  app.use("/api/candidates", container.modules.candidates.routes);
-  app.use("/api/positions",  container.modules.positions.routes);
-  app.use("/api/elections/:electionId/positions",  container.modules.electionPositions.routes);
-  app.use("/api/elections/:electionId/candidates", container.modules.electionCandidates.routes);
-  app.use("/api/elections/:electionId/tracking",   container.modules.electionTracking.routes);
-  app.use("/api/voters/elections/:electionId/candidates", container.modules.electionCandidateVoter);
+  // Register API routes
+  app.use("/api/auth", routes.auth.routes);
+  app.use("/api/users", routes.users.routes);
+  app.use("/api/votes", routes.vote.routes);
+  app.use("/api/elections", routes.election.routes);
+  app.use("/api/candidates", routes.candidates.routes);
+  app.use("/api/positions", routes.positions.routes);
+  app.use("/api/elections/:electionId/positions", routes.electionPositions.routes);
+  app.use("/api/elections/:electionId/candidates", routes.electionCandidates.routes);
+  app.use("/api/elections/:electionId/tracking", routes.electionTracking.routes);
+  app.use("/api/voters/elections/:electionId/candidates", routes.electionCandidateVoter);
 
+  // Health checks
   app.get("/health", (req, res) => res.json({ status: "OK" }));
-  app.get("/check",  (req, res) => res.json({ instance: process.env.HOSTNAME }));
+  app.get("/check", (req, res) => res.json({ instance: process.env.HOSTNAME }));
 
   return app;
 }

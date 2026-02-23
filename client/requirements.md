@@ -10,3 +10,8 @@ npm install prop-types
 # Install web socket
 npm install socket.io-client
 
+# Install needed for SSR (Server side rendering)
+npm install vite react react-dom
+
+
+

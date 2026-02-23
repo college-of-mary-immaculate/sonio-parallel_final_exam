@@ -111,9 +111,9 @@ cd
 Required for MySQL master–slave replication to initialize correctly:
 
 ```bash
-chmod 644 ./master/conf/replication.cnf
-chmod 644 ./slave1/conf/replication.cnf
-chmod 644 ./slave2/conf/replication.cnf
+chmod 644 ./server/db/master/conf/replication.cnf
+chmod 644 ./server/db/slave1/conf/replication.cnf
+chmod 644 ./server/db/slave2/conf/replication.cnf
 ```
 
 **3. Run the build script**
