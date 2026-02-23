@@ -1,6 +1,7 @@
-# Permission executable
-chmod 644 ./master/conf/mysql.cnf
-chmod 644 ./slave/conf/mysql.cnf
+# Permission executable (if not done yet)
+chmod 644 ./master/conf/replication.cnf
+chmod 644 ./slave1/conf/replication.cnf
+chmod 644 ./slave2/conf/replication.cnf
 
 # Run build.sh 
 chmod +x build.sh

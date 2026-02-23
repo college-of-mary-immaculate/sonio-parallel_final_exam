@@ -21,3 +21,5 @@ Final:
     * combine the output of ssr-serverApi.js and ssr-serverPages.js
     * rendered html and data fetched combined = hydrated page 
     * faster than csr
+
+    
