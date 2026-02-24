@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { electionApi } from "../../apis/electionApi";
+import { useSSRData } from "../../context/SSRContext";
 import Button from "../../components/Button";
 import s from "../../css/pages/UserElectionsPage.module.css";
 
@@ -123,11 +124,18 @@ function ErrorMessage({ message }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function UserElectionsPage() {
-  const [elections, setElections] = useState([]);
-  const [loading, setLoading]     = useState(true);
+  const ssrData = useSSRData();
+
+  // ✅ Pre-populate from SSR data if available — no loading flash
+  const [elections, setElections] = useState(ssrData.elections || []);
+  const [loading, setLoading]     = useState(!ssrData.elections);
   const [error, setError]         = useState(null);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    // ✅ Skip client fetch if SSR already provided the data
+    if (ssrData.elections) return;
+    load();
+  }, []);
 
   async function load() {
     try {

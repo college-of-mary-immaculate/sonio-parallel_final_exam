@@ -1,10 +1,13 @@
 import AppRoutes from "./routes/AppRoutes";
 import { AuthProvider } from "./context/AuthContext";
+import { SSRProvider } from "./context/SSRContext";
 
-export default function AppWrapper() {
+export default function AppWrapper({ ssrData = {} }) {
   return (
     <AuthProvider>
-      <AppRoutes />
+      <SSRProvider data={ssrData}>
+        <AppRoutes />
+      </SSRProvider>
     </AuthProvider>
   );
 }

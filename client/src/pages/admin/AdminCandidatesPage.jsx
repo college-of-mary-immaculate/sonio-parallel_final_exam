@@ -10,7 +10,8 @@ const isBrowser = typeof window !== "undefined";
 
 export default function AdminCandidatesPage() {
   const [candidates, setCandidates] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const isBrowser = typeof window !== "undefined";
+  const [loading, setLoading] = useState(isBrowser);
   const [selectedCandidate, setSelectedCandidate] = useState(null);
   const [showModal, setShowModal] = useState(false);
 

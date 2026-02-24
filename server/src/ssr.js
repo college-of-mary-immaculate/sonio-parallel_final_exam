@@ -12,6 +12,26 @@ console.log('[SSR] CLIENT_ROOT resolved to:', CLIENT_ROOT)
 
 const isProd = process.env.NODE_ENV === 'production'
 
+// ── Route-level data fetchers ─────────────────────────────────
+// Only public routes — auth-gated pages stay as shell SSR
+const API_BASE = `http://localhost:${process.env.PORT || 3000}`
+
+async function fetchSSRData(url) {
+  try {
+    const cleanUrl = url.split('?')[0] // strip query strings
+
+    if (cleanUrl === '/elections') {
+      const res = await fetch(`${API_BASE}/api/elections/public`)
+      if (!res.ok) return {}
+      const elections = await res.json()
+      return { elections }
+    }
+  } catch (err) {
+    console.error('[SSR] data fetch error:', err.message)
+  }
+  return {}
+}
+
 async function createSSRMiddleware(app) {
   let vite
   let template
@@ -70,8 +90,17 @@ async function createSSRMiddleware(app) {
         html = template
       }
 
-      const { html: appHtml } = await renderFn(url)
-      const finalHtml = html.replace('<!--ssr-outlet-->', appHtml)
+      // ✅ Fetch SSR data for this route
+      const ssrData = await fetchSSRData(url)
+
+      const { html: appHtml } = await renderFn(url, ssrData)
+
+      // ✅ Embed data into page for client hydration — no re-fetch needed
+      const dataScript = `<script>window.__SSR_DATA__ = ${JSON.stringify(ssrData)}</script>`
+
+      const finalHtml = html
+        .replace('<!--ssr-outlet-->', appHtml)
+        .replace('</head>', `${dataScript}</head>`)
 
       res.status(200).set({ 'Content-Type': 'text/html' }).end(finalHtml)
 
