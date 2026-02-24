@@ -10,6 +10,7 @@ chmod +x build.sh
 # Install
 npm install cors
 npm install jsonwebtoken
+npm install dotenv
 
 # Live sync for docker
 npm install -g nodemon
@@ -24,6 +25,12 @@ npm install @socket.io/redis-adapter ioredis
 npm install react react-dom express vite
 # OR 
 npm install react react-dom express vite @vitejs/plugin-react
+# and
+npm install express compression serve-static
+npm install -D vite @vitejs/plugin-react
+
+# install needed
+npm install sirv
 
 # docker fresh
 docker compose down -v

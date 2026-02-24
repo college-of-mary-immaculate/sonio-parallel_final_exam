@@ -1,6 +1,6 @@
 import CandidateCard from "./CandidateCard";
 
-export default function PositionSection({ position, index, selectedIds, onSelect }) {
+export default function PositionSection({ position, index, selectedIds = [], onSelect }) {
   const max = position.votes_per_voter ?? 1;
   const isFull = selectedIds.length >= max;
 

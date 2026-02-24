@@ -2,24 +2,23 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package.json first for caching
-COPY package*.json ./
+# Copy package files from server/
+COPY server/package*.json ./
 RUN npm install
 
-# Install curl (needed for healthcheck)
+# Install curl for healthcheck
 RUN apk add --no-cache curl
 
-# Copy all source code
-COPY . .
+# Copy server source
+COPY server/ .
 
-# =============================
-# RUN TESTS BEFORE BUILD SUCCEEDS
-# =============================
-# If tests fail, Docker build fails automatically
+# ✅ Bake pre-built client dist directly into the image
+# No volume mount needed — avoids Windows path issues
+COPY client/dist /client/dist
+
+# Run tests
 RUN npm test
 
-# Expose port
 EXPOSE 3000
 
-# Start app in production mode
 CMD ["node", "src/server.js"]

@@ -1,24 +1,32 @@
-// bootstrap.js
 const cors = require("cors");
 const express = require("express");
 const buildContainer = require("./backend/di/container");
 const initSocket = require("./socket");
+const createSSRMiddleware = require("./ssr"); // 👈 ADD THIS
 
 async function bootstrap(httpServer) {
   const app = express();
 
+  // =====================
   // Middlewares
+  // =====================
   app.use(cors());
   app.use(express.json());
 
+  // =====================
   // Socket.IO
+  // =====================
   const io = initSocket(httpServer);
 
+  // =====================
   // Dependency Injection container
+  // =====================
   const container = await buildContainer({ io });
   const routes = container.modules;
 
-  // Register API routes
+  // =====================
+  // API Routes
+  // =====================
   app.use("/api/auth", routes.auth.routes);
   app.use("/api/users", routes.users.routes);
   app.use("/api/votes", routes.vote.routes);
@@ -28,11 +36,24 @@ async function bootstrap(httpServer) {
   app.use("/api/elections/:electionId/positions", routes.electionPositions.routes);
   app.use("/api/elections/:electionId/candidates", routes.electionCandidates.routes);
   app.use("/api/elections/:electionId/tracking", routes.electionTracking.routes);
-  app.use("/api/voters/elections/:electionId/candidates", routes.electionCandidateVoter);
+  app.use(
+    "/api/voters/elections/:electionId/candidates",
+    routes.electionCandidateVoter
+  );
 
+  // =====================
   // Health checks
+  // =====================
   app.get("/health", (req, res) => res.json({ status: "OK" }));
-  app.get("/check", (req, res) => res.json({ instance: process.env.HOSTNAME }));
+  app.get("/check", (req, res) =>
+    res.json({ instance: process.env.HOSTNAME })
+  );
+
+  // =====================
+  // SSR — MUST COME LAST
+  // =====================
+  const ssrHandler = await createSSRMiddleware(app);
+  app.use(ssrHandler);
 
   return app;
 }

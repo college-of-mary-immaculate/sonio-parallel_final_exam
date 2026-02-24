@@ -49,6 +49,7 @@ export default function AdminElectionDetailPage() {
   const [addingCandidateMap, setAddingCandidateMap] = useState({});
   const [replicaSyncing, setReplicaSyncing] = useState(false);
 
+  const isBrowser = typeof window !== "undefined";
   // ── Load ──────────────────────────────────────────────────────────────────
   const load = async () => {
     try {
@@ -148,7 +149,8 @@ export default function AdminElectionDetailPage() {
   };
 
   const handleRemovePosition = async (positionId) => {
-    if (!confirm("Remove this position and all its candidates from the election?")) return;
+    // ✅ FIX: bare confirm()
+    if (!isBrowser || !window.confirm("Remove this position and all its candidates from the election?")) return;
     try {
       await electionPositionApi.remove(electionId, positionId);
       await load();
@@ -170,7 +172,8 @@ export default function AdminElectionDetailPage() {
   };
 
   const handleRemoveCandidate = async (positionId, candidateId) => {
-    if (!confirm("Remove this candidate?")) return;
+    // ✅ FIX: bare confirm()
+    if (!isBrowser || !window.confirm("Remove this candidate?")) return;
     try {
       await electionCandidateApi.remove(electionId, positionId, candidateId);
       await load();

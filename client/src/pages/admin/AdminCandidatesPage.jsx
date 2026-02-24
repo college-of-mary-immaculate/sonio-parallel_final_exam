@@ -5,6 +5,9 @@ import Button from "../../components/Button";
 import { getAllCandidates, deleteCandidate } from "../../apis/candidateApi";
 import CandidateFormModal from "./components/CandidateFormModal";
 
+// ── SSR guard ─────────────────────────────────────────────────────
+const isBrowser = typeof window !== "undefined";
+
 export default function AdminCandidatesPage() {
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +31,8 @@ export default function AdminCandidatesPage() {
   }, []);
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this candidate?")) return;
+    // guard: window.confirm is browser-only
+    if (isBrowser && !window.confirm("Are you sure you want to delete this candidate?")) return;
     try {
       await deleteCandidate(id);
       loadCandidates();

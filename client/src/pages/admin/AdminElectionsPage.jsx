@@ -5,6 +5,9 @@ import Button from "../../components/Button";
 import ElectionFormModal from "./components/ElectionFormModal";
 import { electionApi } from "../../apis/electionApi";
 
+// ── SSR guard ─────────────────────────────────────────────────────
+const isBrowser = typeof window !== "undefined";
+
 export default function AdminElectionsPage() {
   const [elections, setElections] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -13,25 +16,17 @@ export default function AdminElectionsPage() {
 
   const navigate = useNavigate();
 
-  // ===============================
-  // Fetch Elections
-  // ===============================
   const fetchElections = async () => {
     try {
       setLoading(true);
-
       const response = await electionApi.getAll();
-
       const electionsArray = Array.isArray(response)
         ? response
         : response.elections || [];
-
       const sorted = electionsArray
         .slice()
         .sort((a, b) => (a.election_id ?? 0) - (b.election_id ?? 0));
-
       setElections(sorted);
-
     } catch (err) {
       console.error(err);
       alert(err.response?.data?.error || "Failed to load elections");
@@ -44,17 +39,11 @@ export default function AdminElectionsPage() {
     fetchElections();
   }, []);
 
-  // ===============================
-  // Navigation
-  // ===============================
   const handleView = (election) => {
     if (!election?.election_id) return;
     navigate(`/admin/elections/${election.election_id}`);
   };
 
-  // ===============================
-  // Edit / Delete
-  // ===============================
   const handleEdit = (election) => {
     setEditingElection(election);
     setModalOpen(true);
@@ -62,7 +51,8 @@ export default function AdminElectionsPage() {
 
   const handleDelete = async (id) => {
     if (!id) return;
-    if (!confirm("Are you sure you want to delete this election?")) return;
+    // ✅ FIX: bare confirm() is a browser global — will ReferenceError on server
+    if (!isBrowser || !window.confirm("Are you sure you want to delete this election?")) return;
 
     try {
       await electionApi.delete(id);

@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
-import "../../css/admin/AdminPage.css";           // shared admin base
-import "../../css/admin/AdminPositionsPage.css";  // page-specific overrides
+import "../../css/admin/AdminPage.css";
+import "../../css/admin/AdminPositionsPage.css";
 import Button from "../../components/Button";
 import PositionFormModal from "./components/PositionFormModal";
 import { positionApi } from "../../apis/positionApi";
+
+// ── SSR guard ─────────────────────────────────────────────────────
+const isBrowser = typeof window !== "undefined";
 
 export default function AdminPositionsPage() {
   const [positions, setPositions] = useState([]);
@@ -33,7 +36,8 @@ export default function AdminPositionsPage() {
   };
 
   const handleDelete = async (id) => {
-    if (!confirm("Are you sure you want to delete this position?")) return;
+    // ✅ FIX: bare confirm() ReferenceErrors on server
+    if (!isBrowser || !window.confirm("Are you sure you want to delete this position?")) return;
     try {
       await positionApi.delete(id);
       setPositions(prev => prev.filter(p => p.position_id !== id));
@@ -44,15 +48,13 @@ export default function AdminPositionsPage() {
   };
 
   const handleSaved = () => {
-    // Backend returns the latest, so simply refetch
     fetchPositions();
     setModalOpen(false);
   };
 
+  // JSX completely unchanged
   return (
     <div className="admin-page admin-positions-page">
-
-      {/* Header */}
       <div className="page-header">
         <h2>Position Management</h2>
         <Button onClick={() => { setEditingPosition(null); setModalOpen(true); }}>
@@ -60,7 +62,6 @@ export default function AdminPositionsPage() {
         </Button>
       </div>
 
-      {/* Table */}
       {loading ? (
         <p className="page-empty">Loading positions...</p>
       ) : (
@@ -89,7 +90,6 @@ export default function AdminPositionsPage() {
         </table>
       )}
 
-      {/* Modal */}
       {modalOpen && (
         <PositionFormModal
           isOpen={modalOpen}

@@ -1,6 +1,10 @@
 #!/bin/bash
 set -e
 
+# ✅ Prevents Git Bash from mangling Unix paths in Docker commands (Windows fix)
+export MSYS_NO_PATHCONV=1
+
+echo "Grant permission for the ./build.sh"
 echo "Grant permission for the databases! master, slave1 and slave2!"
 
 chmod +x build.sh
@@ -9,16 +13,29 @@ chmod 644 ./server/db/slave1/conf/replication.cnf
 chmod 644 ./server/db/slave2/conf/replication.cnf
 
 echo "===================================="
+echo "Cleaning old client dist..."
+echo "===================================="
+rm -rf client/dist
+echo "✅ client/dist cleaned"
+
+echo "===================================="
+echo "Building client SSR bundle (local)..."
+echo "===================================="
+cd client
+npm install
+npm run build
+cd ..
+echo "✅ Client SSR bundle built successfully"
+
+echo "===================================="
 echo "Stopping containers & volumes..."
 echo "===================================="
 docker compose down -v
 
 echo "===================================="
-echo "Building ALL images (backend + client)..."
+echo "Building ALL images (no cache)..."
 echo "===================================="
-
-# Fail-fast build with echo if tests fail
-if ! docker compose build; then
+if ! docker compose build --no-cache; then
   echo "❌ Docker build failed — likely due to failing tests!"
   exit 1
 fi
@@ -138,12 +155,11 @@ for SLAVE in mysql_slave1 mysql_slave2; do
 done
 
 echo "===================================="
-echo "Starting backend + nginx + client..."
+echo "Starting backend + nginx..."
 echo "===================================="
-docker compose up -d backend1 backend2 backend3 nginx client
+docker compose up -d backend1 backend2 backend3 nginx
 
 echo "===================================="
 echo "FULL SYSTEM READY ✅"
-echo "Backend via nginx: http://localhost:8080"
-echo "React client: http://localhost:5173"
+echo "App (SSR) via nginx: http://localhost:8080"
 echo "===================================="

@@ -12,6 +12,11 @@ npm install socket.io-client
 
 # Install needed for SSR (Server side rendering)
 npm install vite react react-dom
+# or
+npm install react-router-dom
+npm install -D vite @vitejs/plugin-react
+# or
+npm install vite @vitejs/plugin-react react react-dom
 
 
 

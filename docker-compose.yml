@@ -59,7 +59,6 @@ services:
       retries: 5
       start_period: 30s
 
-  # ── Redis — shared pub/sub bus for Socket.IO across all backends ──
   redis:
     image: redis:7-alpine
     container_name: redis
@@ -74,12 +73,14 @@ services:
 
   backend1:
     build:
-      context: ./server
-      dockerfile: Dockerfile
+      context: .                        # ✅ root context so Dockerfile can access client/dist
+      dockerfile: server/Dockerfile     # ✅ point to server/Dockerfile
     container_name: backend1
     volumes:
-      - ./server:/app
+      - ./server:/app                   # ✅ only server code, no client mount needed
     environment:
+      CLIENT_ROOT: /client              # ✅ baked into image at /client/dist
+      NODE_ENV: production
       DB_WRITE_HOST: mysql_master
       DB_READ_HOSTS: mysql_slave1,mysql_slave2
       DB_USER: root
@@ -110,12 +111,14 @@ services:
 
   backend2:
     build:
-      context: ./server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: server/Dockerfile
     container_name: backend2
     volumes:
       - ./server:/app
     environment:
+      CLIENT_ROOT: /client
+      NODE_ENV: production
       DB_WRITE_HOST: mysql_master
       DB_READ_HOSTS: mysql_slave1,mysql_slave2
       DB_USER: root
@@ -145,12 +148,14 @@ services:
 
   backend3:
     build:
-      context: ./server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: server/Dockerfile
     container_name: backend3
     volumes:
       - ./server:/app
     environment:
+      CLIENT_ROOT: /client
+      NODE_ENV: production
       DB_WRITE_HOST: mysql_master
       DB_READ_HOSTS: mysql_slave1,mysql_slave2
       DB_USER: root
@@ -199,23 +204,6 @@ services:
       interval: 10s
       timeout: 3s
       retries: 5
-
-
-  client:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-    container_name: react_client
-    volumes:
-      - ./client:/app
-      - /app/node_modules
-    ports:
-      - "5173:5173"
-    environment:
-      VITE_API_URL: http://localhost:8080   # ← add this
-    depends_on:
-      nginx:
-        condition: service_healthy
 
 volumes:
   master_data:
