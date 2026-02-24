@@ -5,8 +5,6 @@ import { setAuthToken } from "../apis/mainApi";
 const AuthContext = createContext();
 const isBrowser = typeof window !== "undefined";
 
-// ✅ Inject token immediately at module load — before any component renders
-// This ensures API calls on protected pages have auth headers from the start
 if (isBrowser) {
   const token = localStorage.getItem("token");
   if (token) setAuthToken(token);

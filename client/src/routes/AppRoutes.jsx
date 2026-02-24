@@ -16,10 +16,13 @@ import ProtectedRoute from "./ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
 import Navbar from "../components/Navbar";
 
+/* ─── AppRoutes ──────────────────────────────────────────────── */
 function AppRoutes() {
   const { user, loading } = useAuth();
 
-  if (loading) return <p>Loading app...</p>;
+  // ── Loading: body already has the correct theme class from AuthContext
+  // Just render nothing — the themed body background shows through, no white flash
+  if (loading) return null;
 
   return (
     <Routes>
