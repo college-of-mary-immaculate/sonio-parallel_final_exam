@@ -1,7 +1,6 @@
 const fs = require('fs')
 const path = require('path')
 
-// ✅ Auto-detect CLIENT_ROOT — bypasses Git Bash env var path mangling
 const DOCKER_CLIENT = '/client'
 const LOCAL_CLIENT = path.resolve(__dirname, '../../client')
 

@@ -37,12 +37,65 @@ Each component—including the client, backend servers, load balancer, Redis, an
 | Layer | Technology |
 |---|---|
 | Backend | Express.js |
-| Frontend | React.js (Vite) |
+| Frontend | React.js (Vite + SSR) |
+| Rendering | Vite SSR — server-side shell rendering with client-side hydration |
 | WebSockets | Socket.IO |
 | Load Balancer | Nginx |
 | Cache / Pub-Sub | Redis (with Socket.IO Redis Adapter) |
 | Database | MySQL (master–slave replication) |
 | Containerization | Docker & Docker Compose |
+
+---
+
+## Server-Side Rendering (SSR)
+
+This project uses **Vite SSR** integrated directly into the Express backend. Rather than serving a blank `<div id="root">`, the server pre-renders an HTML shell for every route before sending it to the browser.
+
+### How It Works
+
+```
+Browser Request
+      ↓
+Nginx Load Balancer
+      ↓
+Express Backend (ssr.js middleware)
+      ↓
+entry-server.jsx — renderToString() with StaticRouter
+      ↓
+HTML shell sent to browser (fast first paint)
+      ↓
+entry-client.jsx — hydrateRoot() attaches React to existing HTML
+      ↓
+useEffect fires → fetches real data → UI updates
+```
+
+### SSR Entry Points
+
+| File | Purpose |
+|---|---|
+| `client/src/entry-server.jsx` | Server entry — renders app to HTML string using `StaticRouter` |
+| `client/src/entry-client.jsx` | Client entry — hydrates the server-rendered HTML using `hydrateRoot` |
+| `server/src/ssr.js` | Express middleware — intercepts non-API routes and returns SSR HTML |
+
+### SSR Strategy — Shell Rendering
+
+The system uses **SSR shell rendering with client-side data fetching**:
+
+* The server renders the page structure and loading state immediately
+* The browser receives real HTML (not a blank page) on first load
+* After hydration, `useEffect` hooks fetch authenticated data from the API
+* This approach keeps all pages SSR-compatible without rewriting data fetching logic
+
+### Build Process
+
+The client produces two separate bundles:
+
+```bash
+vite build                                              # client bundle → dist/assets/
+vite build --ssr src/entry-server.jsx --outDir dist/server  # SSR bundle → dist/server/
+```
+
+The SSR bundle is baked into the backend Docker image at `/client/dist/` and served by all three backend instances behind Nginx.
 
 ---
 
@@ -125,20 +178,25 @@ chmod +x build.sh
 
 This script will automatically:
 
+- Clean any previous client build output (`client/dist/`)
+- Build the client SSR bundle locally (both client and server bundles)
 - Stop any existing containers and clean volumes
-- Build all Docker images (backend tests run during this step)
+- Build all Docker images with `--no-cache` (backend tests run during this step)
+- Bake the pre-built SSR bundle into the backend Docker images
 - Configure MySQL master–slave replication
 - Initialize the database schema and seed data
-- Start Redis, all backend instances, Nginx, and the React client
+- Start Redis, all backend instances, and Nginx
 
 > ⚠️ If any Jest test fails during the build, deployment stops immediately. Fix the failing tests before retrying.
+
+> ⚠️ On Windows (Git Bash), the build script sets `MSYS_NO_PATHCONV=1` automatically to prevent path mangling in Docker commands.
 
 ### Accessing the App
 
 | Service         | URL                        |
 | --------------- | -------------------------- |
-| React Client    | http://localhost:5173      |
-| API (via Nginx) | http://localhost:8080      |
+| App (SSR)       | http://localhost:8080      |
+| API (via Nginx) | http://localhost:8080/api  |
 | WebSocket       | ws://localhost:8080        |
 
 ---
@@ -237,10 +295,11 @@ The figures above illustrate the voting system's:
 
 * **Distributed architecture** with multiple backend instances
 * **Containerized deployment** for isolation and scalability
+* **Server-side rendering (SSR)** with Vite for fast first paint and HTML pre-rendering
 * **Administrative modules** for managing elections, candidates, and positions
 * **Real-time vote tracking** via WebSockets + Redis
 * **Voter interaction flow** with constraints and validation
 
-This setup demonstrates **scalable, real-time, and test-gated distributed system design**, while remaining simplified for demonstration and educational purposes.
+This setup demonstrates **scalable, real-time, SSR-enabled, and test-gated distributed system design**, while remaining simplified for demonstration and educational purposes.
 
 ---
