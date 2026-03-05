@@ -12,7 +12,7 @@ if (isBrowser) {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    // ✅ Initialize user synchronously from localStorage
+ 
     if (!isBrowser) return null;
     try {
       const userData = localStorage.getItem("user");

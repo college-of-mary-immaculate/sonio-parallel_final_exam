@@ -11,26 +11,69 @@ const CLIENT_ROOT = fs.existsSync(path.join(DOCKER_CLIENT, 'dist/index.html'))
 console.log('[SSR] CLIENT_ROOT resolved to:', CLIENT_ROOT)
 
 const isProd = process.env.NODE_ENV === 'production'
-
-// ── Route-level data fetchers ─────────────────────────────────
-// Only public routes — auth-gated pages stay as shell SSR
 const API_BASE = `http://localhost:${process.env.PORT || 3000}`
 
+// ─── Add every route your app has and fetch ALL data it needs ───────────────
 async function fetchSSRData(url) {
   try {
-    const cleanUrl = url.split('?')[0] // strip query strings
+    const cleanUrl = url.split('?')[0]
 
+    // HOME / root
+    if (cleanUrl === '/' || cleanUrl === '') {
+      const res = await fetch(`${API_BASE}/api/elections/public`)
+      if (!res.ok) return {}
+      const elections = await res.json()
+      return { elections }
+    }
+
+    // ELECTIONS LIST
     if (cleanUrl === '/elections') {
       const res = await fetch(`${API_BASE}/api/elections/public`)
       if (!res.ok) return {}
       const elections = await res.json()
       return { elections }
     }
+
+    // SINGLE ELECTION — e.g. /elections/123
+    const electionMatch = cleanUrl.match(/^\/elections\/([^/]+)$/)
+    if (electionMatch) {
+      const id = electionMatch[1]
+      const [electionRes, candidatesRes] = await Promise.all([
+        fetch(`${API_BASE}/api/elections/${id}`),
+        fetch(`${API_BASE}/api/elections/${id}/candidates`),
+      ])
+      const election = electionRes.ok ? await electionRes.json() : null
+      const candidates = candidatesRes.ok ? await candidatesRes.json() : []
+      return { election, candidates }
+    }
+
+    // Add more routes here as your app grows:
+    // if (cleanUrl === '/results') { ... }
+    // if (cleanUrl === '/about')   { ... }
+
   } catch (err) {
     console.error('[SSR] data fetch error:', err.message)
   }
   return {}
 }
+
+// ─── CRITICAL: your components must use SSR data instead of fetching in useEffect ─
+// In each page component do this pattern:
+//
+//   import { useSSRData } from '../context/SSRContext'
+//
+//   export default function ElectionsPage() {
+//     const ssrData = useSSRData()
+//     const [elections, setElections] = useState(ssrData.elections ?? null)
+//
+//     useEffect(() => {
+//       if (elections !== null) return   // ← skip fetch if SSR already gave us data
+//       fetch('/api/elections/public')
+//         .then(r => r.json())
+//         .then(setElections)
+//     }, [])
+//     ...
+//   }
 
 async function createSSRMiddleware(app) {
   let vite
@@ -56,10 +99,10 @@ async function createSSRMiddleware(app) {
     console.log('[SSR] indexHtml exists?', fs.existsSync(indexHtml))
 
     if (!fs.existsSync(ssrBundle)) {
-      throw new Error(`[SSR] SSR bundle not found at ${ssrBundle} — did you run 'npm run build' in the client?`)
+      throw new Error(`[SSR] SSR bundle not found at ${ssrBundle} — did you run 'npm run build'?`)
     }
     if (!fs.existsSync(indexHtml)) {
-      throw new Error(`[SSR] index.html not found at ${indexHtml} — did you run 'npm run build' in the client?`)
+      throw new Error(`[SSR] index.html not found at ${indexHtml} — did you run 'npm run build'?`)
     }
 
     const compression = require('compression')
@@ -90,12 +133,13 @@ async function createSSRMiddleware(app) {
         html = template
       }
 
-      // ✅ Fetch SSR data for this route
+      // 1. Fetch ALL data this route needs — server-side, before render
       const ssrData = await fetchSSRData(url)
 
+      // 2. Render the full React tree to an HTML string WITH the data already in it
       const { html: appHtml } = await renderFn(url, ssrData)
 
-      // ✅ Embed data into page for client hydration — no re-fetch needed
+      // 3. Embed data so the client can hydrate without re-fetching
       const dataScript = `<script>window.__SSR_DATA__ = ${JSON.stringify(ssrData)}</script>`
 
       const finalHtml = html
