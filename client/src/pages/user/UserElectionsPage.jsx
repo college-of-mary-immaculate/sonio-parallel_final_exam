@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { electionApi } from "../../apis/electionApi";
-import { useSSRFetch } from "../../hooks/useSSRFetch";   // ← import the hook
+import { useSSRFetch } from "../../hooks/useSSRFetch";  
 import Button from "../../components/Button";
 import s from "../../css/pages/UserElectionsPage.module.css";
 

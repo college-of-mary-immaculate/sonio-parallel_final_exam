@@ -2,25 +2,27 @@ const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
     try {
-        const authHeader = req.headers["authorization"];
+        // 1. Try cookie first (SSR requests, browser navigation)
+        // 2. Fall back to Authorization header (API clients, mobile)
+        let token = req.cookies?.token;
 
-        if (!authHeader) {
-            return res.status(401).json({ message: "Authorization header missing." });
+        if (!token) {
+            const authHeader = req.headers["authorization"];
+            if (authHeader && authHeader.startsWith("Bearer ")) {
+                token = authHeader.split(" ")[1];
+            }
         }
 
-        const tokenParts = authHeader.split(" ");
-
-        if (tokenParts[0] !== "Bearer" || !tokenParts[1]) {
-            return res.status(401).json({ message: "Invalid authorization format." });
+        if (!token) {
+            return res.status(401).json({ message: "No token provided." });
         }
 
-        const token = tokenParts[1];
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         req.user = {
             userId: decoded.userId,
             email: decoded.email,
-            role: decoded.role
+            role: decoded.role,
         };
 
         next();

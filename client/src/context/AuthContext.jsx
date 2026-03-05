@@ -1,50 +1,12 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { loginApi } from "../apis/authApi";
-import { setAuthToken } from "../apis/mainApi";
+import { loginApi, getMeApi, logoutApi } from "../apis/authApi";
 
 const AuthContext = createContext();
 const isBrowser = typeof window !== "undefined";
 
-if (isBrowser) {
-  const token = localStorage.getItem("token");
-  if (token) setAuthToken(token);
-}
-
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
- 
-    if (!isBrowser) return null;
-    try {
-      const userData = localStorage.getItem("user");
-      return userData ? JSON.parse(userData) : null;
-    } catch {
-      return null;
-    }
-  });
-
+  const [user, setUser] = useState(null);    // always start null — cookie check happens in useEffect
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!isBrowser) return;
-
-    const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user");
-
-    if (token && userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        setAuthToken(token);
-        setUser(parsedUser);
-        applyTheme(parsedUser.role);
-      } catch {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        setAuthToken(null);
-      }
-    }
-
-    setLoading(false);
-  }, []);
 
   const applyTheme = (role) => {
     if (!isBrowser) return;
@@ -53,20 +15,38 @@ export const AuthProvider = ({ children }) => {
     else if (role === "voter") document.body.classList.add("user-theme");
   };
 
+  // On mount: ask the server "who am I?" using the cookie
+  // If the cookie is valid, server returns the user — session restored
+  // If not, user stays null — logged out
+  useEffect(() => {
+    if (!isBrowser) return;
+
+    getMeApi()
+      .then((res) => {
+        setUser(res.data.user);
+        applyTheme(res.data.user.role);
+      })
+      .catch(() => {
+        setUser(null);   // cookie missing or expired — that's fine
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
   const login = async (email, password) => {
     const response = await loginApi({ email, password });
-    const { token, user } = response.data;
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
-    setAuthToken(token);
+    const { user } = response.data;    // server sets cookie, we just get user back
     setUser(user);
     applyTheme(user.role);
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setAuthToken(null);
+  const logout = async () => {
+    try {
+      await logoutApi();               // server clears the cookie
+    } catch {
+      // even if the request fails, clear client state
+    }
     setUser(null);
     if (isBrowser) document.body.classList.remove("user-theme", "admin-theme");
   };

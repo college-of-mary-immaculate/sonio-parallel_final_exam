@@ -1,5 +1,6 @@
 const fs = require('fs')
 const path = require('path')
+const jwt = require('jsonwebtoken')
 
 const DOCKER_CLIENT = '/client'
 const LOCAL_CLIENT = path.resolve(__dirname, '../../client')
@@ -13,12 +14,24 @@ console.log('[SSR] CLIENT_ROOT resolved to:', CLIENT_ROOT)
 const isProd = process.env.NODE_ENV === 'production'
 const API_BASE = `http://localhost:${process.env.PORT || 3000}`
 
-// ─── Add every route your app has and fetch ALL data it needs ───────────────
-async function fetchSSRData(url) {
+// ─── Read and verify the cookie from the SSR request ────────────────────────
+function getUserFromRequest(req) {
+  try {
+    const token = req.cookies?.token
+    if (!token) return null
+    return jwt.verify(token, process.env.JWT_SECRET)
+  } catch {
+    return null
+  }
+}
+
+// ─── Fetch SSR data — public and protected routes ────────────────────────────
+async function fetchSSRData(url, req) {
   try {
     const cleanUrl = url.split('?')[0]
 
-    // HOME / root
+    // ── PUBLIC ROUTES (no auth needed) ──────────────────────────────────────
+
     if (cleanUrl === '/' || cleanUrl === '') {
       const res = await fetch(`${API_BASE}/api/elections/public`)
       if (!res.ok) return {}
@@ -26,7 +39,6 @@ async function fetchSSRData(url) {
       return { elections }
     }
 
-    // ELECTIONS LIST
     if (cleanUrl === '/elections') {
       const res = await fetch(`${API_BASE}/api/elections/public`)
       if (!res.ok) return {}
@@ -34,46 +46,59 @@ async function fetchSSRData(url) {
       return { elections }
     }
 
-    // SINGLE ELECTION — e.g. /elections/123
-    const electionMatch = cleanUrl.match(/^\/elections\/([^/]+)$/)
-    if (electionMatch) {
-      const id = electionMatch[1]
-      const [electionRes, candidatesRes] = await Promise.all([
-        fetch(`${API_BASE}/api/elections/${id}`),
-        fetch(`${API_BASE}/api/elections/${id}/candidates`),
-      ])
-      const election = electionRes.ok ? await electionRes.json() : null
-      const candidates = candidatesRes.ok ? await candidatesRes.json() : []
-      return { election, candidates }
+    // ── PROTECTED ROUTES (need cookie) ───────────────────────────────────────
+    // Forward the cookie from the browser request to the internal API call
+
+    const cookie = req.headers.cookie || ''   // e.g. "token=abc123"
+
+    // Admin elections list
+    if (cleanUrl === '/admin/elections') {
+      const user = getUserFromRequest(req)
+      if (!user || user.role !== 'admin') return {}
+
+      const res = await fetch(`${API_BASE}/api/elections`, {
+        headers: { Cookie: cookie },
+      })
+      if (!res.ok) return {}
+      const elections = await res.json()
+      return { elections }
     }
 
-    // Add more routes here as your app grows:
-    // if (cleanUrl === '/results') { ... }
-    // if (cleanUrl === '/about')   { ... }
+    // Admin election detail
+    const adminElectionMatch = cleanUrl.match(/^\/admin\/elections\/([^/]+)$/)
+    if (adminElectionMatch) {
+      const user = getUserFromRequest(req)
+      if (!user || user.role !== 'admin') return {}
+
+      const id = adminElectionMatch[1]
+      const res = await fetch(`${API_BASE}/api/elections/${id}`, {
+        headers: { Cookie: cookie },
+      })
+      if (!res.ok) return {}
+      const election = await res.json()
+      return { election }
+    }
+
+    // Voter ballot page
+    const ballotMatch = cleanUrl.match(/^\/vote\/([^/]+)$/)
+    if (ballotMatch) {
+      const user = getUserFromRequest(req)
+      if (!user || user.role !== 'voter') return {}
+
+      const id = ballotMatch[1]
+      const res = await fetch(`${API_BASE}/api/elections/${id}/positions/voter`, {
+        headers: { Cookie: cookie },
+      })
+      if (!res.ok) return {}
+      const positions = await res.json()
+      return { positions }
+    }
 
   } catch (err) {
     console.error('[SSR] data fetch error:', err.message)
   }
   return {}
 }
-
-// ─── CRITICAL: your components must use SSR data instead of fetching in useEffect ─
-// In each page component do this pattern:
-//
-//   import { useSSRData } from '../context/SSRContext'
-//
-//   export default function ElectionsPage() {
-//     const ssrData = useSSRData()
-//     const [elections, setElections] = useState(ssrData.elections ?? null)
-//
-//     useEffect(() => {
-//       if (elections !== null) return   // ← skip fetch if SSR already gave us data
-//       fetch('/api/elections/public')
-//         .then(r => r.json())
-//         .then(setElections)
-//     }, [])
-//     ...
-//   }
 
 async function createSSRMiddleware(app) {
   let vite
@@ -133,13 +158,13 @@ async function createSSRMiddleware(app) {
         html = template
       }
 
-      // 1. Fetch ALL data this route needs — server-side, before render
-      const ssrData = await fetchSSRData(url)
+      // 1. Fetch data — pass req so protected routes can read the cookie
+      const ssrData = await fetchSSRData(url, req)
 
-      // 2. Render the full React tree to an HTML string WITH the data already in it
+      // 2. Render the full React tree to HTML string with data already in it
       const { html: appHtml } = await renderFn(url, ssrData)
 
-      // 3. Embed data so the client can hydrate without re-fetching
+      // 3. Embed data for client hydration — no re-fetch needed
       const dataScript = `<script>window.__SSR_DATA__ = ${JSON.stringify(ssrData)}</script>`
 
       const finalHtml = html

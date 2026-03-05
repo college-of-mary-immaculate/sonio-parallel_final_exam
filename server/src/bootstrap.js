@@ -1,8 +1,9 @@
 const cors = require("cors");
 const express = require("express");
+const cookieParser = require("cookie-parser");
 const buildContainer = require("./backend/di/container");
 const initSocket = require("./socket");
-const createSSRMiddleware = require("./ssr"); // 👈 ADD THIS
+const createSSRMiddleware = require("./ssr");
 
 async function bootstrap(httpServer) {
   const app = express();
@@ -10,8 +11,12 @@ async function bootstrap(httpServer) {
   // =====================
   // Middlewares
   // =====================
-  app.use(cors());
+  app.use(cors({
+    origin: process.env.CLIENT_URL || "http://localhost:8080",  // exact origin — no wildcard
+    credentials: true,                                           // allows cookies cross-origin
+  }));
   app.use(express.json());
+  app.use(cookieParser());   // ← parses req.cookies so authMiddleware and ssr.js can read them
 
   // =====================
   // Socket.IO
