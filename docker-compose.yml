@@ -90,7 +90,7 @@ services:
       JWT_SECRET: super_secret_key_change_this
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      CLIENT_URL: http://localhost:5173
+      CLIENT_URL: http://localhost:8080 
     depends_on:
       mysql_master:
         condition: service_healthy
@@ -127,7 +127,7 @@ services:
       JWT_SECRET: super_secret_key_change_this
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      CLIENT_URL: http://localhost:5173
+      CLIENT_URL: http://localhost:8080 
     depends_on:
       mysql_master:
         condition: service_healthy
@@ -164,7 +164,7 @@ services:
       JWT_SECRET: super_secret_key_change_this
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      CLIENT_URL: http://localhost:5173
+      CLIENT_URL: http://localhost:8080 
     depends_on:
       mysql_master:
         condition: service_healthy

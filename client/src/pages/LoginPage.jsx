@@ -5,36 +5,41 @@ import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 
 export default function LoginPage() {
-    const { login } = useAuth();
+    const { login, user, loading } = useAuth();
     const navigate = useNavigate();
 
     const [email, setEmail]       = useState("");
     const [password, setPassword] = useState("");
     const [result, setResult]     = useState(null);
     const [isError, setIsError]   = useState(false);
-    const [loading, setLoading]   = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
+    console.log('[LoginPage] render — user:', user, 'loading:', loading)
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
+        setIsLoading(true);
         setResult(null);
+        console.log('[LoginPage] handleSubmit fired, email:', email)
         try {
+            console.log('[LoginPage] calling login()...')
             await login(email, password);
+            console.log('[LoginPage] login() success — navigating to /')
             setIsError(false);
-            navigate("/", { replace: true });   // ← explicitly navigate after login
+            navigate("/", { replace: true });
         } catch (err) {
+            console.error('[LoginPage] login() threw:', err)
+            console.error('[LoginPage] error response:', err.response?.data)
             setIsError(true);
             setResult(err.response?.data?.message || err.message || "Login failed");
         } finally {
-            setLoading(false);
+            setIsLoading(false);
         }
     };
 
     return (
         <div className="login-page">
             <div className="login-card">
-
-                {/* Brand */}
                 <div className="login-brand">
                     <div className="brand-icon">
                         <svg viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -58,7 +63,6 @@ export default function LoginPage() {
                             required
                         />
                     </div>
-
                     <div className="form-group">
                         <label htmlFor="password">Password</label>
                         <input
@@ -70,16 +74,9 @@ export default function LoginPage() {
                             required
                         />
                     </div>
-
                     <div className="form-actions">
-                        <Button
-                            type="submit"
-                            variant="primary"
-                            size="md"
-                            fullWidth
-                            disabled={loading}
-                        >
-                            {loading ? "Signing in…" : "Sign in"}
+                        <Button type="submit" variant="primary" size="md" fullWidth disabled={isLoading}>
+                            {isLoading ? "Signing in…" : "Sign in"}
                         </Button>
                     </div>
                 </form>
@@ -89,7 +86,6 @@ export default function LoginPage() {
                         {result}
                     </div>
                 )}
-
             </div>
         </div>
     );

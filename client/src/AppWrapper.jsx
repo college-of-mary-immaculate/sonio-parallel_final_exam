@@ -4,10 +4,10 @@ import { SSRProvider } from "./context/SSRContext";
 
 export default function AppWrapper({ ssrData = {} }) {
   return (
-    <AuthProvider>
-      <SSRProvider data={ssrData}>
+    <SSRProvider data={ssrData}>
+      <AuthProvider>
         <AppRoutes />
-      </SSRProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </SSRProvider>
   );
 }

@@ -17,10 +17,12 @@ const isBrowser = typeof window !== "undefined";
 function AppRoutes() {
   const { user, loading } = useAuth();
 
-  // Only block render while loading IN THE BROWSER
-  // On the server, loading is always false (we set useState(isBrowser))
-  // so this never blocks SSR
-  if (isBrowser && loading) return null;
+  console.log('[AppRoutes] render — user:', user, 'loading:', loading)
+
+  if (isBrowser && loading) {
+    console.log('[AppRoutes] still loading, returning null')
+    return null;
+  }
 
   return (
     <Routes>
@@ -28,7 +30,11 @@ function AppRoutes() {
       <Route element={<MainLayout />}>
         <Route
           path="/login"
-          element={user ? <Navigate to="/" replace /> : <LoginPage />}
+          element={
+            user
+              ? <Navigate to={user.role === "admin" ? "/admin/elections" : "/"} replace />
+              : <LoginPage />
+          }
         />
       </Route>
 
@@ -62,8 +68,11 @@ function AppRoutes() {
         />
       </Route>
 
-      {/* FALLBACK */}
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* FALLBACK — send to login if not authenticated, home if authenticated */}
+      <Route
+        path="*"
+        element={user ? <Navigate to="/" replace /> : <Navigate to="/login" replace />}
+      />
     </Routes>
   );
 }
