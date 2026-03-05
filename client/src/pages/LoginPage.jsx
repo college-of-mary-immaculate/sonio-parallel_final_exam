@@ -1,10 +1,12 @@
 import "../css/pages/LoginPage.css";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 
 export default function LoginPage() {
     const { login } = useAuth();
+    const navigate = useNavigate();
 
     const [email, setEmail]       = useState("");
     const [password, setPassword] = useState("");
@@ -19,7 +21,7 @@ export default function LoginPage() {
         try {
             await login(email, password);
             setIsError(false);
-            setResult("Login successful! Redirecting…");
+            navigate("/", { replace: true });   // ← explicitly navigate after login
         } catch (err) {
             setIsError(true);
             setResult(err.response?.data?.message || err.message || "Login failed");

@@ -1,12 +1,22 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { loginApi, getMeApi, logoutApi } from "../apis/authApi";
+import { useSSRData } from "./SSRContext";
 
 const AuthContext = createContext();
 const isBrowser = typeof window !== "undefined";
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);    // always start null — cookie check happens in useEffect
-  const [loading, setLoading] = useState(isBrowser); // false on server → renders content; true on browser → waits for getMeApi()
+  const ssrData = useSSRData();
+
+  // ── Seed from SSR data so server + client render identically ──────────────
+  // Server:  ssrData.user = verified user from cookie → renders correct UI
+  // Client:  window.__SSR_DATA__.user = same value → no hydration mismatch
+  // If no cookie: ssrData.user = null → renders login/public UI on both sides
+  const [user, setUser]       = useState(ssrData?.user ?? null);
+  const [loading, setLoading] = useState(isBrowser && !ssrData?.user);
+  // loading=false on server (no useEffect)
+  // loading=false on client if SSR gave us a user (skip getMeApi)
+  // loading=true  on client if no SSR user (need to verify cookie)
 
   const applyTheme = (role) => {
     if (!isBrowser) return;
@@ -15,19 +25,21 @@ export const AuthProvider = ({ children }) => {
     else if (role === "voter") document.body.classList.add("user-theme");
   };
 
-  // On mount: ask the server "who am I?" using the cookie
-  // If the cookie is valid, server returns the user — session restored
-  // If not, user stays null — logged out
   useEffect(() => {
-    if (!isBrowser) return;
+    // SSR already gave us a user — apply theme and skip the /me fetch
+    if (ssrData?.user) {
+      applyTheme(ssrData.user.role);
+      return;
+    }
 
+    // No SSR user — check cookie (e.g. direct URL navigation, page refresh)
     getMeApi()
       .then((res) => {
         setUser(res.data.user);
         applyTheme(res.data.user.role);
       })
       .catch(() => {
-        setUser(null);   // cookie missing or expired — that's fine
+        setUser(null);
       })
       .finally(() => {
         setLoading(false);
@@ -36,16 +48,16 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const response = await loginApi({ email, password });
-    const { user } = response.data;    // server sets cookie, we just get user back
+    const { user } = response.data;
     setUser(user);
     applyTheme(user.role);
   };
 
   const logout = async () => {
     try {
-      await logoutApi();               // server clears the cookie
+      await logoutApi();
     } catch {
-      // even if the request fails, clear client state
+      // clear client state even if request fails
     }
     setUser(null);
     if (isBrowser) document.body.classList.remove("user-theme", "admin-theme");

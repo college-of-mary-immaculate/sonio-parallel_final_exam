@@ -2,8 +2,13 @@ const jwt = require("jsonwebtoken");
 
 const authMiddleware = (req, res, next) => {
     try {
-        // 1. Try cookie first (SSR requests, browser navigation)
-        // 2. Fall back to Authorization header (API clients, mobile)
+        // ── DEBUG ──────────────────────────────────────────────────────────
+        console.log('[authMiddleware] path:', req.path)
+        console.log('[authMiddleware] req.cookies:', req.cookies)
+        console.log('[authMiddleware] cookie header raw:', req.headers.cookie)
+        console.log('[authMiddleware] authorization:', req.headers.authorization)
+        // ──────────────────────────────────────────────────────────────────
+
         let token = req.cookies?.token;
 
         if (!token) {
@@ -14,9 +19,11 @@ const authMiddleware = (req, res, next) => {
         }
 
         if (!token) {
+            console.log('[authMiddleware] ❌ no token found anywhere')
             return res.status(401).json({ message: "No token provided." });
         }
 
+        console.log('[authMiddleware] ✅ token found, verifying...')
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         req.user = {
@@ -25,8 +32,10 @@ const authMiddleware = (req, res, next) => {
             role: decoded.role,
         };
 
+        console.log('[authMiddleware] ✅ user verified:', req.user)
         next();
     } catch (error) {
+        console.log('[authMiddleware] ❌ error:', error.message)
         return res.status(401).json({ message: "Unauthorized: " + error.message });
     }
 };
