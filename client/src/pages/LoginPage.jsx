@@ -1,11 +1,11 @@
 import "../css/pages/LoginPage.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Button from "../components/Button";
 
 export default function LoginPage() {
-    const { login, user, loading } = useAuth();
+    const { login, user } = useAuth();
     const navigate = useNavigate();
 
     const [email, setEmail]       = useState("");
@@ -14,22 +14,29 @@ export default function LoginPage() {
     const [isError, setIsError]   = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
-    console.log('[LoginPage] render — user:', user, 'loading:', loading)
+    // ── When user is set (after successful login), navigate ──────────────────
+    // This runs AFTER React has committed the new user state,
+    // so ProtectedRoute will see the user correctly
+    useEffect(() => {
+        if (!user) return;
+        console.log('[LoginPage] user set, navigating to:', user.role === 'admin' ? '/admin/elections' : '/')
+        if (user.role === 'admin') {
+            navigate('/admin/elections', { replace: true });
+        } else {
+            navigate('/', { replace: true });
+        }
+    }, [user]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsLoading(true);
         setResult(null);
-        console.log('[LoginPage] handleSubmit fired, email:', email)
         try {
-            console.log('[LoginPage] calling login()...')
             await login(email, password);
-            console.log('[LoginPage] login() success — navigating to /')
-            setIsError(false);
-            navigate("/", { replace: true });
+            // Don't navigate here — let the useEffect above handle it
+            // once React has committed the user state update
         } catch (err) {
-            console.error('[LoginPage] login() threw:', err)
-            console.error('[LoginPage] error response:', err.response?.data)
+            console.error('[LoginPage] login error:', err.response?.data || err.message)
             setIsError(true);
             setResult(err.response?.data?.message || err.message || "Login failed");
         } finally {

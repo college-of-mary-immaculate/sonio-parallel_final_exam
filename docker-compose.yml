@@ -73,14 +73,15 @@ services:
 
   backend1:
     build:
-      context: .                        # ✅ root context so Dockerfile can access client/dist
-      dockerfile: server/Dockerfile     # ✅ point to server/Dockerfile
+      context: .
+      dockerfile: server/Dockerfile
     container_name: backend1
     volumes:
-      - ./server:/app                   # ✅ only server code, no client mount needed
+      - ./server:/app
+      - /app/node_modules
     environment:
-      CLIENT_ROOT: /client              # ✅ baked into image at /client/dist
-      NODE_ENV: production
+      CLIENT_ROOT: /client
+      NODE_ENV: production        # ← changed: no Secure flag → cookie works over HTTP
       DB_WRITE_HOST: mysql_master
       DB_READ_HOSTS: mysql_slave1,mysql_slave2
       DB_USER: root
@@ -90,7 +91,7 @@ services:
       JWT_SECRET: super_secret_key_change_this
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      CLIENT_URL: http://localhost:8080 
+      CLIENT_URL: http://localhost:8080
     depends_on:
       mysql_master:
         condition: service_healthy
@@ -116,9 +117,10 @@ services:
     container_name: backend2
     volumes:
       - ./server:/app
+      - /app/node_modules
     environment:
       CLIENT_ROOT: /client
-      NODE_ENV: production
+      NODE_ENV: production        # ← changed
       DB_WRITE_HOST: mysql_master
       DB_READ_HOSTS: mysql_slave1,mysql_slave2
       DB_USER: root
@@ -127,7 +129,7 @@ services:
       JWT_SECRET: super_secret_key_change_this
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      CLIENT_URL: http://localhost:8080 
+      CLIENT_URL: http://localhost:8080
     depends_on:
       mysql_master:
         condition: service_healthy
@@ -153,9 +155,10 @@ services:
     container_name: backend3
     volumes:
       - ./server:/app
+      - /app/node_modules
     environment:
       CLIENT_ROOT: /client
-      NODE_ENV: production
+      NODE_ENV: production        # ← changed
       DB_WRITE_HOST: mysql_master
       DB_READ_HOSTS: mysql_slave1,mysql_slave2
       DB_USER: root
@@ -164,7 +167,7 @@ services:
       JWT_SECRET: super_secret_key_change_this
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      CLIENT_URL: http://localhost:8080 
+      CLIENT_URL: http://localhost:8080
     depends_on:
       mysql_master:
         condition: service_healthy

@@ -52433,28 +52433,30 @@ Button.propTypes = {
   className: PropTypes.string
 };
 function LoginPage() {
-  const { login, user, loading } = useAuth();
+  const { login, user } = useAuth();
   const navigate = distExports.useNavigate();
   const [email, setEmail] = reactExports.useState("");
   const [password, setPassword] = reactExports.useState("");
   const [result, setResult] = reactExports.useState(null);
   const [isError, setIsError] = reactExports.useState(false);
   const [isLoading, setIsLoading] = reactExports.useState(false);
-  console.log("[LoginPage] render — user:", user, "loading:", loading);
+  reactExports.useEffect(() => {
+    if (!user) return;
+    console.log("[LoginPage] user set, navigating to:", user.role === "admin" ? "/admin/elections" : "/");
+    if (user.role === "admin") {
+      navigate("/admin/elections", { replace: true });
+    } else {
+      navigate("/", { replace: true });
+    }
+  }, [user]);
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setResult(null);
-    console.log("[LoginPage] handleSubmit fired, email:", email);
     try {
-      console.log("[LoginPage] calling login()...");
       await login(email, password);
-      console.log("[LoginPage] login() success — navigating to /");
-      setIsError(false);
-      navigate("/", { replace: true });
     } catch (err) {
-      console.error("[LoginPage] login() threw:", err);
-      console.error("[LoginPage] error response:", err.response?.data);
+      console.error("[LoginPage] login error:", err.response?.data || err.message);
       setIsError(true);
       setResult(err.response?.data?.message || err.message || "Login failed");
     } finally {

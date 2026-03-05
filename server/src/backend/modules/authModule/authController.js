@@ -9,10 +9,8 @@ class AuthController {
 
             res.cookie('token', result.token, {
                 httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                // 'strict' blocks the cookie when origin differs (localhost:8080 → localhost:3000)
-                // 'lax' works for cross-origin in dev while still protecting against CSRF
-                sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+                secure: false,       // ← never require HTTPS — works on HTTP localhost
+                sameSite: 'lax',     // ← lax works cross-origin (nginx:8080 → backend:3000)
                 maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
             });
 
@@ -33,8 +31,8 @@ class AuthController {
     logout = async (req, res) => {
         res.clearCookie('token', {
             httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+            secure: false,
+            sameSite: 'lax',
         });
         res.json({ message: 'Logged out' });
     };
