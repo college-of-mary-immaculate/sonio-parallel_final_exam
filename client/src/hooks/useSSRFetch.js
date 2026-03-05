@@ -1,25 +1,10 @@
-// hooks/useSSRFetch.js
-// ─────────────────────────────────────────────────────────────────────────────
-// Handles the SSR → client handoff pattern automatically.
-//
-// On the SERVER:  renders with `ssrData[key]` already populated → full HTML
-// On the CLIENT:  if SSR data exists, skips the fetch entirely (no double load)
-//                 if SSR data is missing, fetches normally
-//
-// Usage:
-//   const { data, loading, error, reload } = useSSRFetch('elections', fetchFn)
-//
-// Where `fetchFn` is an async function that returns the data, e.g.:
-//   () => electionApi.getPublic()
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { useState, useEffect, useCallback } from "react";
 import { useSSRData } from "../context/SSRContext";
 
 /**
- * @param {string}   ssrKey      - Key to look up in window.__SSR_DATA__ / SSRContext
- * @param {Function} fetchFn     - async () => data   called only when SSR data is absent
- * @param {*}        [fallback]  - Initial value before data arrives (default: null)
+ * @param {string}   ssrKey   
+ * @param {Function} fetchFn 
+ * @param {*}        [fallback] 
  */
 export function useSSRFetch(ssrKey, fetchFn, fallback = null) {
   const ssrData   = useSSRData();
@@ -44,7 +29,7 @@ export function useSSRFetch(ssrKey, fetchFn, fallback = null) {
   }, [fetchFn, ssrKey]);
 
   useEffect(() => {
-    // ✅ Skip client fetch entirely if the server already gave us this data
+    // Skip client fetch entirely if the server already gave us this data
     if (ssrValue !== null) return;
     load();
   }, []);   // intentionally runs once on mount only

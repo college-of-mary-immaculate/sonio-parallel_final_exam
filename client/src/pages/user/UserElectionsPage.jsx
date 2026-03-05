@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { electionApi } from "../../apis/electionApi";
-import { useSSRData } from "../../context/SSRContext";
+import { useSSRFetch } from "../../hooks/useSSRFetch";   // ← import the hook
 import Button from "../../components/Button";
 import s from "../../css/pages/UserElectionsPage.module.css";
 
@@ -124,31 +123,11 @@ function ErrorMessage({ message }) {
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function UserElectionsPage() {
-  const ssrData = useSSRData();
-
-  // ✅ Pre-populate from SSR data if available — no loading flash
-  const [elections, setElections] = useState(ssrData.elections || []);
-  const [loading, setLoading]     = useState(!ssrData.elections);
-  const [error, setError]         = useState(null);
-
-  useEffect(() => {
-    // ✅ Skip client fetch if SSR already provided the data
-    if (ssrData.elections) return;
-    load();
-  }, []);
-
-  async function load() {
-    try {
-      setError(null);
-      const data = await electionApi.getPublic();
-      setElections(data);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load elections. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { data: elections, loading, error } = useSSRFetch(
+    'elections',                      // matches the key returned in ssr.js fetchSSRData()
+    () => electionApi.getPublic(),
+    []                                // fallback = empty array so .length never crashes
+  )
 
   return (
     <div className={s.page}>
