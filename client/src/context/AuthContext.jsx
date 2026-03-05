@@ -6,7 +6,7 @@ const isBrowser = typeof window !== "undefined";
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);    // always start null — cookie check happens in useEffect
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isBrowser); // false on server → renders content; true on browser → waits for getMeApi()
 
   const applyTheme = (role) => {
     if (!isBrowser) return;

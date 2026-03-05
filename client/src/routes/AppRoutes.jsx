@@ -1,32 +1,29 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
 import LoginPage from "../pages/LoginPage";
 import HomePage from "../pages/HomePage";
-
 import AdminCandidatesPage from "../pages/admin/AdminCandidatesPage";
 import AdminPositionsPage from "../pages/admin/AdminPositionsPage";
 import AdminElectionsPage from "../pages/admin/AdminElectionsPage";
 import AdminElectionDetailPage from "../pages/admin/pages/AdminElectionDetailpage";
-
 import UserElectionsPage from "../pages/user/UserElectionsPage";
 import BallotPage from "../pages/user/BallotPage";
-
 import ProtectedRoute from "./ProtectedRoute";
 import MainLayout from "../layouts/MainLayout";
 import Navbar from "../components/Navbar";
 
-/* ─── AppRoutes ──────────────────────────────────────────────── */
+const isBrowser = typeof window !== "undefined";
+
 function AppRoutes() {
   const { user, loading } = useAuth();
 
-  // ── Loading: body already has the correct theme class from AuthContext
-  // Just render nothing — the themed body background shows through, no white flash
-  if (loading) return null;
+  // Only block render while loading IN THE BROWSER
+  // On the server, loading is always false (we set useState(isBrowser))
+  // so this never blocks SSR
+  if (isBrowser && loading) return null;
 
   return (
     <Routes>
-
       {/* PUBLIC */}
       <Route element={<MainLayout />}>
         <Route
@@ -67,7 +64,6 @@ function AppRoutes() {
 
       {/* FALLBACK */}
       <Route path="*" element={<Navigate to="/" replace />} />
-
     </Routes>
   );
 }
