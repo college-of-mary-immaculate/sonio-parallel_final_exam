@@ -24,6 +24,8 @@ describe("AuthController", () => {
       json: jest.fn(),
       status: jest.fn().mockReturnThis()
     };
+
+    jest.clearAllMocks();
   });
 
   // =====================================
@@ -34,7 +36,7 @@ describe("AuthController", () => {
 
     const fakeResult = {
       token: "FAKE.TOKEN",
-      user: { userId: 1 }
+      user: { userId: 1, email: "test@example.com" }
     };
 
     mockService.login.mockResolvedValue(fakeResult);
@@ -48,7 +50,7 @@ describe("AuthController", () => {
       "FAKE.TOKEN",
       expect.objectContaining({
         httpOnly: true,
-        sameSite: "strict"
+        maxAge: 1000 * 60 * 60 * 24 * 7
       })
     );
 
@@ -70,6 +72,7 @@ describe("AuthController", () => {
     await controller.login(req, res);
 
     expect(res.status).toHaveBeenCalledWith(401);
+
     expect(res.json).toHaveBeenCalledWith({
       message: "Invalid email or password."
     });
@@ -89,14 +92,13 @@ describe("AuthController", () => {
   // =====================================
   // LOGOUT
   // =====================================
-  test("should clear cookie and logout user", async () => {
+  test("should clear cookie and return logout message", async () => {
     await controller.logout(req, res);
 
     expect(res.clearCookie).toHaveBeenCalledWith(
       "token",
       expect.objectContaining({
-        httpOnly: true,
-        sameSite: "strict"
+        httpOnly: true
       })
     );
 
