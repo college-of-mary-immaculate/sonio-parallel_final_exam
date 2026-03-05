@@ -62832,16 +62832,12 @@ const isBrowser = typeof window !== "undefined";
 function AppRoutes() {
   const { user, loading } = useAuth();
   console.log("[AppRoutes] render — user:", user, "loading:", loading);
-  if (isBrowser && loading) {
-    console.log("[AppRoutes] still loading, returning null");
-    return null;
-  }
   return /* @__PURE__ */ jsxRuntimeExports.jsxs(distExports.Routes, { children: [
     /* @__PURE__ */ jsxRuntimeExports.jsx(distExports.Route, { element: /* @__PURE__ */ jsxRuntimeExports.jsx(MainLayout, {}), children: /* @__PURE__ */ jsxRuntimeExports.jsx(
       distExports.Route,
       {
         path: "/login",
-        element: user ? /* @__PURE__ */ jsxRuntimeExports.jsx(distExports.Navigate, { to: user.role === "admin" ? "/admin/elections" : "/", replace: true }) : /* @__PURE__ */ jsxRuntimeExports.jsx(LoginPage, {})
+        element: !isBrowser || loading ? /* @__PURE__ */ jsxRuntimeExports.jsx(LoginPage, {}) : user ? /* @__PURE__ */ jsxRuntimeExports.jsx(distExports.Navigate, { to: user.role === "admin" ? "/admin/elections" : "/", replace: true }) : /* @__PURE__ */ jsxRuntimeExports.jsx(LoginPage, {})
       }
     ) }),
     /* @__PURE__ */ jsxRuntimeExports.jsxs(

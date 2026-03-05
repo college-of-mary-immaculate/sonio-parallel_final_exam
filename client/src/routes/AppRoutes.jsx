@@ -19,10 +19,9 @@ function AppRoutes() {
 
   console.log('[AppRoutes] render — user:', user, 'loading:', loading)
 
-  if (isBrowser && loading) {
-    console.log('[AppRoutes] still loading, returning null')
-    return null;
-  }
+  // ── NEVER return null — that causes hydration mismatch ──────────────────
+  // SSR renders full content, client must render same structure
+  // ProtectedRoute handles redirects after loading completes
 
   return (
     <Routes>
@@ -31,9 +30,11 @@ function AppRoutes() {
         <Route
           path="/login"
           element={
-            user
-              ? <Navigate to={user.role === "admin" ? "/admin/elections" : "/"} replace />
-              : <LoginPage />
+            (!isBrowser || loading)
+              ? <LoginPage />  // during SSR and loading, always show login page at /login
+              : user
+                ? <Navigate to={user.role === "admin" ? "/admin/elections" : "/"} replace />
+                : <LoginPage />
           }
         />
       </Route>
@@ -68,7 +69,7 @@ function AppRoutes() {
         />
       </Route>
 
-      {/* FALLBACK — send to login if not authenticated, home if authenticated */}
+      {/* FALLBACK */}
       <Route
         path="*"
         element={user ? <Navigate to="/" replace /> : <Navigate to="/login" replace />}
