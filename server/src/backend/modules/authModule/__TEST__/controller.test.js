@@ -34,11 +34,10 @@ describe("AuthController", () => {
   test("should set cookie and return user on login", async () => {
     req.body = { email: "test@example.com", password: "123" };
 
-    const fakeResult = {
-      token: "FAKE.TOKEN",
-      user: { userId: 1, email: "test@example.com" }
-    };
-
+  const fakeResult = {
+    token: "FAKE.TOKEN",
+    user: { userId: 1, email: "test@example.com", role: "admin" }  // ← add role
+  };
     mockService.login.mockResolvedValue(fakeResult);
 
     await controller.login(req, res);
