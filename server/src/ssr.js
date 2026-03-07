@@ -74,9 +74,6 @@ async function fetchSSRData(url, req) {
       const positions = res.ok ? await res.json() : []
       return { user, positions }
     }
-
-    // ── ALL OTHER ROUTES (/, /login, /admin/candidates, etc.) ────────────────
-    // Always include user so AuthContext hydrates correctly on every page
     return { user }
 
   } catch (err) {

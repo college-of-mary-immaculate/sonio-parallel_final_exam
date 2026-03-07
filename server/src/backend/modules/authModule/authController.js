@@ -14,7 +14,14 @@ class AuthController {
                 maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
             });
 
-            res.json({ user: result.user });
+            res.json({
+            accessToken: result.token,
+            tokenType: "Bearer",
+            user: {
+                id: result.user.userId,
+                role: result.user.role
+            }
+        });
         } catch (error) {
             res.status(401).json({ message: error.message });
         }

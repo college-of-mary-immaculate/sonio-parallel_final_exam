@@ -47,10 +47,10 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const response = await loginApi({ email, password });
-    const { user } = response.data;
-    setUser(user);
-    applyTheme(user.role);
+      const response = await loginApi({ email, password });
+      const { user } = response.data;   // user is now { id, role }
+      setUser(user);
+      applyTheme(user.role);
   };
 
   const logout = async () => {

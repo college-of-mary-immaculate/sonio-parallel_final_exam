@@ -54,9 +54,11 @@ describe("AuthController", () => {
       })
     );
 
-    expect(res.json).toHaveBeenCalledWith({
-      user: fakeResult.user
-    });
+  expect(res.json).toHaveBeenCalledWith({
+      accessToken: "FAKE.TOKEN",
+      tokenType: "Bearer",
+      user: { id: 1, role: "admin" }  // was: fakeResult.user
+  });
   });
 
   // =====================================
